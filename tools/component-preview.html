@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大富翁·工位版 · 视觉规范 v2 预览</title>
+<link rel="stylesheet" href="../src/ui/tokens.css">
+<style>
+  /* ─────────── 预览页自身样式（不依赖 tokens.css 之外的样式） ─────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    background: linear-gradient(180deg, #1a1d24 0%, #14171f 100%);
+    color: var(--text-on-dark);
+    min-height: 100vh;
+    padding: var(--sp-9) var(--sp-6);
+  }
+  .page { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    font: var(--font-h1);
+    background: linear-gradient(90deg, var(--gold), var(--tile-orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: var(--sp-3);
+  }
+  .sub { color: var(--text-mute); font-size: var(--fs-body-sm); margin-bottom: var(--sp-9); }
+  h2 {
+    font: var(--font-h2);
+    color: var(--text-on-dark);
+    margin: var(--sp-9) 0 var(--sp-5);
+    padding-bottom: var(--sp-3);
+    border-bottom: 2px solid var(--border-card);
+  }
+  h2::before { content: "§"; color: var(--gold); margin-right: var(--sp-3); font-family: var(--font-num); }
+  h3 {
+    font: var(--font-h3);
+    color: var(--gold);
+    margin: var(--sp-7) 0 var(--sp-4);
+  }
+  h3::before { content: "▸"; color: var(--tile-orange); margin-right: var(--sp-2); }
+
+  /* ─────────── 色板 ─────────── */
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--sp-4);
+  }
+  .swatch {
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    border: 1px solid var(--border-card);
+    background: rgba(255,255,255,0.02);
+  }
+  .swatch-color {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--font-num);
+    font-size: var(--fs-caption);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  }
+  .swatch-info { padding: var(--sp-3) var(--sp-4); }
+  .swatch-info .name { font-weight: 700; font-size: var(--fs-body-sm); }
+  .swatch-info .hex { font-family: var(--font-num); font-size: var(--fs-mini); color: var(--text-mute); margin-top: 2px; }
+
+  /* ─────────── 字体层级 ─────────── */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-5);
+    padding: var(--sp-3) 0;
+    border-bottom: 1px dashed var(--border-card);
+  }
+  .type-row .label { flex: 0 0 180px; color: var(--text-mute); font-size: var(--fs-caption); }
+  .type-row .sample { flex: 1; }
+
+  /* ─────────── 按钮 ─────────── */
+  .btn-row { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; margin-bottom: var(--sp-4); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-5);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-btn);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
+    color: var(--text-on-dark);
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-default);
+  }
+  .btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.primary {
+    background: linear-gradient(180deg, var(--state-info), #3a8ac0);
+    border-color: #2a6a9a;
+    box-shadow: 0 2px 8px rgba(79, 168, 216, 0.35);
+  }
+  .btn.gold {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border-color: var(--gold-deep);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(245, 200, 66, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .btn.danger {
+    background: rgba(232, 90, 90, 0.18);
+    border-color: rgba(232, 90, 90, 0.5);
+    color: #f8a8a8;
+  }
+  .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.15); }
+  .btn.sm { padding: var(--sp-2) var(--sp-3); font-size: var(--fs-body-sm); }
+  .btn.lg { padding: var(--sp-4) var(--sp-6); font-size: var(--fs-body-lg); }
+
+  /* ─────────── 圆角展示 ─────────── */
+  .radius-row { display: flex; gap: var(--sp-5); align-items: end; flex-wrap: wrap; }
+  .radius-box {
+    width: 120px; height: 80px;
+    background: linear-gradient(135deg, var(--gold), var(--tile-orange));
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-num); font-size: var(--fs-caption); font-weight: 700;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-2);
+  }
+
+  /* ─────────── 玩家卡 ─────────── */
+  .pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-4); }
+  .pcard {
+    background: linear-gradient(160deg, #2a2933, #1f1e27);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-card);
+    padding: var(--sp-4);
+    box-shadow: var(--shadow-1);
+    position: relative;
+  }
+  .pcard.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold-soft), var(--shadow-2);
+  }
+  .pcard.active::before {
+    content: ''; position: absolute; left: 0; top: 12%; bottom: 12%; width: 3px;
+    background: var(--gold); border-radius: 0 3px 3px 0;
+  }
+  .pcard-head { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+  .pcard-av {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 24px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-card);
+  }
+  .pcard-name { font-size: var(--fs-title-md); font-weight: var(--fw-bold); }
+  .pcard-rank { font-size: var(--fs-body-sm); color: var(--text-mute); }
+  .pcard-nw {
+    margin-left: auto; text-align: right;
+    font-family: var(--font-num); font-weight: var(--fw-bold);
+    color: var(--gold); font-size: var(--fs-title-md);
+  }
+  .pcard-row { display: flex; justify-content: space-between; padding: var(--sp-2) 0; font-size: var(--fs-body-sm); color: var(--text-mute); }
+  .pcard-row b { font-family: var(--font-num); color: var(--text-on-dark); font-weight: var(--fw-semibold); }
+
+  /* ─────────── 弹窗样例 ─────────── */
+  .modal-demo {
+    background: linear-gradient(170deg, #322f40, #2a2933);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-modal);
+    max-width: 480px;
+    margin: var(--sp-5) auto;
+    box-shadow: var(--shadow-3);
+    overflow: hidden;
+    animation: pop 0.3s var(--ease-bounce);
+  }
+  @keyframes pop {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-head {
+    padding: var(--sp-5) var(--sp-6) var(--sp-4);
+    border-bottom: 1px solid var(--border-card);
+    display: flex; align-items: center; gap: var(--sp-3);
+  }
+  .modal-emoji { font-size: 32px; }
+  .modal-title { font-size: var(--fs-title-lg); font-weight: var(--fw-bold); }
+  .modal-body { padding: var(--sp-5) var(--sp-6); font-size: var(--fs-body); line-height: 1.7; }
+  .modal-detail {
+    margin-top: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--gold-soft);
+    color: var(--gold);
+    border-radius: var(--radius-tag);
+    font-family: var(--font-num);
+    font-size: var(--fs-body-lg);
+    font-weight: var(--fw-bold);
+  }
+  .modal-foot {
+    padding: var(--sp-4) var(--sp-6);
+    display: flex; gap: var(--sp-3); justify-content: flex-end;
+    background: rgba(0,0,0,0.2);
+  }
+
+  /* ─────────── Toast ─────────── */
+  .toasts { display: flex; flex-direction: column; gap: var(--sp-2); align-items: center; }
+  .toast {
+    padding: var(--sp-3) var(--sp-5);
+    border-radius: var(--radius-circle);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    background: rgba(42, 41, 51, 0.95);
+    border: 1px solid var(--border-card);
+    box-shadow: var(--shadow-2);
+  }
+  .toast.warn { background: rgba(232, 90, 90, 0.2); color: #f8a8a8; border-color: rgba(232, 90, 90, 0.5); }
+  .toast.bad  { background: rgba(232, 90, 90, 0.15); color: #f08882; border-color: rgba(232, 90, 90, 0.4); }
+  .toast.good { background: rgba(92, 184, 104, 0.18); color: #8fd896; border-color: rgba(92, 184, 104, 0.45); }
+  .toast.info { background: rgba(79, 168, 216, 0.18); color: #8fc8e8; border-color: rgba(79, 168, 216, 0.45); }
+
+  /* ─────────── 6 区段地块样例 ─────────── */
+  .tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--sp-4); }
+  .tile {
+    aspect-ratio: 1;
+    border-radius: var(--radius-card);
+    padding: var(--sp-3);
+    display: flex; flex-direction: column; justify-content: space-between;
+    color: #fff;
+    font-weight: var(--fw-semibold);
+    box-shadow:
+      0 4px 0 var(--tile-shadow),
+      var(--shadow-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .tile::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+    background: var(--tile-hi);
+    opacity: 0.6;
+  }
+  .tile .icon { font-size: 32px; }
+  .tile .name { font-size: var(--fs-body); }
+  .tile .price {
+    font-family: var(--font-num);
+    font-size: var(--fs-body-lg);
+    background: rgba(0,0,0,0.3);
+    padding: 2px 8px;
+    border-radius: 6px;
+    align-self: flex-start;
+  }
+  .tile-blue   { background: var(--tile-blue);   --tile-hi: var(--tile-blue-hi);   --tile-shadow: var(--tile-blue-deep); }
+  .tile-purple { background: var(--tile-purple); --tile-hi: var(--tile-purple-hi); --tile-shadow: var(--tile-purple-deep); }
+  .tile-brown  { background: var(--tile-brown);  --tile-hi: var(--tile-brown-hi);  --tile-shadow: var(--tile-brown-deep); }
+  .tile-green  { background: var(--tile-green);  --tile-hi: var(--tile-green-hi);  --tile-shadow: var(--tile-green-deep); }
+  .tile-gold   { background: var(--tile-gold);   --tile-hi: var(--tile-gold-hi);   --tile-shadow: var(--tile-gold-deep); color: var(--text-primary); }
+  .tile-orange { background: var(--tile-orange); --tile-hi: var(--tile-orange-hi); --tile-shadow: var(--tile-orange-deep); }
+
+  /* ─────────── 专注模式 demo ─────────── */
+  .focus-demo {
+    position: relative;
+    background: linear-gradient(180deg, #2b2937, #1a1d24);
+    border-radius: var(--radius-modal);
+    padding: var(--sp-7);
+    margin: var(--sp-5) 0;
+    min-height: 320px;
+    overflow: hidden;
+  }
+  .focus-demo .fake-board {
+    position: absolute; inset: 50% var(--sp-7) var(--sp-7) var(--sp-7);
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, var(--tile-green), var(--tile-blue), var(--tile-purple));
+    border-radius: var(--radius-card);
+    display: grid; place-items: center;
+    color: #fff;
+    font-size: var(--fs-title-lg);
+    font-weight: var(--fw-bold);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    box-shadow: var(--shadow-3);
+  }
+  .focus-demo .fake-topbar, .focus-demo .fake-side, .focus-demo .fake-bottom {
+    background: rgba(0,0,0,0.5);
+    border-radius: var(--radius-tag);
+    font-size: var(--fs-caption);
+    color: var(--text-mute);
+    padding: var(--sp-2) var(--sp-3);
+    text-align: center;
+  }
+  .focus-demo .fake-topbar { position: absolute; top: var(--sp-4); left: var(--sp-4); right: var(--sp-4); }
+  .focus-demo .fake-side { position: absolute; right: var(--sp-4); top: 60px; bottom: 60px; width: 80px; }
+  .focus-demo .fake-bottom { position: absolute; bottom: var(--sp-4); left: var(--sp-4); right: var(--sp-4); }
+  .focus-demo.focus-on .fake-topbar,
+  .focus-demo.focus-on .fake-side,
+  .focus-demo.focus-on .fake-bottom { opacity: 0.05; transition: opacity var(--dur-slow); }
+  .focus-demo.focus-on .fake-board {
+    inset: var(--sp-7);
+    transform: none;
+    transition: all var(--dur-slow) var(--ease-default);
+  }
+  .focus-toggle {
+    position: absolute; top: var(--sp-4); right: var(--sp-4); z-index: 2;
+  }
+
+  /* ─────────── 间距展示 ─────────── */
+  .sp-demo { display: flex; align-items: end; gap: var(--sp-3); }
+  .sp-bar {
+    width: 36px;
+    background: linear-gradient(180deg, var(--gold), var(--tile-orange));
+    border-radius: 4px 4px 0 0;
+  }
+  .sp-bar + small { display: block; text-align: center; font-family: var(--font-num); font-size: var(--fs-mini); color: var(--text-mute); margin-top: var(--sp-1); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>🏢 大富翁·工位版 · 视觉规范 v2</h1>
+  <p class="sub">Phase 1 交付物 · 引用 <code style="font-family:var(--font-num);color:var(--gold);">src/ui/tokens.css</code> · 验收通过后合并到 <code style="font-family:var(--font-num);color:var(--gold);">theme.css</code></p>
+
+  <!-- ─────────── §1 主色板 ─────────── -->
+  <h2>1. 主色板</h2>
+  <div class="swatches">
+    <div class="swatch"><div class="swatch-color" style="background:var(--bg-stage)">棋盘底色</div><div class="swatch-info"><div class="name">bg-stage</div><div class="hex">#1a2330</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--bg-floor)">中央地毯</div><div class="swatch-info"><div class="name">bg-floor</div><div class="hex">#3a6a4f</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--bg-sky)">远景天顶</div><div class="swatch-info"><div class="name">bg-sky</div><div class="hex">#7fc1e8</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--gold);color:var(--text-primary)">主金</div><div class="swatch-info"><div class="name">gold</div><div class="hex">#f5c842</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--gold-deep)">金描边</div><div class="swatch-info"><div class="name">gold-deep</div><div class="hex">#b88a1f</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--state-good)">成功</div><div class="swatch-info"><div class="name">state-good</div><div class="hex">#5cb868</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--state-warn)">警告</div><div class="swatch-info"><div class="name">state-warn</div><div class="hex">#e85a5a</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--state-info)">信息</div><div class="swatch-info"><div class="name">state-info</div><div class="hex">#4fa8d8</div></div></div>
+  </div>
+
+  <!-- ─────────── §2 6 区段色 ─────────── -->
+  <h2>2. 6 大区段色（地段分组）</h2>
+  <div class="tiles">
+    <div class="tile tile-blue"><div class="icon">🖥️</div><div><div class="name">研发区</div><div class="price">¥ 90,000</div></div></div>
+    <div class="tile tile-purple"><div class="icon">📊</div><div><div class="name">会议室区</div><div class="price">¥ 120,000</div></div></div>
+    <div class="tile tile-brown"><div class="icon">☕</div><div><div class="name">咖啡区</div><div class="price">¥ 60,000</div></div></div>
+    <div class="tile tile-green"><div class="icon">🌿</div><div><div class="name">公共区</div><div class="price">¥ 70,000</div></div></div>
+    <div class="tile tile-gold"><div class="icon">🏆</div><div><div class="name">高管区</div><div class="price">¥ 220,000</div></div></div>
+    <div class="tile tile-orange"><div class="icon">✈️</div><div><div class="name">机动区</div><div class="price">¥ 150,000</div></div></div>
+  </div>
+
+  <!-- ─────────── §3 字体层级 ─────────── -->
+  <h2>3. 字体层级</h2>
+  <div class="type-row"><span class="label">H1 / 顶栏大数字</span><span class="sample" style="font: var(--font-h1); color: var(--gold);">星期 12</span></div>
+  <div class="type-row"><span class="label">H2 / 卡片标题</span><span class="sample" style="font: var(--font-h2);">季度分红！</span></div>
+  <div class="type-row"><span class="label">H3 / 玩家名</span><span class="sample" style="font: var(--font-h3);">王思齐 · ★总监</span></div>
+  <div class="type-row"><span class="label">Body / 正文</span><span class="sample" style="font: var(--font-body);">老板发话："这个季度大家辛苦了！"</span></div>
+  <div class="type-row"><span class="label">Num / 价格</span><span class="sample" style="font: var(--font-num); color: var(--gold);">¥ 58,000</span></div>
+  <div class="type-row"><span class="label">Mono / 等宽</span><span class="sample" style="font: var(--font-mono); color: var(--text-mute);">log[2026-10-08 21:30] netWorth=58,000</span></div>
+
+  <!-- ─────────── §4 圆角 ─────────── -->
+  <h2>4. 圆角（来自 §7.1 一致性原则）</h2>
+  <div class="radius-row">
+    <div><div class="radius-box" style="border-radius: var(--radius-btn);">按钮 8px</div></div>
+    <div><div class="radius-box" style="border-radius: var(--radius-tag);">小标签 12px</div></div>
+    <div><div class="radius-box" style="border-radius: var(--radius-card);">卡片 16px</div></div>
+    <div><div class="radius-box" style="border-radius: var(--radius-modal);">弹窗 24px</div></div>
+  </div>
+
+  <!-- ─────────── §5 间距 ─────────── -->
+  <h2>5. 间距尺度（4–48px）</h2>
+  <div class="sp-demo">
+    <div><div class="sp-bar" style="height: 4px;"></div><small>4</small></div>
+    <div><div class="sp-bar" style="height: 8px;"></div><small>8</small></div>
+    <div><div class="sp-bar" style="height: 12px;"></div><small>12</small></div>
+    <div><div class="sp-bar" style="height: 16px;"></div><small>16</small></div>
+    <div><div class="sp-bar" style="height: 20px;"></div><small>20</small></div>
+    <div><div class="sp-bar" style="height: 24px;"></div><small>24</small></div>
+    <div><div class="sp-bar" style="height: 32px;"></div><small>32</small></div>
+    <div><div class="sp-bar" style="height: 40px;"></div><small>40</small></div>
+    <div><div class="sp-bar" style="height: 48px;"></div><small>48</small></div>
+  </div>
+
+  <!-- ─────────── §6 按钮 ─────────── -->
+  <h2>6. 按钮</h2>
+  <h3>6.1 类型</h3>
+  <div class="btn-row">
+    <button class="btn">默认按钮</button>
+    <button class="btn primary">主按钮 (primary)</button>
+    <button class="btn gold">金色按钮 (gold)</button>
+    <button class="btn danger">危险按钮 (danger)</button>
+    <button class="btn ghost">幽灵按钮 (ghost)</button>
+    <button class="btn" disabled>禁用</button>
+  </div>
+
+  <h3>6.2 尺寸</h3>
+  <div class="btn-row">
+    <button class="btn sm">小 (sm)</button>
+    <button class="btn">默认</button>
+    <button class="btn lg">大 (lg)</button>
+  </div>
+
+  <!-- ─────────── §7 玩家卡 ─────────── -->
+  <h2>7. 玩家卡（4 人排名面板）</h2>
+  <div class="pcards">
+    <div class="pcard active">
+      <div class="pcard-head">
+        <div class="pcard-av" style="background: linear-gradient(135deg, #ffd980, #e8804f);">👨‍💼</div>
+        <div><div class="pcard-name">王思齐</div><div class="pcard-rank">★ 总监 · 起手 3.2 万</div></div>
+        <div class="pcard-nw">58,000<small>净资产</small></div>
+      </div>
+      <div class="pcard-row"><span>💰 现金</span><b>26,000</b></div>
+      <div class="pcard-row"><span>🏦 存款</span><b>12,000</b></div>
+      <div class="pcard-row"><span>🏢 房产</span><b>¥ 240,000</b></div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head">
+        <div class="pcard-av" style="background: linear-gradient(135deg, #8fc4f5, #4f80d8);">👩‍💼</div>
+        <div><div class="pcard-name">李梦琪</div><div class="pcard-rank">★ 经理 · 起手 2 万</div></div>
+        <div class="pcard-nw">45,000<small>净资产</small></div>
+      </div>
+      <div class="pcard-row"><span>💰 现金</span><b>20,000</b></div>
+      <div class="pcard-row"><span>🏦 存款</span><b>8,000</b></div>
+      <div class="pcard-row"><span>🏢 房产</span><b>¥ 180,000</b></div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head">
+        <div class="pcard-av" style="background: linear-gradient(135deg, #bca0e8, #9268d4);">👨‍🎓</div>
+        <div><div class="pcard-name">张伟</div><div class="pcard-rank">★ 主管 · 起手 1.2 万</div></div>
+        <div class="pcard-nw">38,000<small>净资产</small></div>
+      </div>
+      <div class="pcard-row"><span>💰 现金</span><b>15,000</b></div>
+      <div class="pcard-row"><span>🏦 存款</span><b>5,000</b></div>
+      <div class="pcard-row"><span>🏢 房产</span><b>¥ 90,000</b></div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head">
+        <div class="pcard-av" style="background: linear-gradient(135deg, #f0a888, #e8804f);">👩‍🎓</div>
+        <div><div class="pcard-name">周晓</div><div class="pcard-rank">★ 专员 · 起手 6000</div></div>
+        <div class="pcard-nw">22,000<small>净资产</small></div>
+      </div>
+      <div class="pcard-row"><span>💰 现金</span><b>10,000</b></div>
+      <div class="pcard-row"><span>🏦 存款</span><b>3,000</b></div>
+      <div class="pcard-row"><span>🏢 房产</span><b>¥ 0</b></div>
+    </div>
+  </div>
+
+  <!-- ─────────── §8 弹窗 ─────────── -->
+  <h2>8. 弹窗（机遇卡样式）</h2>
+  <div class="modal-demo">
+    <div class="modal-head">
+      <div class="modal-emoji">📈</div>
+      <div class="modal-title">ⓘ 机遇 / Opportunity</div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size: var(--fs-title-md); font-weight: var(--fw-bold); margin-bottom: var(--sp-2);">季度分红！</div>
+      <p style="color: var(--text-mute);">老板发话："这个季度大家辛苦了！"</p>
+      <div class="modal-detail">→ 获得 ¥ 5,000</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost">转赠</button>
+      <button class="btn gold">收下</button>
+    </div>
+  </div>
+
+  <!-- ─────────── §9 Toast ─────────── -->
+  <h2>9. Toast（4 种状态）</h2>
+  <div class="toasts">
+    <div class="toast">📌 默认提示：游戏开始</div>
+    <div class="toast info">ℹ️ 信息：王思齐买下了「研发楼 3 层」</div>
+    <div class="toast good">✅ 成功：+¥ 5,000（季度分红）</div>
+    <div class="toast warn">⚠️ 警告：现金低于月供，无法偿还</div>
+    <div class="toast bad">❌ 失败：李梦琪宣告破产</div>
+  </div>
+
+  <!-- ─────────── §10 专注模式 ─────────── -->
+  <h2>10. 专注模式（点击按钮对比效果）</h2>
+  <div class="focus-demo" id="focusDemo">
+    <button class="btn gold focus-toggle" onclick="document.getElementById('focusDemo').classList.toggle('focus-on')">
+      切换专注模式（F11）
+    </button>
+    <div class="fake-topbar">顶栏（顶栏/排名面板/立绘/道具栏/托管）</div>
+    <div class="fake-side">右侧排名面板</div>
+    <div class="fake-bottom">底部道具栏 + 立绘</div>
+    <div class="fake-board">棋盘铺满整个视口</div>
+  </div>
+
+  <p class="sub" style="margin-top: var(--sp-9);">
+    <strong style="color: var(--gold);">验收清单：</strong>
+    <br>1. 6 区段色饱和度是否合适（看是否刺眼或偏暗）
+    <br>2. 字号层级是否清晰（H1 → H6 是否能拉开）
+    <br>3. 按钮三态是否到位（hover / active / disabled）
+    <br>4. 玩家卡"当前玩家"金色描边是否足够显眼
+    <br>5. 弹窗圆角 24px + 入场动画是否符合预期
+    <br>6. 专注模式切换是否流畅
+    <br>7. Toast 4 种状态色对比是否清晰
+  </p>
+
+</div>
+</body>
+</html>

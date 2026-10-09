@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "game": {
+    "boardId": "office-default",
+    "roundsPerMonth": 4,
+    "maxRounds": 40,
+    "bankruptcy": {
+      "graceRounds": 1,
+      "liquidationOrder": ["vehicle", "property", "deposit"],
+      "minCashAfterLiquidation": 0
+    }
+  },
+  "economy": {
+    "initialCash": 20000,
+    "initialDeposit": 0,
+    "baseSalary": 12000,
+    "salaryTaxRate": 0.12,
+    "livingCostByRank": {
+      "实习生": 900,
+      "专员": 1300,
+      "主管": 2000,
+      "经理": 3000,
+      "总监": 4500
+    },
+    "depositInterestRate": 0.0035,
+    "loanInterestRate": 0.012,
+    "sellPropertyRatio": 0.72,
+    "mortgageRatio": 0.7,
+    "mortgageMonths": 36,
+    "vehicleMonths": 24,
+    "propertyAppreciation": 0.012,
+    "vehicleDepreciation": 0.02
+  },
+  "ranks": [
+    { "id": "intern", "name": "实习生", "coefficient": 0.6, "minNetWorth": 0 },
+    { "id": "specialist", "name": "专员", "coefficient": 1.0, "minNetWorth": 60000 },
+    { "id": "supervisor", "name": "主管", "coefficient": 1.4, "minNetWorth": 120000 },
+    { "id": "manager", "name": "经理", "coefficient": 2.0, "minNetWorth": 200000 },
+    { "id": "director", "name": "总监", "coefficient": 3.0, "minNetWorth": 320000 }
+  ],
+  "decks": {
+    "opportunity": 20,
+    "fate": 20,
+    "item": 12
+  },
+  "winCondition": {
+    "default": "rounds",
+    "options": [
+      { "id": "rounds", "label": "固定回合数制", "rounds": 40 },
+      { "id": "bankruptcy", "label": "破产淘汰制", "rounds": 0, "note": "活到最后即胜" }
+    ]
+  },
+  "startingDeck": {
+    "item": ["coffee", "resume", "goldResume"]
+  }
+}

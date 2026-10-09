@@ -1,0 +1,12 @@
+# 依赖与构建产物
+node_modules/
+release/
+
+# 本地调试残留（含本机路径的日志）
+.playwright-cli/
+*.log
+/tmp/
+
+# 系统文件
+.DS_Store
+Thumbs.db

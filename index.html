@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大富翁 · 工位版</title>
+<link rel="stylesheet" href="./src/ui/theme.css">
+</head>
+<body>
+
+<div id="setupRoot"><!-- 模式选择界面挂载点 --></div>
+
+<div id="app">
+  <!-- 顶部状态栏：回合 / 月份 / 各玩家资产速览 -->
+  <div class="topbar" id="topbar"></div>
+
+  <div class="main">
+    <!-- 左侧：俯视正方形棋盘，随窗口自适应缩放 -->
+    <div class="board-wrap">
+      <canvas id="board" width="600" height="600"></canvas>
+    </div>
+    <!-- 右侧：玩家信息面板 -->
+    <div class="side" id="side"></div>
+  </div>
+
+  <!-- 底部操作区 -->
+  <div class="actionbar" id="actionbar"></div>
+</div>
+
+<!-- 中央弹窗层 -->
+<div class="overlay" id="modalLayer"></div>
+<div class="toasts" id="toastLayer"></div>
+
+<script type="module" src="./src/main.js"></script>
+<!-- 顶栏按钮（音效/BGM/帮助）统一由 src/main.js 的 bindTopButtons() 用事件委托处理。
+     这里不要再挂一份：旧版两处都监听，开发态下点一次音效开关会 toggle 两次（看似没反应）。
+     单文件构建（tools/build.mjs）不保留 index.html 的内联脚本，dist 产物无此问题。 -->
+</body>
+</html>

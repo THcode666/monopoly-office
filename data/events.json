@@ -1,0 +1,741 @@
+{
+  "version": "1.0.0",
+  "pools": {
+    "eat": [
+      {
+        "id": "eat-bento",
+        "weight": 30,
+        "text": [
+          "今天的午饭是公司食堂第九大菜系：麻辣烫自由。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -35
+          }
+        ],
+        "requires": {},
+        "icon": "bento"
+      },
+      {
+        "id": "eat-meeting",
+        "weight": 10,
+        "text": [
+          "AA 制聚餐，你悄悄多付了 20 块，谁也没发现。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -68
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "meal"
+      },
+      {
+        "id": "eat-reward",
+        "weight": 8,
+        "text": [
+          "楼下新开的店今天老板请客，你运气不错。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -35
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 8
+          }
+        ],
+        "requires": {},
+        "icon": "meal"
+      },
+      {
+        "id": "eat-noodle",
+        "weight": 20,
+        "text": [
+          "一个人吃面，加了个蛋。你觉得这叫仪式感。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -22
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 3
+          }
+        ],
+        "requires": {},
+        "icon": "noodle"
+      },
+      {
+        "id": "eat-delivery",
+        "weight": 12,
+        "text": [
+          "点了外卖，备注写了「不要餐具」。你环保，你心虚。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -48
+          }
+        ],
+        "requires": {},
+        "icon": "delivery"
+      },
+      {
+        "id": "eat-buffet",
+        "weight": 6,
+        "text": [
+          "公司团建自助，你扶着墙出来。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -88
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 12
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "buffet"
+      },
+      {
+        "id": "eat-lucky",
+        "weight": 8,
+        "text": [
+          "便利店集点卡居然中奖了，店员塞给你一件小礼物。"
+        ],
+        "effects": [
+          {
+            "op": "drawCard",
+            "deck": "item",
+            "count": 1
+          }
+        ],
+        "requires": {},
+        "icon": "gift"
+      }
+    ],
+    "clothes": [
+      {
+        "id": "clothes-basic",
+        "weight": 35,
+        "text": [
+          "优衣库打折，你买了三件。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -300
+          }
+        ],
+        "requires": {},
+        "icon": "shirt"
+      },
+      {
+        "id": "clothes-suit",
+        "weight": 20,
+        "text": [
+          "为了见客户，你买了身新西装。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -800
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 3
+          }
+        ],
+        "requires": {},
+        "icon": "suit"
+      },
+      {
+        "id": "clothes-sale",
+        "weight": 25,
+        "text": [
+          "断码清仓，你抢到了最后一件。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -160
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "shirt"
+      },
+      {
+        "id": "clothes-shoes",
+        "weight": 20,
+        "text": [
+          "皮鞋该擦了，顺便买了双新的。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -420
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 2
+          }
+        ],
+        "requires": {},
+        "icon": "shoes"
+      },
+      {
+        "id": "clothes-lottery",
+        "weight": 6,
+        "text": [
+          "购物小票刮出了「再来一件」，奖品随机。"
+        ],
+        "effects": [
+          {
+            "op": "drawCard",
+            "deck": "item",
+            "count": 1
+          }
+        ],
+        "requires": {},
+        "icon": "shirt"
+      }
+    ],
+    "rent": [
+      {
+        "id": "rent-due",
+        "weight": 40,
+        "text": [
+          "房东准时发来房租提醒，从不迟到，从不问候。"
+        ],
+        "effects": [
+          {
+            "op": "payRent",
+            "tileId": "{tileId}"
+          }
+        ],
+        "requires": {},
+        "icon": "house"
+      },
+      {
+        "id": "rent-deposit",
+        "weight": 25,
+        "text": [
+          "房东说要换锁，押金重新算了一遍。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -800
+          }
+        ],
+        "requires": {},
+        "icon": "house"
+      },
+      {
+        "id": "rent-repair",
+        "weight": 20,
+        "text": [
+          "热水器坏了，物业说要你自己修。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -600
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": -5
+          }
+        ],
+        "requires": {},
+        "icon": "repair"
+      },
+      {
+        "id": "rent-upgrade",
+        "weight": 15,
+        "text": [
+          "你终于把次卧改成了书房。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -1200
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 10
+          }
+        ],
+        "requires": {},
+        "icon": "house"
+      }
+    ],
+    "promotion": [
+      {
+        "id": "promo-boss-like",
+        "weight": 35,
+        "text": [
+          "你陪领导聊了两小时思路，他很满意。虽然聊的是高尔夫。"
+        ],
+        "effects": [
+          {
+            "op": "rankCoefficientDelta",
+            "delta": 0.12
+          }
+        ],
+        "requires": {},
+        "icon": "star"
+      },
+      {
+        "id": "promo-project",
+        "weight": 25,
+        "text": [
+          "你独立推动的项目上线了，年底评级有了底气。"
+        ],
+        "effects": [
+          {
+            "op": "rankCheck",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "star"
+      },
+      {
+        "id": "promo-cert",
+        "weight": 20,
+        "text": [
+          "你考了个证，虽然没人要求你考。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -1500
+          },
+          {
+            "op": "rankCheck",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "cert"
+      },
+      {
+        "id": "promo-praise",
+        "weight": 20,
+        "text": [
+          "你在年会上被点名表扬，散会后没人记得你说了什么。"
+        ],
+        "effects": [
+          {
+            "op": "rankCoefficientDelta",
+            "delta": 0.08
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 15
+          }
+        ],
+        "requires": {},
+        "icon": "star"
+      }
+    ],
+    "demotion": [
+      {
+        "id": "demote-restructure",
+        "weight": 35,
+        "text": [
+          "组织架构调整，你的头衔少了一个「副」字，多了两个「临时」。"
+        ],
+        "effects": [
+          {
+            "op": "rankCoefficientDelta",
+            "delta": -0.12
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      },
+      {
+        "id": "demote-competitor",
+        "weight": 30,
+        "text": [
+          "新来的同事比你年轻五岁，职位跟你一样。"
+        ],
+        "effects": [
+          {
+            "op": "rankCheck",
+            "delta": -1
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      },
+      {
+        "id": "demote-transfer",
+        "weight": 20,
+        "text": [
+          "你被调去支援一个新项目，薪资按新人算。"
+        ],
+        "effects": [
+          {
+            "op": "rankCoefficientDelta",
+            "delta": -0.15
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": -10
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      },
+      {
+        "id": "demote-feedback",
+        "weight": 15,
+        "text": [
+          "绩效面谈结束，你记下了三条改进项和两个「下周开始」。"
+        ],
+        "effects": [
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": -15
+          },
+          {
+            "op": "cash",
+            "delta": -2000
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      }
+    ],
+    "raise": [
+      {
+        "id": "raise-adjust",
+        "weight": 45,
+        "text": [
+          "调薪名单里有你，涨了 10%。同事说恭喜，你说还行。"
+        ],
+        "effects": [
+          {
+            "op": "salaryCoefficientDelta",
+            "delta": 0.1
+          }
+        ],
+        "requires": {},
+        "icon": "up"
+      },
+      {
+        "id": "raise-13th",
+        "weight": 30,
+        "text": [
+          "十三个月工资。HR 说这是惯例，惯例没写进合同。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": 12000
+          }
+        ],
+        "requires": {},
+        "icon": "up"
+      },
+      {
+        "id": "raise-bonus",
+        "weight": 25,
+        "text": [
+          "年终奖发了，比去年多一点，多了个零。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": 20000
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 12
+          }
+        ],
+        "requires": {},
+        "icon": "up"
+      }
+    ],
+    "cut": [
+      {
+        "id": "cut-freeze",
+        "weight": 40,
+        "text": [
+          "薪资结构调整，你的月薪少了一个零后面的数字。"
+        ],
+        "effects": [
+          {
+            "op": "salaryCoefficientDelta",
+            "delta": -0.1
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      },
+      {
+        "id": "cut-social",
+        "weight": 35,
+        "text": [
+          "社保基数按最低档缴纳了，你觉得挺好，医保报销少一半也是挺好。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -3000
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": -8
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      },
+      {
+        "id": "cut-5off",
+        "weight": 25,
+        "text": [
+          "公司强制 5% 降本，人人有份。"
+        ],
+        "effects": [
+          {
+            "op": "rankCheck",
+            "delta": -1
+          }
+        ],
+        "requires": {},
+        "icon": "down"
+      }
+    ],
+    "vacation": [
+      {
+        "id": "vacation-sick",
+        "weight": 40,
+        "text": [
+          "你感冒发烧，请了一天假，没人问你去哪家医院。"
+        ],
+        "effects": [
+          {
+            "op": "skipNext",
+            "count": 1
+          }
+        ],
+        "requires": {},
+        "icon": "leave"
+      },
+      {
+        "id": "vacation-save",
+        "weight": 35,
+        "text": [
+          "你请了年假，在家躺了两天看了四部电影。"
+        ],
+        "effects": [
+          {
+            "op": "skipNext",
+            "count": 1
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 25
+          }
+        ],
+        "requires": {},
+        "icon": "leave"
+      },
+      {
+        "id": "vacation-pay",
+        "weight": 25,
+        "text": [
+          "年假一天，调休一天，你做了一个违背工期的决定。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": 2000
+          },
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 15
+          }
+        ],
+        "requires": {},
+        "icon": "leave"
+      },
+      {
+        "id": "vacation-souvenir",
+        "weight": 10,
+        "text": [
+          "旅途中顺手淘到的宝贝，正好用得上。"
+        ],
+        "effects": [
+          {
+            "op": "drawCard",
+            "deck": "item",
+            "count": 1
+          }
+        ],
+        "requires": {},
+        "icon": "gift"
+      }
+    ],
+    "company": [
+      {
+        "id": "co-standup",
+        "weight": 35,
+        "text": [
+          "站会开到第 40 分钟，你想起今天没做昨天说的事。"
+        ],
+        "effects": [
+          {
+            "op": "stat",
+            "key": "energy",
+            "delta": -8
+          }
+        ],
+        "requires": {},
+        "icon": "meeting"
+      },
+      {
+        "id": "co-coffee",
+        "weight": 30,
+        "text": [
+          "茶水间遇到老板，他问你最近怎么样。你说「还行」。"
+        ],
+        "effects": [
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 10
+          },
+          {
+            "op": "stat",
+            "key": "face",
+            "delta": 1
+          }
+        ],
+        "requires": {},
+        "icon": "coffee"
+      },
+      {
+        "id": "co-overtime",
+        "weight": 20,
+        "text": [
+          "又是 22 点走的一天，打车费自己出。"
+        ],
+        "effects": [
+          {
+            "op": "cash",
+            "delta": -80
+          },
+          {
+            "op": "stat",
+            "key": "energy",
+            "delta": -15
+          }
+        ],
+        "requires": {},
+        "icon": "night"
+      },
+      {
+        "id": "co-praise",
+        "weight": 15,
+        "text": [
+          "你做的方案被客户当场夸了。这在职场里属于稀有事件。"
+        ],
+        "effects": [
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 20
+          },
+          {
+            "op": "rankCoefficientDelta",
+            "delta": 0.05
+          }
+        ],
+        "requires": {},
+        "icon": "star"
+      },
+      {
+        "id": "co-welfare",
+        "weight": 10,
+        "text": [
+          "行政部在茶水间发节日礼包，手快有手慢无。"
+        ],
+        "effects": [
+          {
+            "op": "drawCard",
+            "deck": "item",
+            "count": 1
+          }
+        ],
+        "requires": {},
+        "icon": "box"
+      }
+    ],
+    "vacation2": [
+      {
+        "id": "v2-remote",
+        "weight": 40,
+        "text": [
+          "今天允许远程办公，你在小区里走了 8000 步假装在散步。"
+        ],
+        "effects": [
+          {
+            "op": "stat",
+            "key": "mood",
+            "delta": 8
+          },
+          {
+            "op": "stat",
+            "key": "energy",
+            "delta": 5
+          }
+        ],
+        "requires": {},
+        "icon": "home"
+      }
+    ]
+  }
+}

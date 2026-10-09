@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大富翁 · 工位版</title>
+<style>
+/* 大富翁 · 工位版 —— 深色主题
+   配色思路：棋盘是高饱和彩色块（由 Canvas 画），
+   所以外框 UI 走深色中性面，让棋盘成为视觉焦点（对比度最大化）。
+
+   ── v2 视觉规范合并（2026-10-08，源自 docs/05-UI概念设计.md §2.1）──
+   保留全部 v1 变量，新变量以 v2- 前缀追加，避免冲突。
+   主品牌色从蓝 (#4a90d9) 调整为金 (#f5c842)。 */
+
+:root {
+  /* 深色中性面 */
+  --bg: #1e1d24;
+  --bg-elev: #2a2933;
+  --bg-elev2: #343341;
+  --bg-sunken: #17161c;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text: #f0eef4;
+  --text-2: #a8a4b4;
+  --text-3: #6e6a7c;
+
+  /* 语义色（v2：主品牌金 + 6 区段色辅助） */
+  --accent: #f5c842;          /* ★ v2: 从蓝 #4a90d9 → 金 #f5c842 */
+  --accent-2: #d99a1f;
+  --accent-soft: rgba(245, 200, 66, 0.18);
+  --gold: #f5c842;            /* ★ v2: 与 --accent 统一 */
+  --gold-deep: #b88a1f;
+  --gold-soft: rgba(245, 200, 66, 0.18);
+  --danger: #e0554f;
+  --danger-soft: rgba(224, 85, 79, 0.18);
+  --success: #5cb868;         /* ★ v2: 跟 --state-good 对齐 */
+  --success-soft: rgba(92, 184, 104, 0.18);
+  --purple: #a97fd6;
+  --purple-soft: rgba(169, 127, 214, 0.18);
+
+  /* 圆角 + 阴影（v2：保留 v1 值，扩充 card/modal 大圆角） */
+  --radius: 16px;             /* ★ v2: 12 → 16，对齐设计稿 §7.1 */
+  --radius-sm: 12px;          /* ★ v2: 8 → 12，对齐设计稿 §7.1 */
+  --radius-card: 16px;
+  --radius-modal: 24px;
+  --radius-tag: 12px;
+  --radius-btn: 8px;
+  --radius-circle: 999px;
+  --shadow-1: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 14px 44px rgba(0, 0, 0, 0.5);
+  --shadow-glow-gold: 0 0 16px rgba(245, 200, 66, 0.45);
+  --font: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", system-ui, sans-serif;
+  --mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+
+  /* ── v2 新增 token（来自 docs/05-UI概念设计.md §2.1 / §2.2 / §2.5） ── */
+  /* 主色板 */
+  --bg-stage: #1a2330;
+  --bg-floor: #3a6a4f;
+  --bg-sky: #7fc1e8;
+  /* 6 区段色（地段分组） */
+  --tile-blue: #4f80d8;    --tile-blue-deep: #345d9b;    --tile-blue-hi: #8fb0e8;
+  --tile-purple: #9268d4;  --tile-purple-deep: #674695;  --tile-purple-hi: #bca0e8;
+  --tile-brown: #a07050;   --tile-brown-deep: #75513a;   --tile-brown-hi: #c89e80;
+  --tile-green: #5cb868;   --tile-green-deep: #3f8048;   --tile-green-hi: #8fd896;
+  --tile-gold: #e8c66c;    --tile-gold-deep: #a98a4a;    --tile-gold-hi: #f0dca0;
+  --tile-orange: #e8804f;  --tile-orange-deep: #a55a35;  --tile-orange-hi: #f0a888;
+  /* 文字 */
+  --text-primary: #2d2a3e;
+  --text-on-dark: #f5f1e6;
+  --text-mute: #7d7894;
+  /* 状态 */
+  --state-warn: #e85a5a;
+  --state-good: #5cb868;
+  --state-info: #4fa8d8;
+  /* 字号 */
+  --fs-num-xl: 40px;
+  --fs-num-lg: 32px;
+  --fs-num-md: 24px;
+  --fs-title-lg: 28px;
+  --fs-title-md: 22px;
+  --fs-body-lg: 18px;
+  --fs-body: 16px;
+  --fs-body-sm: 14px;
+  --fs-caption: 13px;
+  --fs-mini: 12px;
+  /* 间距 */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
+  --sp-6: 24px; --sp-7: 32px; --sp-8: 40px; --sp-9: 48px;
+  /* 动效曲线 */
+  --ease-default: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+  --dur-toast: 220ms;
+  --dur-dice: 1200ms;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; font-size: 13px; cursor: pointer; border: none; background: none; color: inherit; }
+button:disabled { cursor: not-allowed; opacity: 0.4; }
+
+/* ─────────── 布局 ─────────── */
+
+#app { display: none; height: 100vh; flex-direction: column;
+  background: radial-gradient(ellipse at 50% 0%, #2b2937 0%, var(--bg) 70%); }
+#app.ready { display: flex; }
+
+.topbar {
+  height: 50px; flex: 0 0 50px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, var(--bg-elev) 0%, rgba(42,41,51,0.92) 100%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+  z-index: 20;
+}
+.topbar .brand { font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ffd980, #ffa94d);
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.topbar .brand small { color: var(--text-3); font-weight: 400; font-size: 11px; margin-left: 6px;
+  -webkit-text-fill-color: var(--text-3); }
+.topbar .turn {
+  font-size: 12.5px; font-weight: 500; padding: 4px 12px; border-radius: 999px;
+  background: var(--accent-soft); color: #8fc4f5;
+  border: 1px solid rgba(74, 144, 217, 0.3);
+}
+.topbar .spacer { flex: 1; }
+.topbar .mini-list { display: flex; gap: 6px; overflow-x: auto; }
+.topbar .mini {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 4px 10px; border-radius: 999px;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  white-space: nowrap; color: var(--text-2);
+}
+.topbar .mini.active { background: var(--accent-soft); border-color: rgba(74,144,217,0.45); color: #a8d4f5; font-weight: 600; }
+.topbar .mini.dead { opacity: 0.35; text-decoration: line-through; }
+.topbar .mini .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px;
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,0.2); }
+
+.icon-btn {
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 15px;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  transition: background 0.14s;
+}
+.icon-btn:hover { background: var(--bg-elev2); border-color: var(--border-strong); }
+
+.main { flex: 1; display: flex; min-height: 0; }
+
+.board-wrap {
+  flex: 1; display: grid; place-items: center;
+  padding: 14px; min-width: 0; position: relative;
+}
+#board { display: block; border-radius: 14px; box-shadow: var(--shadow-3); }
+
+/* ─────────── 右侧面板 ─────────── */
+
+.side {
+  width: 300px; flex: 0 0 300px;
+  background: linear-gradient(180deg, var(--bg-elev) 0%, rgba(38,37,46,0.98) 100%);
+  border-left: 1px solid var(--border);
+  overflow-y: auto; overflow-x: hidden;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.25);
+}
+.side::-webkit-scrollbar { width: 8px; }
+.side::-webkit-scrollbar-track { background: var(--bg-sunken); }
+.side::-webkit-scrollbar-thumb { background: #3f3d4d; border-radius: 4px; }
+.side::-webkit-scrollbar-thumb:hover { background: #4d4a5e; }
+
+.side .side-sec { padding: 12px 13px; border-bottom: 1px solid var(--border); }
+.sec-title {
+  font-size: 11px; color: var(--text-3); letter-spacing: 1px;
+  font-weight: 600; margin-bottom: 9px;
+}
+
+.pcard {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 11px; margin-bottom: 9px;
+  background: linear-gradient(160deg, var(--bg-elev2) 0%, var(--bg-elev) 100%);
+  position: relative; cursor: pointer;
+  transition: transform 0.14s, border-color 0.14s, box-shadow 0.14s;
+  box-shadow: var(--shadow-1);
+}
+.pcard:hover { transform: translateX(-3px); border-color: var(--border-strong); }
+.pcard.active { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-soft), var(--shadow-2); }
+.pcard.active::before {
+  content: ''; position: absolute; left: 0; top: 12%; bottom: 12%; width: 3px;
+  background: var(--gold); border-radius: 0 3px 3px 0;
+}
+.pcard.dead { opacity: 0.42; filter: grayscale(0.5); }
+
+.pcard-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.pcard-id { flex: 1; min-width: 0; }
+.pcard-av {
+  width: 34px; height: 34px; border-radius: 9px; flex: 0 0 34px;
+  display: grid; place-items: center; font-size: 17px;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* 立绘（portrait）—— 80×100 立体块：底色 + emoji + 表情气泡 + 职级徽章 */
+.portrait {
+  position: relative;
+  width: 60px; height: 78px; flex: 0 0 60px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--skin) 35%, var(--bg-elev)) 0%, var(--bg-elev2) 100%);
+  border: 1px solid color-mix(in srgb, var(--skin) 50%, transparent);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.07),
+    inset 0 -2px 6px rgba(0,0,0,0.4),
+    0 4px 10px rgba(0,0,0,0.35);
+  display: grid; place-items: center;
+  overflow: visible;
+}
+.portrait-body {
+  position: relative;
+  display: grid; place-items: center;
+  width: 100%; height: 100%;
+}
+.portrait-emoji {
+  font-size: 38px;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.4));
+  line-height: 1;
+}
+.portrait-mood {
+  position: absolute; top: -8px; right: -10px;
+  font-size: 20px;
+  background: var(--bg-elev); border: 1px solid var(--border-strong);
+  border-radius: 50%; width: 26px; height: 26px;
+  display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  animation: mood-bob 2.4s ease-in-out infinite;
+}
+@keyframes mood-bob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-2px); }
+}
+.portrait-lv {
+  position: absolute; bottom: -3px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--rank); color: #1a1d24;
+  font-size: 9.5px; font-weight: 800;
+  padding: 1.5px 6px 2px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  letter-spacing: 0.5px;
+}
+
+/* 当前玩家立绘加金色脉冲 */
+.pcard.active .portrait {
+  border-color: var(--gold);
+  box-shadow:
+    inset 0 0 0 1px var(--gold-soft),
+    inset 0 2px 4px rgba(255,255,255,0.07),
+    0 0 0 1px var(--gold),
+    0 4px 14px rgba(245, 200, 66, 0.25);
+  animation: portrait-glow 2s ease-in-out infinite;
+}
+@keyframes portrait-glow {
+  0%,100% { box-shadow: inset 0 0 0 1px var(--gold-soft), 0 0 0 1px var(--gold), 0 4px 14px rgba(245, 200, 66, 0.18); }
+  50%     { box-shadow: inset 0 0 0 2px var(--gold), 0 0 0 2px var(--gold), 0 4px 18px rgba(245, 200, 66, 0.45); }
+}
+
+.pcard-name { font-size: 13.5px; font-weight: 600; }
+.pcard-rank { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+.pcard-nw { margin-left: auto; text-align: right; font-family: var(--mono); font-size: 13px; font-weight: 600; color: #ffd980; }
+.pcard-nw small { display: block; color: var(--text-3); font-size: 9.5px; font-family: var(--font); font-weight: 400; }
+
+.pcard-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2.5px 0; color: var(--text-2); }
+.pcard-row b { font-family: var(--mono); font-weight: 600; color: var(--text); }
+.pcard-row .neg { color: var(--danger); }
+.pcard-row .pos { color: var(--success); }
+.pcard-assets { margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--border); }
+.chip {
+  display: inline-block; font-size: 10.5px; padding: 2px 7px;
+  border-radius: 5px; background: var(--bg-sunken); color: var(--text-2);
+  margin: 2px 3px 0 0; border: 1px solid var(--border);
+}
+.chip.warn { background: var(--danger-soft); color: #f08882; border-color: rgba(224,85,79,0.3); }
+.chip.card { background: var(--purple-soft); color: #c9a8e8; border-color: rgba(169,127,214,0.3); cursor: pointer; }
+.chip.card:hover { filter: brightness(1.25); }
+
+/* 日志 */
+.log-item { font-size: 11.5px; color: var(--text-2); padding: 3px 0; line-height: 1.55;
+  border-left: 2px solid var(--border); padding-left: 8px; }
+.log-item.r { color: var(--text-3); }
+
+/* ─────────── 底部操作区 ─────────── */
+
+.actionbar {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; min-height: 60px; flex-wrap: wrap;
+  background: linear-gradient(0deg, var(--bg-elev) 0%, rgba(42,41,51,0.94) 100%);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.28);
+}
+.btn {
+  padding: 8px 17px; border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, var(--bg-elev2), #3a3846);
+  border: 1px solid var(--border-strong);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-1);
+  transition: transform 0.1s, filter 0.12s;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary {
+  background: linear-gradient(180deg, #5aa0e8, #3a7fc4);
+  border-color: #2f6ba8; color: #fff;
+  box-shadow: 0 3px 10px rgba(74,144,217,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.btn.gold {
+  background: linear-gradient(180deg, #f0bc4a, #d99a1f);
+  border-color: #b57f16; color: #3d2f00;
+  box-shadow: 0 3px 10px rgba(224,169,44,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.btn.danger { background: var(--danger-soft); color: #f08882; border-color: rgba(224,85,79,0.4); }
+.btn.ghost { background: transparent; border-color: var(--border); }
+.btn.sm { padding: 5px 12px; font-size: 12px; }
+.actionbar .hint { font-size: 12px; color: var(--text-3); margin-left: auto; }
+
+/* ─────────── 中央弹窗 ─────────── */
+
+.overlay {
+  position: absolute; inset: 0; display: none; place-items: center;
+  background: rgba(10, 10, 14, 0.62);
+  backdrop-filter: blur(3px);
+  z-index: 40; padding: 20px;
+}
+.overlay.show { display: grid; }
+
+.modal {
+  background: linear-gradient(170deg, #322f40 0%, var(--bg-elev) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: var(--shadow-3);
+  max-width: 470px; width: 100%; max-height: 82vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: pop 0.2s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+@keyframes pop {
+  from { transform: scale(0.92) translateY(12px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-head {
+  padding: 17px 20px 11px; display: flex; align-items: center; gap: 11px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+/* 右上角关闭按钮 —— 反馈「不能取消使用道具」的兜底：
+   任何弹窗都必须有一个明确的退出入口，不能逼玩家去猜按钮。
+   默认半透明（不抢视觉），弹窗悬停时才完全显形。 */
+.modal-x {
+  position: absolute; right: 12px; top: 12px;
+  width: 26px; height: 26px; border-radius: 8px;
+  background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  color: var(--text-3); font-size: 18px; line-height: 1;
+  cursor: pointer; display: grid; place-items: center;
+  transition: all var(--dur-base) var(--ease-default);
+  font-family: var(--font);
+  opacity: 0.5; z-index: 2;
+}
+.modal:hover .modal-x { opacity: 1; }
+.modal-x:hover { background: var(--bg-elev2); color: var(--text); border-color: var(--border-strong); opacity: 1; }
+.modal-emoji { font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+.modal-title { font-size: 16.5px; font-weight: 700; }
+.modal-body { padding: 15px 20px 17px; overflow-y: auto; font-size: 13.5px; line-height: 1.78; }
+.modal-body .quote {
+  background: rgba(0,0,0,0.24); border-left: 3px solid var(--accent);
+  padding: 11px 14px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 11px; color: var(--text-2);
+}
+.modal-body .quote b { color: var(--text); }
+.modal-detail {
+  font-size: 12px; color: #f0c65a; background: var(--gold-soft);
+  padding: 8px 12px; border-radius: var(--radius-sm); margin-top: 9px;
+  border: 1px solid rgba(224,169,44,0.22);
+}
+.modal-foot {
+  padding: 13px 20px; display: flex; gap: 9px; justify-content: flex-end;
+  border-top: 1px solid var(--border); background: rgba(0,0,0,0.2);
+}
+
+.opt-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+.opt {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 11px 13px; cursor: pointer; text-align: left; width: 100%;
+  background: var(--bg-elev2);
+  transition: border-color 0.14s, transform 0.12s, background 0.14s;
+  box-shadow: var(--shadow-1);
+}
+.opt:hover:not(:disabled) {
+  border-color: var(--gold); background: var(--bg-elev);
+  transform: translateX(3px);
+}
+.opt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.opt-name { font-size: 13.5px; font-weight: 700; }
+.opt-price { font-family: var(--mono); font-size: 13.5px; color: #ffd980; font-weight: 600; }
+.opt-meta { font-size: 11.5px; color: var(--text-2); line-height: 1.55; }
+
+/* 结算表 */
+.settle-table { width: 100%; font-size: 12.5px; margin-top: 6px; }
+.settle-table .st-row { display: flex; justify-content: space-between; padding: 4.5px 0; }
+.settle-table .st-row .k { color: var(--text-2); }
+.settle-table .st-row .v { font-family: var(--mono); font-weight: 600; }
+.settle-table .st-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 600; }
+.st-row .v.pos { color: var(--success); }
+.st-row .v.neg { color: var(--danger); }
+
+.rank-list { display: flex; flex-direction: column; gap: 7px; }
+.rank-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius);
+  background: var(--bg-elev2); border: 1px solid var(--border);
+}
+.rank-item.win { background: var(--gold-soft); border-color: rgba(224,169,44,0.35); }
+.rank-no {
+  width: 22px; height: 22px; border-radius: 50%; flex: 0 0 22px;
+  display: grid; place-items: center; font-size: 11.5px; font-weight: 700;
+  background: var(--bg-sunken); color: var(--text-2);
+}
+.rank-item.win .rank-no { background: linear-gradient(180deg, #f0bc4a, #d99a1f); color: #3d2f00; }
+
+/* ─────────── 开局设置 ─────────── */
+
+.setup {
+  position: fixed; inset: 0; z-index: 100;
+  background: radial-gradient(ellipse at 50% 0%, #322f45 0%, #17161d 75%);
+  overflow-y: auto;
+}
+.setup-inner { max-width: 960px; margin: 0 auto; padding: 44px 24px 60px; }
+.setup h1 {
+  font-size: 30px; font-weight: 800; margin-bottom: 7px; letter-spacing: 1px;
+  background: linear-gradient(90deg, #ffd980, #ff9f4a 60%, #e0554f);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.setup .sub { font-size: 13.5px; color: var(--text-2); margin-bottom: 32px; }
+
+.mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 32px; }
+.mode-card {
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px; background: linear-gradient(160deg, var(--bg-elev2), var(--bg-elev));
+  cursor: pointer; box-shadow: var(--shadow-1);
+  transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
+}
+.mode-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: var(--shadow-2); }
+.mode-card.sel { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft), var(--shadow-2); }
+.mode-ico { font-size: 34px; margin-bottom: 11px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+.mode-name { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+.mode-desc { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+.setup-sec { margin-bottom: 28px; }
+.setup-sec > h2 { font-size: 13.5px; color: var(--text-2); margin-bottom: 12px; font-weight: 600;
+  padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+.field { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; flex-wrap: wrap; }
+.field label { font-size: 12.5px; color: var(--text-2); min-width: 72px; font-weight: 500; }
+.field input[type=text] {
+  padding: 8px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font);
+  background: var(--bg-sunken); color: var(--text); width: 170px;
+}
+.field input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.seg { display: flex; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden; }
+.seg button { padding: 7px 15px; font-size: 12.5px; background: var(--bg-elev2); color: var(--text-2);
+  border-right: 1px solid var(--border); }
+.seg button:last-child { border-right: none; }
+.seg button.on { background: linear-gradient(180deg, #5aa0e8, #3a7fc4); color: #fff; font-weight: 600; }
+.swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+  border: 2px solid transparent; transition: transform 0.12s;
+}
+.swatch:hover { transform: scale(1.12); }
+.swatch.sel { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
+.aipick { display: flex; gap: 8px; flex-wrap: wrap; }
+.aipick .chip { font-size: 12.5px; padding: 6px 13px; border-radius: 999px; cursor: pointer; }
+.aipick .chip.on { background: linear-gradient(180deg, #a97fd6, #8b62b8); color: #fff; border-color: transparent; }
+
+.setup-foot { display: flex; gap: 11px; align-items: center; margin-top: 14px; }
+.setup-foot .note { font-size: 12px; color: var(--text-3); }
+
+/* toast */
+.toasts {
+  position: fixed; top: 62px; left: 50%; transform: translateX(-50%);
+  z-index: 90; display: flex; flex-direction: column; gap: 7px;
+  align-items: center; pointer-events: none;
+}
+.toast {
+  background: var(--bg-elev2); color: var(--text);
+  padding: 9px 17px; border-radius: 999px; font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-2);
+  animation: toastIn 0.22s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.toast.warn { background: var(--gold-soft); color: #f0c65a; border-color: rgba(224,169,44,0.4); }
+.toast.bad { background: var(--danger-soft); color: #f08882; border-color: rgba(224,85,79,0.4); }
+.toast.good { background: var(--success-soft); color: #6fd39c; border-color: rgba(63,174,111,0.4); }
+@keyframes toastIn {
+  from { transform: translateY(-14px) scale(0.94); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 飘字 */
+.float-text {
+  position: absolute; font-family: var(--mono); font-size: 14px; font-weight: 700;
+  pointer-events: none; z-index: 30;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+  animation: floatUp 1.1s ease-out forwards;
+}
+@keyframes floatUp {
+  from { transform: translateY(0) scale(1); opacity: 1; }
+  30% { transform: translateY(-14px) scale(1.15); }
+  to { transform: translateY(-38px) scale(1); opacity: 0; }
+}
+
+@media (max-width: 1000px) {
+  .side { width: 244px; flex: 0 0 244px; }
+  .mode-grid { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   v2 视觉规范 — 字号 / 圆角 / 弹窗 / 玩家卡 升级
+   （源自 docs/05-UI概念设计.md §2.2 / §7.1 一致性原则）
+   ───────────────────────────────────────────────────────── */
+
+/* 字号升级：v1 13.5–16.5px → v2 16–22px（设计稿 §2.2） */
+.modal-title { font-size: 22px; font-weight: 700; }
+.modal-body { font-size: 16px; line-height: 1.75; }
+.modal-emoji { font-size: 32px; }
+.modal-detail { font-size: 18px; }
+.pcard-name { font-size: 16px; font-weight: 700; }
+.pcard-rank { font-size: 13px; }
+.pcard-nw { font-size: 18px; }
+.pcard-row { font-size: 13px; }
+.modal-head { padding: 20px 22px 14px; }
+.modal-body { padding: 18px 22px 20px; }
+.modal-foot { padding: 14px 22px; }
+
+/* 圆角升级：v1 16 → v2 24（弹窗），卡片 12 → 16（设计稿 §7.1） */
+.modal { border-radius: 24px; }
+.pcard { border-radius: 16px; padding: 12px 13px; }
+.opt { border-radius: 16px; padding: 12px 14px; }
+
+/* 玩家卡当前态 — v2 双层金色描边更醒目（设计稿 §3.2 §②） */
+.pcard.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-soft), 0 0 16px rgba(245, 200, 66, 0.18), var(--shadow-2);
+}
+.pcard.active::before {
+  width: 4px;
+  background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+  box-shadow: 0 0 8px rgba(245, 200, 66, 0.6);
+}
+
+/* 主按钮 .primary 跟随 v2 金色品牌（--accent 已改为金） */
+.btn.primary {
+  background: linear-gradient(180deg, var(--gold), var(--accent-2));
+  border-color: var(--gold-deep);
+  color: var(--text-primary);
+  box-shadow: 0 3px 12px rgba(245, 200, 66, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+
+/* 顶栏 brand 渐变升级（v1 黄→橙，v2 金→橙） */
+.topbar .brand {
+  background: linear-gradient(90deg, var(--gold) 0%, var(--tile-orange) 100%);
+}
+
+/* 弹窗入场动画 — 用 v2 弹跳曲线 */
+.modal { animation: pop 0.25s var(--ease-bounce); }
+@keyframes pop {
+  from { transform: scale(0.92) translateY(12px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   v2 视觉规范 — §4.4 专注模式（Focus Mode）
+   F11 切换 body.focus-mode：收顶栏 / 收侧栏 / 棋盘铺满
+   ───────────────────────────────────────────────────────── */
+
+/* 状态指示器（用户可见的"专注模式已开启"提示） */
+body.focus-mode::after {
+  content: '专注模式已开启 · F11 退出';
+  position: fixed; bottom: 16px; right: 16px; z-index: 100;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.6); color: var(--text-2);
+  font-size: 12px; border-radius: var(--radius-circle);
+  border: 1px solid var(--border-card);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-default) 0.5s;
+}
+body.focus-mode:hover::after { opacity: 1; }
+
+body.focus-mode .topbar {
+  height: 0 !important; min-height: 0 !important;
+  padding: 0 14px;
+  border-bottom: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: height var(--dur-slow) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
+}
+body.focus-mode .side {
+  width: 0 !important; flex: 0 0 0 !important;
+  border-left: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width var(--dur-slow) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
+}
+body.focus-mode .actionbar {
+  padding: 4px 14px; min-height: 36px;
+  transition: padding var(--dur-slow) var(--ease-out),
+              min-height var(--dur-slow) var(--ease-out);
+}
+body.focus-mode .actionbar .btn { padding: 4px 10px; font-size: 12px; }
+body.focus-mode .actionbar .hint { font-size: 11px; }
+
+/* 棋盘放大 — 占据整个中间区域 */
+body.focus-mode .board-wrap {
+  padding: 8px;
+  transition: padding var(--dur-slow) var(--ease-out);
+}
+body.focus-mode #board {
+  box-shadow: var(--shadow-3), 0 0 32px rgba(245, 200, 66, 0.18);
+}
+
+/* 退出按钮（鼠标在右下角悬停时浮现） */
+.focus-exit {
+  position: fixed; bottom: 16px; right: 16px; z-index: 50;
+  padding: 6px 14px;
+  background: rgba(42, 41, 51, 0.85); color: var(--text-2);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-circle);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-default);
+  pointer-events: none;
+}
+body.focus-mode:hover .focus-exit { opacity: 1; pointer-events: auto; }
+.focus-exit:hover { background: var(--bg-elev2); color: var(--text); }
+
+/* ─────────── AI 等待指示器 ─────────── */
+.ai-wait {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px 7px 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px; color: var(--text-2);
+}
+.ai-wait-av {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px;
+  border: 1px solid var(--border-strong);
+}
+.ai-wait-name { font-weight: 500; }
+.ai-dots { display: inline-flex; gap: 3px; }
+.ai-dots i {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--gold);
+  animation: ai-dot 1.1s ease-in-out infinite;
+}
+.ai-dots i:nth-child(2) { animation-delay: 0.16s; }
+.ai-dots i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes ai-dot {
+  0%, 60%, 100% { opacity: 0.28; transform: translateY(0); }
+  30%           { opacity: 1;    transform: translateY(-3px); }
+}
+
+/* ─────────── 道具栏（fixed 在棋盘左下角） ─────────── */
+/* 道具栏：贴左侧中部。
+   原位置 left:14px/bottom:14px 会压住棋盘左下角那一圈格子 ——
+   而名牌（drawNameTags）正好画在格子内，被道具栏盖掉就白做了。
+   改成绝对居中偏左，避开上下两排格子。 */
+.inv-fixed {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  pointer-events: auto;
+  animation: inv-in var(--dur-slow) var(--ease-bounce);
+}
+@keyframes inv-in {
+  from { transform: translateY(calc(-50% + 20px)); opacity: 0; }
+  to   { transform: translateY(-50%); opacity: 1; }
+}
+@keyframes inv-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.inv-wrap {
+  background: linear-gradient(180deg, rgba(26, 29, 36, 0.95), rgba(36, 40, 50, 0.95));
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 10px 12px 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+.inv-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+  letter-spacing: 1px;
+}
+.inv-title small { color: var(--text-3); font-weight: 400; font-size: 11px; }
+/* 2 列 × 3 行 —— 竖排省横向空间，避免压到棋盘左侧格子 */
+.inv-slots {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;
+}
+.inv-slot {
+  width: 46px; height: 44px;
+  border-radius: 9px;
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 3px 0;
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-bounce), border-color var(--dur-base), background var(--dur-base);
+  font-family: var(--font);
+  color: var(--text);
+}
+.inv-slot:hover { transform: translateY(-3px); border-color: var(--gold); }
+.inv-slot.empty {
+  cursor: default; opacity: 0.32;
+  border-style: dashed;
+}
+.inv-slot.empty:hover { transform: none; border-color: var(--border); }
+.inv-slot.filled.item        { background: linear-gradient(160deg, rgba(245, 200, 66, 0.18), rgba(245, 200, 66, 0.05)); border-color: rgba(245, 200, 66, 0.4); }
+.inv-slot.filled.opportunity { background: linear-gradient(160deg, rgba(146, 104, 212, 0.22), rgba(146, 104, 212, 0.05)); border-color: rgba(146, 104, 212, 0.4); }
+.inv-slot.filled.fate        { background: linear-gradient(160deg, rgba(92, 184, 104, 0.22), rgba(92, 184, 104, 0.05)); border-color: rgba(92, 184, 104, 0.4); }
+.inv-glyph { font-size: 22px; line-height: 1; }
+.inv-name { font-size: 9.5px; color: var(--text-2); margin-top: 3px; letter-spacing: 0.5px; }
+
+/* ─────────── 顶栏 mini-list 强化 ─────────── */
+.topbar .mini {
+  position: relative; padding-left: 22px;
+}
+.topbar .mini.active {
+  background: var(--gold-soft);
+  border-color: var(--gold);
+  color: var(--gold);
+  font-weight: 700;
+}
+.topbar .mini.active .dot {
+  box-shadow: 0 0 0 2px var(--gold-soft), 0 0 8px var(--gold);
+}
+.topbar .mini.active::after {
+  content: "▶";
+  position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+  color: var(--gold); font-size: 8px;
+  animation: mini-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mini-pulse {
+  0%,100% { opacity: 0.5; transform: translateY(-50%) translateX(0); }
+  50%     { opacity: 1; transform: translateY(-50%) translateX(2px); }
+}
+
+/* ─────────── 设置面板 ─────────── */
+.set-wrap { display: flex; flex-direction: column; gap: 18px; padding: 8px 4px; }
+.set-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.set-row:last-child { border-bottom: none; }
+.set-label { flex: 1; }
+.set-name { color: var(--text); font-size: 15px; font-weight: 600; }
+.set-hint { color: var(--text-3); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+
+/* iOS 风格开关 */
+.switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; cursor: pointer; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider {
+  position: absolute; inset: 0;
+  background: var(--bg-sunken); border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  transition: background var(--dur-base) var(--ease-default);
+}
+.switch .slider::before {
+  content: ""; position: absolute;
+  width: 20px; height: 20px; left: 2px; top: 2px;
+  background: var(--text-2); border-radius: 50%;
+  transition: transform var(--dur-base) var(--ease-bounce), background var(--dur-base);
+}
+.switch input:checked + .slider { background: var(--gold); border-color: var(--gold-deep); }
+.switch input:checked + .slider::before { transform: translateX(22px); background: #fff; }
+
+/* 段控器（动画速度） */
+.seg {
+  display: inline-flex; gap: 0;
+  background: var(--bg-sunken); border: 1px solid var(--border-strong);
+  border-radius: 10px; padding: 3px; flex-shrink: 0;
+}
+.seg button {
+  background: transparent; border: none; color: var(--text-2);
+  padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 500;
+  border-radius: 7px;
+  transition: all var(--dur-base) var(--ease-default);
+}
+.seg button:hover { color: var(--text); }
+.seg button.on {
+  background: var(--gold); color: #1a1d24; font-weight: 700;
+  box-shadow: 0 2px 6px rgba(245, 200, 66, 0.35);
+}
+
+/* ═==========================================================═
+   v3 视觉打磨（2026-10-09，参考《大富翁11》的金色嘉年华风格）
+   原则：只追加覆盖，不动上面的 v1/v2 规则。
+   ═==========================================================═ */
+
+/* ── 玩家卡：职级星标 + 金色渐变描边 ── */
+.rank-stars {
+  color: var(--gold);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 6px rgba(245, 200, 66, 0.5);
+  vertical-align: 1px;
+}
+.pcard.active {
+  border-color: rgba(245, 200, 66, 0.75);
+  background: linear-gradient(150deg, rgba(245, 200, 66, 0.07), transparent 45%);
+  box-shadow: 0 0 0 2px var(--gold-soft), 0 0 22px rgba(245, 200, 66, 0.12), var(--shadow-2);
+}
+
+/* ── 主按钮：金色渐变（大富翁式的"金光按钮"） ── */
+.btn.primary {
+  background: linear-gradient(180deg, #f7d06a, #eab53c 55%, #d99a1f);
+  border-color: #b8861f;
+  color: #2b2200;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 3px 10px rgba(217, 154, 31, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn.primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow: 0 4px 14px rgba(217, 154, 31, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn.gold {
+  background: linear-gradient(180deg, rgba(245, 200, 66, 0.2), rgba(245, 200, 66, 0.08));
+  border-color: rgba(245, 200, 66, 0.55);
+  color: var(--gold);
+}
+
+/* ── 弹窗：顶部金色饰条，更像"嘉年华机台" ── */
+.modal {
+  border: 1px solid rgba(245, 200, 66, 0.22);
+}
+.modal::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.modal-title { letter-spacing: 1px; }
+
+/* ── 结算/胜利榜：前三名奖牌底色 ── */
+.rank-item.win {
+  background: linear-gradient(120deg, rgba(245, 200, 66, 0.16), rgba(245, 200, 66, 0.04));
+  border-color: rgba(245, 200, 66, 0.45);
+  box-shadow: 0 0 18px rgba(245, 200, 66, 0.12);
+}
+.rank-no { font-size: 15px; }
+
+/* ── 棋盘容器：外圈金色氛围光，让棋盘"浮"在页面上 ── */
+.board-wrap { position: relative; }
+.board-wrap::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at center, rgba(245, 200, 66, 0.07), transparent 62%);
+  pointer-events: none;
+}
+
+/* ── 模式卡：选中时金色流光描边 ── */
+.mode-card.sel {
+  border-color: var(--gold);
+  background: linear-gradient(150deg, rgba(245, 200, 66, 0.09), transparent 50%);
+  box-shadow: 0 0 0 3px var(--gold-soft), 0 0 26px rgba(245, 200, 66, 0.15), var(--shadow-2);
+}
+.mode-ico { font-size: 30px; }
+
+/* ── 飘字：更醒目的资产变动 ── */
+.float-text {
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+
+/* ═==========================================================═
+   v5 打磨（2026-10-09 第二轮体验反馈）
+   ═==========================================================═ */
+
+/* ── 玩家卡：左侧玩家色身份条纹 ── */
+.pcard { position: relative; overflow: hidden; }
+.pcard::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--pc, var(--gold));
+  opacity: 0.85;
+}
+.pcard.active::after { width: 5px; opacity: 1; box-shadow: 0 0 8px var(--pc, var(--gold)); }
+
+/* ── 操作按钮分色：一眼区分功能 ── */
+.btn.blue {
+  background: linear-gradient(180deg, rgba(79, 128, 216, 0.24), rgba(79, 128, 216, 0.08));
+  border-color: rgba(79, 128, 216, 0.55);
+  color: #9cc0f5;
+}
+.btn.green {
+  background: linear-gradient(180deg, rgba(92, 184, 104, 0.24), rgba(92, 184, 104, 0.08));
+  border-color: rgba(92, 184, 104, 0.55);
+  color: #8fd896;
+}
+.btn.purple {
+  background: linear-gradient(180deg, rgba(146, 104, 212, 0.26), rgba(146, 104, 212, 0.08));
+  border-color: rgba(146, 104, 212, 0.6);
+  color: #c9aef0;
+}
+.btn.ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-2);
+}
+.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--text-3); }
+
+/* 有道具时"使用道具"按钮呼吸灯 */
+.btn.pulse { animation: btn-pulse 1.6s ease-in-out infinite; }
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 200, 66, 0.45); }
+  50%      { box-shadow: 0 0 0 7px rgba(245, 200, 66, 0); }
+}
+
+/* ── 顶栏金色分隔线 ── */
+.topbar { border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, rgba(245,200,66,0.55), rgba(245,200,66,0.06) 45%, rgba(245,200,66,0.55)) 1; }
+
+/* ── 道具栏呼吸灯 ── */
+.inv-fixed.has-items .inv-wrap {
+  border-color: rgba(245, 200, 66, 0.5);
+  animation: inv-glow 2.2s ease-in-out infinite;
+}
+@keyframes inv-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 200, 66, 0); }
+  50%      { box-shadow: 0 0 14px 2px rgba(245, 200, 66, 0.28); }
+}
+
+/* ── 玩家卡人物头像 ── */
+.portrait-cv, .ai-wait-cv, .podium-cv { display: block; border-radius: 12px; }
+.portrait .portrait-cv { width: 100%; height: 100%; object-fit: contain; background: linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02)); }
+.ai-wait-cv { background: rgba(255, 255, 255, 0.06); border-radius: 8px; }
+
+/* ── 结算领奖台 ── */
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  padding: 6px 0 0;
+}
+.podium-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 118px;
+}
+.podium-cv {
+  background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+  border: 1px solid var(--border-strong);
+}
+.podium-col.champ .podium-cv {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 18px rgba(245, 200, 66, 0.35);
+}
+.podium-name { font-size: 13px; font-weight: 600; max-width: 118px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium-worth { font-family: var(--mono); font-size: 13px; color: var(--gold); }
+.podium-block {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: linear-gradient(180deg, #3b3a48, #26252e);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+}
+.podium-col.champ .podium-block {
+  background: linear-gradient(180deg, #5a4a1e, #332a12);
+  border-color: rgba(245, 200, 66, 0.45);
+  color: var(--gold);
+}
+
+/* ── 卡牌使用全屏特效 ── */
+.splash-layer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 90;
+}
+.item-splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 46px;
+  background: linear-gradient(160deg, rgba(34, 30, 44, 0.96), rgba(24, 21, 32, 0.96));
+  border: 2px solid rgba(245, 200, 66, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 0 44px rgba(245, 200, 66, 0.3), var(--shadow-3);
+  animation: splash-in 1.4s var(--ease-bounce, cubic-bezier(.2,1.4,.4,1)) forwards;
+}
+.splash-emoji { font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+.splash-name { font-size: 16px; font-weight: 700; color: var(--gold); }
+.splash-detail { font-size: 12px; color: var(--text-2); }
+@keyframes splash-in {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  14%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  22%  { transform: scale(1) rotate(0); }
+  80%  { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.94) translateY(-8px); opacity: 0; }
+}
+
+/* ── 退出游戏告别页 ── */
+.farewell {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  padding: 40px;
+}
+.farewell-emoji { font-size: 64px; }
+.farewell h1 { font-size: 20px; margin: 0; }
+.farewell p { color: var(--text-2); margin: 0 0 10px; }
+
+</style>
+</head>
+<body>
+<div id="setupRoot"></div>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <div class="main">
+    <div class="board-wrap"><canvas id="board" width="600" height="600"></canvas></div>
+    <div class="side" id="side"></div>
+  </div>
+  <div class="actionbar" id="actionbar"></div>
+</div>
+<div class="overlay" id="modalLayer"></div>
+<div class="toasts" id="toastLayer"></div>
+
+<script id="gamedata" type="application/json">{"ai_profiles":{"version":"1.0.0","profiles":[{"id":"greedy","name":"贪婪型","desc":"见钱就抢，敢贷款梭哈","avatar":"shark","color":"#E24B4A","weights":{"buyProperty":1,"keepCash":0.15,"deposit":0.05,"takeLoan":0.85,"useItem":0.75,"cardOpportunity":0.9,"cardFate":0.55,"cardItem":0.7},"thresholds":{"reserveRatio":0.05,"loanMaxRatio":0.72},"tradeStyle":{"offerCashToRich":0.3,"askPriceMarkup":1.2},"voice":["现金为王，杠杆是朋友。","这波我不贪，我只是资金效率最大化。","别人恐惧我贪婪。"],"strategy":"看到可买资产就上，现金不足就贷款。负债率过高时会暂时收手。"},{"id":"steady","name":"稳健型","desc":"现金流为上，存款吃利息","avatar":"turtle","color":"#378ADD","weights":{"buyProperty":0.55,"keepCash":0.6,"deposit":0.75,"takeLoan":0.15,"useItem":0.9,"cardOpportunity":0.85,"cardFate":0.8,"cardItem":0.85},"thresholds":{"reserveRatio":0.3,"loanMaxRatio":0.45},"tradeStyle":{"offerCashToRich":0.7,"askPriceMarkup":1},"voice":["我不需要暴富，我需要不下班。","存款利率再低也是确定收益。","现金流断裂比亏钱难受多了。"],"strategy":"优先把闲钱存入银行吃息，只买能收租的核心资产，永远留 35% 现金。"},{"id":"spender","name":"消费型","desc":"及时行乐，装备党","avatar":"cat","color":"#D4537E","weights":{"buyProperty":0.35,"keepCash":0.1,"deposit":0.05,"takeLoan":0.45,"useItem":0.95,"cardOpportunity":0.5,"cardFate":0.3,"cardItem":1},"thresholds":{"reserveRatio":0.05,"loanMaxRatio":0.6},"prefers":["clothes","vehicle","eat"],"tradeStyle":{"offerCashToRich":0.1,"askPriceMarkup":1.35},"voice":["钱不是赚来的，是花出去的。","不开心就买点什么。","明天的事明天再说，今晚先消费。"],"strategy":"优先买车买衣服提升生活开销减免，看到消费类格子就想停。"}]},"board":{"id":"office-default","name":"浦东写字楼 · 标准版","grid":{"cols":11,"rows":11,"cellSize":56},"tiles":[{"id":0,"type":"start","name":"起点工位","grid":[0,10],"payload":{"salaryBonus":2000,"text":"回到自己的工位，摸鱼时间 +1 小时。"}},{"id":1,"type":"eat","name":"楼下食堂","grid":[1,10],"payload":{"text":"今天的午饭是公司食堂第九大菜系：麻辣烫自由。"}},{"id":2,"type":"company","name":"地铁口广告位","grid":[2,10],"payload":{"hot":"gold","price":26000,"rent":440,"group":"gold","text":"这块广告位常年有人找 you 投简历。"},"owner":null},{"id":3,"type":"chance","name":"机会","grid":[3,10],"payload":{}},{"id":4,"type":"rent","name":"合租次卧","grid":[4,10],"payload":{"rent":1800,"group":"rent-small","text":"房东又准时来催房租了。"}},{"id":5,"type":"eat","name":"便利店便当","grid":[5,10],"payload":{"text":"便当里的肉 Always 藏在土豆下面。"}},{"id":6,"type":"clothes","name":"优衣库","grid":[6,10],"payload":{"price":300,"text":"买了两件 T 恤，出门被同事叫了一声「潮男」。"}},{"id":7,"type":"company","name":"工位左侧","grid":[7,10],"payload":{"price":16000,"rent":340,"group":"mid","text":"你拥有了自己工位旁边那半米 airspace。"},"owner":null},{"id":8,"type":"fate","name":"命运","grid":[8,10],"payload":{}},{"id":9,"type":"raise","name":"加薪","grid":[9,10],"payload":{"delta":0.1,"text":"调薪名单里有你，涨了 10%。同事说恭喜，你说还行。"}},{"id":10,"type":"property","name":"老公房","grid":[10,10],"payload":{"price":34000,"rent":520,"mortgage":54000,"group":"old-house","text":"六楼无电梯，但窗外能看到自己的车位。"},"owner":null},{"id":11,"type":"property","name":"商品房","grid":[10,9],"payload":{"hot":"gold","price":62000,"rent":780,"mortgage":120000,"group":"new-house","text":"小区里有健身房，你一年去两次。"},"owner":null},{"id":12,"type":"chance","name":"机会","grid":[10,8],"payload":{}},{"id":13,"type":"eat","name":"公司食堂","grid":[10,7],"payload":{"text":"今天有鸡腿，说明公司还没放弃你。"}},{"id":14,"type":"rent","name":"单间公寓","grid":[10,6],"payload":{"rent":2800,"group":"rent-mid","text":"独居的第一个月，你学会了用电饭煲煮面。"}},{"id":15,"type":"clothes","name":"网购衣柜","grid":[10,5],"payload":{"price":800,"text":"快递盒堆在门口，你假装那是decor。"}},{"id":16,"type":"fate","name":"命运","grid":[10,4],"payload":{}},{"id":17,"type":"cut","name":"降薪","grid":[10,3],"payload":{"delta":0.1,"text":"绩效面谈后，薪资结构调整了「结构」。"}},{"id":18,"type":"vehicle","name":"买车","grid":[10,2],"payload":{"text":"同事说：都这个岁数了该有台车了。","options":[{"id":"ebike","name":"二手电动车","price":7000,"monthly":180,"livingDiscount":260,"depreciation":0.03,"face":2,"mood":8,"tag":"环保但��不体面"},{"id":"sedan","name":"通勤轿车","price":24000,"monthly":620,"livingDiscount":620,"depreciation":0.02,"face":6,"mood":14,"tag":"见客户不用打车了"},{"id":"luxury","name":"豪华轿车","price":62000,"monthly":1650,"livingDiscount":1400,"depreciation":0.015,"face":14,"mood":22,"tag":"停车场 C 位"}]}},{"id":19,"type":"property","name":"江景大平层","grid":[10,1],"payload":{"hot":"prime","price":92000,"rent":1080,"mortgage":228000,"group":"penthouse","text":"你在样板间里看到了 40 岁的自己。"},"owner":null},{"id":20,"type":"promotion","name":"升职","grid":[10,0],"payload":{"text":"新头衔意味着新工位，也意味着新活儿。"}},{"id":21,"type":"chance","name":"机会","grid":[9,0],"payload":{}},{"id":22,"type":"clothes","name":"皮鞋护理","grid":[8,0],"payload":{"price":400,"text":"擦完鞋你才想起来，客户下午才来。"}},{"id":23,"type":"company","name":"茶水间旁","grid":[7,0],"payload":{"price":45000,"rent":620,"group":"mid","text":"这块地皮的租金来自全公司的咖啡消费。"},"owner":null},{"id":24,"type":"eat","name":"下午茶","grid":[6,0],"payload":{"text":"下午茶是团队建设，你一个人喝完了整壶。"}},{"id":25,"type":"rent","name":"两居室","grid":[5,0],"payload":{"rent":4200,"group":"rent-big","text":"两居室意味着你要开始考虑猫了。"}},{"id":26,"type":"demotion","name":"降职","grid":[4,0],"payload":{"text":"组织架构调整，你的头衔少了一个「副」字，多了两个「临时」。"}},{"id":27,"type":"fate","name":"命运","grid":[3,0],"payload":{}},{"id":28,"type":"chance","name":"机会","grid":[2,0],"payload":{}},{"id":29,"type":"company","name":"仓库角落","grid":[1,0],"payload":{"price":9000,"rent":260,"group":"edge","text":"仓库角落堆着你的年终奖和它的包装箱。"},"owner":null},{"id":30,"type":"vacation","name":"公休","grid":[0,0],"payload":{"skipNext":true,"text":"连休两天，你开始怀疑人生。"}},{"id":31,"type":"vehicle","name":"买车","grid":[0,1],"payload":{"text":"分期广告说：月供很轻。你信了。","options":[{"id":"ebike","name":"二手电动车","price":30000,"monthly":600,"livingDiscount":200,"depreciation":0.03},{"id":"sedan","name":"通勤轿车","price":90000,"monthly":1800,"livingDiscount":500,"depreciation":0.02},{"id":"luxury","name":"豪华轿车","price":260000,"monthly":4800,"livingDiscount":1200,"depreciation":0.015}]}},{"id":32,"type":"company","name":"楼梯间","grid":[0,2],"payload":{"price":30000,"rent":480,"group":"edge","text":"楼梯间是你的秘密基地，也是消防隐患。"},"owner":null},{"id":33,"type":"eat","name":"便利店关东煮","grid":[0,3],"payload":{"text":"关东煮的萝卜比工作靠谱。"}},{"id":34,"type":"rent","name":"复式公寓","grid":[0,4],"payload":{"rent":3600,"group":"rent-mid","text":"层高 4.8 米，你在上层放了折叠椅。"}},{"id":35,"type":"clothes","name":"打折区","grid":[0,5],"payload":{"price":500,"text":"打折区的西装，穿上就有了老板的气质。"}},{"id":36,"type":"fate","name":"命运","grid":[0,6],"payload":{}},{"id":37,"type":"company","name":"打印机旁边","grid":[0,7],"payload":{"price":30000,"rent":480,"group":"edge","text":"紧挨打印机，风水学上叫「打印旺铺」。"},"owner":null},{"id":38,"type":"chance","name":"机会","grid":[0,8],"payload":{}},{"id":39,"type":"eat","name":"深夜食堂","grid":[0,9],"payload":{"text":"加班到十点，这顿夜宵算加班餐还是自我安慰？"}}],"decor":[{"kind":"cubicle","grid":[2,3],"label":"工位"},{"kind":"cubicle","grid":[3,3],"label":"工位"},{"kind":"cubicle","grid":[2,4],"label":"工位"},{"kind":"cubicle","grid":[3,4],"label":"工位"},{"kind":"cubicle","grid":[7,3],"label":"工位"},{"kind":"cubicle","grid":[8,3],"label":"工位"},{"kind":"cubicle","grid":[7,4],"label":"工位"},{"kind":"cubicle","grid":[8,4],"label":"工位"},{"kind":"bossOffice","grid":[5,1],"span":2,"label":"老板办公室"},{"kind":"meetingRoom","grid":[5,3],"span":2,"label":"会议室"},{"kind":"teaRoom","grid":[7,6],"span":2,"label":"茶水间"},{"kind":"meetingRoom","grid":[2,7],"label":"小会议室"},{"kind":"printer","grid":[4,2],"label":"复印机"},{"kind":"printer","grid":[7,5],"label":"打印机"},{"kind":"plant","grid":[4,5],"label":"绿萝"},{"kind":"plant","grid":[6,2],"label":"绿萝"},{"kind":"plant","grid":[3,8],"label":"盆栽"},{"kind":"plant","grid":[7,8],"label":"盆栽"},{"kind":"whiteboard","grid":[8,5],"label":"白板"},{"kind":"pantry","grid":[6,7],"label":"零食柜"},{"kind":"window","grid":[5,8],"label":"落地窗"},{"kind":"sofa","grid":[1,5],"label":"沙发"},{"kind":"watercooler","grid":[3,6],"label":"饮水机"},{"kind":"gym","grid":[1,1],"span":2,"label":"健身房"},{"kind":"serverRoom","grid":[8,8],"label":"机房"},{"kind":"reception","grid":[4,9],"label":"前台"}],"colorTokens":["#E24B4A","#378ADD","#1D9E75","#BA7517","#7F77DD","#D4537E"]},"cards.fate":{"version":"1.0.0","cards":[{"id":"layoff","deck":"fate","name":"裁员","weight":6,"maxCopies":3,"target":"self","timing":"immediate","text":["HR 找你聊了 15 分钟，然后给了你一份文件。","你收拾工位时，发现抽屉里的笔筒比想象中满。"],"detail":"失去 25% 现金，职级下降一级","effects":[{"op":"cashLossRatio","ratio":0.25},{"op":"rankCheck","delta":-1}],"icon":"box"},{"id":"scapegoat","deck":"fate","name":"背锅侠","weight":10,"maxCopies":3,"target":"randomOther","timing":"immediate","text":["项目黄了，复盘会上你被点名。","你甚至不太确定那个需求是谁提的。"],"detail":"随机一名对手现金 −8000，你现金 +3000","effects":[{"op":"transferCash","target":"randomOther","delta":-8000},{"op":"cash","delta":3000}],"icon":"blame"},{"id":"bluescreen","deck":"fate","name":"蓝屏","weight":10,"maxCopies":3,"target":"self","timing":"immediate","text":["你的电脑蓝屏了。今晚的方案还在上面。","你重启了三次，第四次它终于承认自己坏了。"],"detail":"现金 −8000（买新设备）","effects":[{"op":"cash","delta":-8000},{"op":"stat","key":"energy","delta":-10}],"icon":"screen"},{"id":"sick-leave","deck":"fate","name":"急病","weight":10,"maxCopies":3,"target":"self","timing":"immediate","text":["你在电梯里突然晕了一下。同事扶住了你，也顺便扶走了你的工位。"],"detail":"跳过下一回合，医疗 −5000","effects":[{"op":"cash","delta":-5000},{"op":"skipNext","count":1},{"op":"stat","key":"energy","delta":-25}],"icon":"health"},{"id":"overtime-night","deck":"fate","name":"通宵","weight":11,"maxCopies":4,"target":"self","timing":"immediate","text":["需求在 18:47 变更。你看着它，想起了大学时的自己。"],"detail":"精力 −30，月薪临时打折","effects":[{"op":"stat","key":"energy","delta":-30},{"op":"salaryCoefficientDelta","delta":-0.1}],"icon":"night"},{"id":"reimburse-deny","deck":"fate","name":"报销驳回","weight":10,"maxCopies":3,"target":"self","timing":"immediate","text":["财务说这张单超标了。超标 3 块钱的单子。"],"detail":"现金 −6000","effects":[{"op":"cash","delta":-6000},{"op":"stat","key":"mood","delta":-10}],"icon":"money"},{"id":"colleague-quit","deck":"fate","name":"同事跑路","weight":9,"maxCopies":2,"target":"self","timing":"immediate","text":["最熟悉这块业务的人提了离职。最后一天他说了句「文档在共享盘」。","共享盘里没有文档。"],"detail":"现金 −10000，精力 −20","effects":[{"op":"cash","delta":-10000},{"op":"stat","key":"energy","delta":-20}],"icon":"door"},{"id":"audit","deck":"fate","name":"突击审计","weight":8,"maxCopies":2,"target":"self","timing":"immediate","text":["审计提前了。你桌上有一杯没洗的咖啡和一份不该出现的文档。"],"detail":"现金 −15000","effects":[{"op":"cash","delta":-15000},{"op":"stat","key":"mood","delta":-15}],"icon":"search"},{"id":"gossip","deck":"fate","name":"被八卦","weight":10,"maxCopies":3,"target":"self","timing":"immediate","text":["有人在群里说了句什么，然后所有人都看向你。"],"detail":"心情 −20，面子 −3","effects":[{"op":"stat","key":"mood","delta":-20},{"op":"stat","key":"face","delta":-3}],"icon":"whisper"},{"id":"system-crash","deck":"fate","name":"系统宕机","weight":9,"maxCopies":2,"target":"self","timing":"immediate","text":["生产环境挂了 2 小时。你在会议室待了 5 小时，什么也做不了。"],"detail":"现金 −12000，精力 −15","effects":[{"op":"cash","delta":-12000},{"op":"stat","key":"energy","delta":-15}],"icon":"server"},{"id":"boss-anger","deck":"fate","name":"老板发火","weight":9,"maxCopies":3,"target":"self","timing":"immediate","text":["周会上他点了你的名。你的方案他昨天说过要「再打磨打磨」。"],"detail":"心情 −25，工资系数 −8%","effects":[{"op":"salaryCoefficientDelta","delta":-0.08},{"op":"stat","key":"mood","delta":-25}],"icon":"anger"},{"id":"invoice","deck":"fate","name":"账单集中期","weight":9,"maxCopies":3,"target":"self","timing":"immediate","text":["信用卡账单、花呗账单、房租账单，邮箱里躺成一排。"],"detail":"现金 −11000","effects":[{"op":"cash","delta":-11000}],"icon":"money"},{"id":"lost-phone","deck":"fate","name":"手机丢了","weight":9,"maxCopies":2,"target":"self","timing":"immediate","text":["地铁上人太多。你的手机和它里面所有的支付功能一起消失了。"],"detail":"现金 −9000","effects":[{"op":"cash","delta":-9000},{"op":"stat","key":"mood","delta":-12}],"icon":"phone"},{"id":"spam-piyo","deck":"fate","name":"画饼充饥","weight":11,"maxCopies":4,"target":"self","timing":"immediate","text":["老板画了一个很大的饼，还给你倒了杯水。"],"detail":"心情 −15，精力 −10（饼太大消化不了）","effects":[{"op":"stat","key":"mood","delta":-15},{"op":"stat","key":"energy","delta":-10}],"icon":"pie"},{"id":"project-fail","deck":"fate","name":"项目黄了","weight":7,"maxCopies":2,"target":"self","timing":"immediate","text":["三个月的项目，今天早上被判定为「方向性错误」。"],"detail":"现金 −15000，职级下降一级","effects":[{"op":"cash","delta":-15000},{"op":"rankCheck","delta":-1},{"op":"stat","key":"mood","delta":-20}],"icon":"fail"},{"id":"credit-cut","deck":"fate","name":"征信花了","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["你查了一下征信，发现去年有笔忘记还。"],"detail":"贷款利率上升，现金 −8000","effects":[{"op":"cash","delta":-8000},{"op":"loanRateDelta","delta":0.005}],"icon":"bank"},{"id":"seat-taken","deck":"fate","name":"工位被占","weight":9,"maxCopies":3,"target":"self","timing":"immediate","text":["新同事的工位安排在了你的位置上。你现在抱着显示器站着。"],"detail":"心情 −20，精力 −10","effects":[{"op":"stat","key":"mood","delta":-20},{"op":"stat","key":"energy","delta":-10}],"icon":"chair"},{"id":"favors","deck":"fate","name":"被拉去帮忙","weight":10,"maxCopies":3,"target":"self","timing":"immediate","text":["隔壁组缺人，老板说「你去帮一下」。你的项目怎么办？他没说。"],"detail":"本月收入 −20%，精力 −20","effects":[{"op":"cash","delta":-12000},{"op":"stat","key":"energy","delta":-20}],"icon":"help"},{"id":"price-hike","deck":"fate","name":"物价飞涨","weight":9,"maxCopies":3,"target":"self","timing":"immediate","text":["楼下咖啡从 25 涨到 32。你还是点了。"],"detail":"生活开销永久 +15%","effects":[{"op":"livingCostDelta","delta":0.15},{"op":"stat","key":"mood","delta":-10}],"icon":"chart"},{"id":"broken-heater","deck":"fate","name":"房东失联","weight":8,"maxCopies":2,"target":"self","timing":"immediate","text":["暖气不热，你发了三条消息，收到一条「在处理」。那是三周前。"],"detail":"现金 −7000，精力 −15","effects":[{"op":"cash","delta":-7000},{"op":"stat","key":"energy","delta":-15}],"icon":"repair"}]},"cards.item":{"version":"1.0.0","cards":[{"id":"coffee","deck":"item","name":"手冲咖啡","weight":12,"maxCopies":6,"target":"self","timing":"ownTurn","text":["续命一杯。"],"detail":"下次掷骰掷两次取较高值","effects":[],"grants":[{"op":"reroll","count":1}],"icon":"coffee"},{"id":"resume","deck":"item","name":"简历","weight":12,"maxCopies":6,"target":"self","timing":"ownTurn","text":["你更新了简历。"],"detail":"抽一张机会卡","effects":[],"grants":[{"op":"drawCard","deck":"opportunity","count":1}],"icon":"doc"},{"id":"goldResume","deck":"item","name":"简历镀金","weight":6,"maxCopies":3,"target":"self","timing":"ownTurn","text":["排版换了颜色，加了三个项目，字号调大了 1.5 号。","你盯着它看了十分钟，怀疑这就是传说中的成长。"],"detail":"抽两张机会卡，下次掷骰取较高值","effects":[],"grants":[{"op":"drawCard","deck":"opportunity","count":2},{"op":"reroll","count":1}],"icon":"doc"},{"id":"slack","deck":"item","name":"摸鱼","weight":11,"maxCopies":6,"target":"self","timing":"ownTurn","text":["把电脑调成最低亮度，你开始研究今天中午吃什么。"],"detail":"跳过一次移动，但本月生活费全免","effects":[],"grants":[{"op":"skipMove","count":1},{"op":"exemptLiving","count":1}],"icon":"fish"},{"id":"mealVoucher","deck":"item","name":"餐补券","weight":11,"maxCopies":6,"target":"self","timing":"ownTurn","text":["公司发的餐饮券，月底才过期。"],"detail":"下个月生活开销减半，心情 +10","effects":[],"grants":[{"op":"halveLiving","count":1},{"op":"stat","key":"mood","delta":10}],"icon":"ticket"},{"id":"trainTicket","deck":"item","name":"回家车票","weight":9,"maxCopies":4,"target":"self","timing":"ownTurn","text":["过年回家，你算好了往返和红包。"],"detail":"跳过一次移动，心情大幅回升","effects":[],"grants":[{"op":"skipMove","count":1},{"op":"stat","key":"mood","delta":30}],"icon":"ticket"},{"id":"gossipCard","deck":"item","name":"茶水间情报","weight":10,"maxCopies":5,"target":"self","timing":"ownTurn","text":["有人在茶水间说了句话，你记住了关键的四分之一。"],"detail":"查看首富的全部资产明细","effects":[],"grants":[{"op":"peekRichest","count":1}],"icon":"eye"},{"id":"energyDrink","deck":"item","name":"红牛","weight":11,"maxCopies":6,"target":"self","timing":"ownTurn","text":["你灌了一罐，然后开始了今晚第 5 个会。"],"detail":"精力 +40，移动 +2 格","effects":[],"grants":[{"op":"stat","key":"energy","delta":40},{"op":"moveBonus","count":2}],"icon":"drink"},{"id":"annualLeave","deck":"item","name":"年假条","weight":6,"maxCopies":3,"target":"self","timing":"ownTurn","text":["你把攒够的天数一次用完。"],"detail":"跳过下一回合，精力全满，心情 +20","effects":[],"grants":[{"op":"skipNext","count":1},{"op":"stat","key":"energy","delta":100},{"op":"stat","key":"mood","delta":20}],"icon":"leave"},{"id":"umbrella","deck":"item","name":"折叠伞","weight":9,"maxCopies":4,"target":"self","timing":"ownTurn","text":["楼下突然下雨，你包里正好有一把。"],"detail":"免除一次负面事件的现金损失","effects":[],"grants":[{"op":"shield","count":1}],"icon":"umbrella"},{"id":"deskPlant","deck":"item","name":"桌面绿植","weight":9,"maxCopies":4,"target":"self","timing":"ownTurn","text":["桌上多了一盆多肉，你觉得自己生活有了绿意。"],"detail":"心情 +20，精力 +10，此后每月被动收入 +500","effects":[],"grants":[{"op":"stat","key":"mood","delta":20},{"op":"stat","key":"energy","delta":10},{"op":"passiveIncome","delta":500}],"icon":"plant"},{"id":"expenseFake","deck":"item","name":"一叠发票","weight":7,"maxCopies":3,"target":"self","timing":"ownTurn","text":["你把发票整理得整整齐齐，日期都在同一个月。"],"detail":"一次性报销 +26000","effects":[],"grants":[{"op":"cash","delta":26000}],"icon":"doc"},{"id":"rideshare","deck":"item","name":"顺风车","weight":9,"maxCopies":4,"target":"self","timing":"ownTurn","text":["手机叫了辆顺风车，司机说他正好顺路。","你一路狂飙，把堵在地铁口的同事甩在身后。"],"detail":"下次掷骰额外前进 3 格","effects":[],"grants":[{"op":"moveBonus","count":3}],"icon":"car"},{"id":"redpacket","deck":"item","name":"老板红包","weight":7,"maxCopies":3,"target":"self","timing":"ownTurn","text":["老板拍拍你的肩，塞给你一个红包：年轻人好好干。","你谢过老板，转头开始琢磨这话是什么意思。"],"detail":"现金 +10000，面子 +2","effects":[],"grants":[{"op":"cash","delta":10000},{"op":"stat","key":"face","delta":2}],"icon":"money"}]},"cards.opportunity":{"version":"1.0.0","cards":[{"id":"job-hop","deck":"opportunity","name":"猎头电话","weight":8,"maxCopies":4,"target":"self","timing":"immediate","text":["猎头的电话来得比老板的 KPI 还准时。"],"detail":"工资系数 +20%","effects":[{"op":"salaryCoefficientDelta","delta":0.2}],"icon":"phone"},{"id":"bonus","deck":"opportunity","name":"年终奖金","weight":8,"maxCopies":3,"target":"self","timing":"immediate","text":["绩效 A，全年奖金到账。虽然 A 是因为去年你干得不错。"],"detail":"现金 +25000","effects":[{"op":"cash","delta":25000}],"icon":"money"},{"id":"side-gig","deck":"opportunity","name":"副业开张","weight":8,"maxCopies":4,"target":"self","timing":"immediate","text":["你接了个私活儿，通宵一周，赚了两个月工资。"],"detail":"现金 +18000，后续月薪 +8%","effects":[{"op":"cash","delta":18000},{"op":"salaryCoefficientDelta","delta":0.08}],"icon":"laptop"},{"id":"patron","deck":"opportunity","name":"关键人物","weight":7,"maxCopies":3,"target":"self","timing":"immediate","text":["有人替你说了句话。他自己都不知道说了什么。"],"detail":"工资系数 +25%","effects":[{"op":"salaryCoefficientDelta","delta":0.25}],"icon":"star"},{"id":"cert","deck":"opportunity","name":"技能认证","weight":8,"maxCopies":4,"target":"self","timing":"immediate","text":["你考了个证。没人要求你考，但简历上好看。"],"detail":"现金 −2000，尝试升一级职级","effects":[{"op":"cash","delta":-2000},{"op":"rankCheck","delta":1}],"icon":"cert"},{"id":"raise-letter","deck":"opportunity","name":"调薪通知","weight":7,"maxCopies":3,"target":"self","timing":"immediate","text":["一封邮件，标题里没有一个「钱」字，但你知道里面是什么。"],"detail":"工资系数 +15%","effects":[{"op":"salaryCoefficientDelta","delta":0.15}],"icon":"mail"},{"id":"project-lead","deck":"opportunity","name":"牵头大项目","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["项目成了，你站在汇报厅中央，PPT 第 47 页翻得太快了。"],"detail":"尝试升一级职级，现金 +10000","effects":[{"op":"rankCheck","delta":1},{"op":"cash","delta":10000}],"icon":"star"},{"id":"stock","deck":"opportunity","name":"基金定投","weight":8,"maxCopies":3,"target":"self","timing":"immediate","text":["你终于开始定投了，并且决定不看账户。"],"detail":"存款 +30000","effects":[{"op":"deposit","delta":30000}],"icon":"chart"},{"id":"rent-out","deck":"opportunity","name":"房产出租","weight":7,"maxCopies":3,"target":"self","timing":"immediate","text":["你把房子租出去了。收租日变成了新的节日。"],"detail":"本月被动收入 +8000","effects":[{"op":"passiveIncome","delta":8000}],"icon":"house"},{"id":"tax-refund","deck":"opportunity","name":"专项附加扣除","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["你终于记得申报了房贷利息和ibt 继续教育。"],"detail":"现金 +12000","effects":[{"op":"cash","delta":12000}],"icon":"money"},{"id":"speech","deck":"opportunity","name":"演讲邀约","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["你被邀请去做行业分享，host 说你讲得比 CTO 好。"],"detail":"现金 +8000，面子 +3","effects":[{"op":"cash","delta":8000},{"op":"stat","key":"face","delta":3}],"icon":"mic"},{"id":"found-cash","deck":"opportunity","name":"抽屉旧物","weight":7,"maxCopies":2,"target":"self","timing":"immediate","text":["整理抽屉翻出一张 2016 年的购物卡，还剩 680。"],"detail":"现金 +6800，本回合可重掷骰子 1 次","effects":[{"op":"cash","delta":6800}],"grants":[{"op":"reroll","count":1}],"icon":"coin"},{"id":"referral","deck":"opportunity","name":"内推offer","weight":6,"maxCopies":3,"target":"self","timing":"immediate","text":["前同事帮你内推，面试只聊了 20 分钟就过了。"],"detail":"工资系数 +30%","effects":[{"op":"salaryCoefficientDelta","delta":0.3}],"icon":"phone"},{"id":"patent","deck":"opportunity","name":"技术专利","weight":4,"maxCopies":2,"target":"self","timing":"immediate","text":["你写的那个方案被申请成了专利，公司给你发了奖金。"],"detail":"现金 +36000","effects":[{"op":"cash","delta":36000}],"icon":"cert"},{"id":"equity","deck":"opportunity","name":"期权到账","weight":4,"maxCopies":2,"target":"self","timing":"immediate","text":["公司上市了。你手上那 5000 股终于能换钱了。"],"detail":"现金 +60000","effects":[{"op":"cash","delta":60000}],"icon":"chart"},{"id":"mentor","deck":"opportunity","name":"导师带飞","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["老员工把你叫进会议室，给了你一份三年规划。"],"detail":"尝试升一级职级，工资系数 +10%","effects":[{"op":"rankCheck","delta":1},{"op":"salaryCoefficientDelta","delta":0.1}],"icon":"star"},{"id":"part-time","deck":"opportunity","name":"周末兼职","weight":7,"maxCopies":3,"target":"self","timing":"immediate","text":["你接了个外包项目，周末都在写，但 money 很实在。"],"detail":"现金 +14000，精力 −15","effects":[{"op":"cash","delta":14000},{"op":"stat","key":"energy","delta":-15}],"icon":"laptop"},{"id":"good-review","deck":"opportunity","name":"意外好评","weight":6,"maxCopies":2,"target":"self","timing":"immediate","text":["你随手写的文档被全公司传阅，甚至被抄进了新人手册。"],"detail":"工资系数 +12%，心情 +15","effects":[{"op":"salaryCoefficientDelta","delta":0.12},{"op":"stat","key":"mood","delta":15}],"icon":"star"},{"id":"expense-claim","deck":"opportunity","name":"报销到账","weight":8,"maxCopies":3,"target":"self","timing":"immediate","text":["攒了半年的打车费终于报下来了，财务说再等 3 个月。"],"detail":"现金 +9000","effects":[{"op":"cash","delta":9000}],"icon":"money"},{"id":"network","deck":"opportunity","name":"人脉变现","weight":5,"maxCopies":2,"target":"self","timing":"immediate","text":["你随手帮的一个忙，三年后变成了一个 offer。"],"detail":"尝试升一级职级，现金 +20000","effects":[{"op":"rankCheck","delta":1},{"op":"cash","delta":20000}],"icon":"phone"}]},"config":{"version":"1.0.0","game":{"boardId":"office-default","roundsPerMonth":4,"maxRounds":40,"bankruptcy":{"graceRounds":1,"liquidationOrder":["vehicle","property","deposit"],"minCashAfterLiquidation":0}},"economy":{"initialCash":20000,"initialDeposit":0,"baseSalary":12000,"salaryTaxRate":0.12,"livingCostByRank":{"实习生":900,"专员":1300,"主管":2000,"经理":3000,"总监":4500},"depositInterestRate":0.0035,"loanInterestRate":0.012,"sellPropertyRatio":0.72,"mortgageRatio":0.7,"mortgageMonths":36,"vehicleMonths":24,"propertyAppreciation":0.012,"vehicleDepreciation":0.02},"ranks":[{"id":"intern","name":"实习生","coefficient":0.6,"minNetWorth":0},{"id":"specialist","name":"专员","coefficient":1,"minNetWorth":60000},{"id":"supervisor","name":"主管","coefficient":1.4,"minNetWorth":120000},{"id":"manager","name":"经理","coefficient":2,"minNetWorth":200000},{"id":"director","name":"总监","coefficient":3,"minNetWorth":320000}],"decks":{"opportunity":20,"fate":20,"item":12},"winCondition":{"default":"rounds","options":[{"id":"rounds","label":"固定回合数制","rounds":40},{"id":"bankruptcy","label":"破产淘汰制","rounds":0,"note":"活到最后即胜"}]},"startingDeck":{"item":["coffee","resume","goldResume"]}},"events":{"version":"1.0.0","pools":{"eat":[{"id":"eat-bento","weight":30,"text":["今天的午饭是公司食堂第九大菜系：麻辣烫自由。"],"effects":[{"op":"cash","delta":-35}],"requires":{},"icon":"bento"},{"id":"eat-meeting","weight":10,"text":["AA 制聚餐，你悄悄多付了 20 块，谁也没发现。"],"effects":[{"op":"cash","delta":-68},{"op":"stat","key":"face","delta":1}],"requires":{},"icon":"meal"},{"id":"eat-reward","weight":8,"text":["楼下新开的店今天老板请客，你运气不错。"],"effects":[{"op":"cash","delta":-35},{"op":"stat","key":"mood","delta":8}],"requires":{},"icon":"meal"},{"id":"eat-noodle","weight":20,"text":["一个人吃面，加了个蛋。你觉得这叫仪式感。"],"effects":[{"op":"cash","delta":-22},{"op":"stat","key":"mood","delta":3}],"requires":{},"icon":"noodle"},{"id":"eat-delivery","weight":12,"text":["点了外卖，备注写了「不要餐具」。你环保，你心虚。"],"effects":[{"op":"cash","delta":-48}],"requires":{},"icon":"delivery"},{"id":"eat-buffet","weight":6,"text":["公司团建自助，你扶着墙出来。"],"effects":[{"op":"cash","delta":-88},{"op":"stat","key":"mood","delta":12},{"op":"stat","key":"face","delta":1}],"requires":{},"icon":"buffet"},{"id":"eat-lucky","weight":8,"text":["便利店集点卡居然中奖了，店员塞给你一件小礼物。"],"effects":[{"op":"drawCard","deck":"item","count":1}],"requires":{},"icon":"gift"}],"clothes":[{"id":"clothes-basic","weight":35,"text":["优衣库打折，你买了三件。"],"effects":[{"op":"cash","delta":-300}],"requires":{},"icon":"shirt"},{"id":"clothes-suit","weight":20,"text":["为了见客户，你买了身新西装。"],"effects":[{"op":"cash","delta":-800},{"op":"stat","key":"face","delta":3}],"requires":{},"icon":"suit"},{"id":"clothes-sale","weight":25,"text":["断码清仓，你抢到了最后一件。"],"effects":[{"op":"cash","delta":-160},{"op":"stat","key":"face","delta":1}],"requires":{},"icon":"shirt"},{"id":"clothes-shoes","weight":20,"text":["皮鞋该擦了，顺便买了双新的。"],"effects":[{"op":"cash","delta":-420},{"op":"stat","key":"face","delta":2}],"requires":{},"icon":"shoes"},{"id":"clothes-lottery","weight":6,"text":["购物小票刮出了「再来一件」，奖品随机。"],"effects":[{"op":"drawCard","deck":"item","count":1}],"requires":{},"icon":"shirt"}],"rent":[{"id":"rent-due","weight":40,"text":["房东准时发来房租提醒，从不迟到，从不问候。"],"effects":[{"op":"payRent","tileId":"{tileId}"}],"requires":{},"icon":"house"},{"id":"rent-deposit","weight":25,"text":["房东说要换锁，押金重新算了一遍。"],"effects":[{"op":"cash","delta":-800}],"requires":{},"icon":"house"},{"id":"rent-repair","weight":20,"text":["热水器坏了，物业说要你自己修。"],"effects":[{"op":"cash","delta":-600},{"op":"stat","key":"mood","delta":-5}],"requires":{},"icon":"repair"},{"id":"rent-upgrade","weight":15,"text":["你终于把次卧改成了书房。"],"effects":[{"op":"cash","delta":-1200},{"op":"stat","key":"mood","delta":10}],"requires":{},"icon":"house"}],"promotion":[{"id":"promo-boss-like","weight":35,"text":["你陪领导聊了两小时思路，他很满意。虽然聊的是高尔夫。"],"effects":[{"op":"rankCoefficientDelta","delta":0.12}],"requires":{},"icon":"star"},{"id":"promo-project","weight":25,"text":["你独立推动的项目上线了，年底评级有了底气。"],"effects":[{"op":"rankCheck","delta":1}],"requires":{},"icon":"star"},{"id":"promo-cert","weight":20,"text":["你考了个证，虽然没人要求你考。"],"effects":[{"op":"cash","delta":-1500},{"op":"rankCheck","delta":1}],"requires":{},"icon":"cert"},{"id":"promo-praise","weight":20,"text":["你在年会上被点名表扬，散会后没人记得你说了什么。"],"effects":[{"op":"rankCoefficientDelta","delta":0.08},{"op":"stat","key":"mood","delta":15}],"requires":{},"icon":"star"}],"demotion":[{"id":"demote-restructure","weight":35,"text":["组织架构调整，你的头衔少了一个「副」字，多了两个「临时」。"],"effects":[{"op":"rankCoefficientDelta","delta":-0.12}],"requires":{},"icon":"down"},{"id":"demote-competitor","weight":30,"text":["新来的同事比你年轻五岁，职位跟你一样。"],"effects":[{"op":"rankCheck","delta":-1}],"requires":{},"icon":"down"},{"id":"demote-transfer","weight":20,"text":["你被调去支援一个新项目，薪资按新人算。"],"effects":[{"op":"rankCoefficientDelta","delta":-0.15},{"op":"stat","key":"mood","delta":-10}],"requires":{},"icon":"down"},{"id":"demote-feedback","weight":15,"text":["绩效面谈结束，你记下了三条改进项和两个「下周开始」。"],"effects":[{"op":"stat","key":"mood","delta":-15},{"op":"cash","delta":-2000}],"requires":{},"icon":"down"}],"raise":[{"id":"raise-adjust","weight":45,"text":["调薪名单里有你，涨了 10%。同事说恭喜，你说还行。"],"effects":[{"op":"salaryCoefficientDelta","delta":0.1}],"requires":{},"icon":"up"},{"id":"raise-13th","weight":30,"text":["十三个月工资。HR 说这是惯例，惯例没写进合同。"],"effects":[{"op":"cash","delta":12000}],"requires":{},"icon":"up"},{"id":"raise-bonus","weight":25,"text":["年终奖发了，比去年多一点，多了个零。"],"effects":[{"op":"cash","delta":20000},{"op":"stat","key":"mood","delta":12}],"requires":{},"icon":"up"}],"cut":[{"id":"cut-freeze","weight":40,"text":["薪资结构调整，你的月薪少了一个零后面的数字。"],"effects":[{"op":"salaryCoefficientDelta","delta":-0.1}],"requires":{},"icon":"down"},{"id":"cut-social","weight":35,"text":["社保基数按最低档缴纳了，你觉得挺好，医保报销少一半也是挺好。"],"effects":[{"op":"cash","delta":-3000},{"op":"stat","key":"mood","delta":-8}],"requires":{},"icon":"down"},{"id":"cut-5off","weight":25,"text":["公司强制 5% 降本，人人有份。"],"effects":[{"op":"rankCheck","delta":-1}],"requires":{},"icon":"down"}],"vacation":[{"id":"vacation-sick","weight":40,"text":["你感冒发烧，请了一天假，没人问你去哪家医院。"],"effects":[{"op":"skipNext","count":1}],"requires":{},"icon":"leave"},{"id":"vacation-save","weight":35,"text":["你请了年假，在家躺了两天看了四部电影。"],"effects":[{"op":"skipNext","count":1},{"op":"stat","key":"mood","delta":25}],"requires":{},"icon":"leave"},{"id":"vacation-pay","weight":25,"text":["年假一天，调休一天，你做了一个违背工期的决定。"],"effects":[{"op":"cash","delta":2000},{"op":"stat","key":"mood","delta":15}],"requires":{},"icon":"leave"},{"id":"vacation-souvenir","weight":10,"text":["旅途中顺手淘到的宝贝，正好用得上。"],"effects":[{"op":"drawCard","deck":"item","count":1}],"requires":{},"icon":"gift"}],"company":[{"id":"co-standup","weight":35,"text":["站会开到第 40 分钟，你想起今天没做昨天说的事。"],"effects":[{"op":"stat","key":"energy","delta":-8}],"requires":{},"icon":"meeting"},{"id":"co-coffee","weight":30,"text":["茶水间遇到老板，他问你最近怎么样。你说「还行」。"],"effects":[{"op":"stat","key":"mood","delta":10},{"op":"stat","key":"face","delta":1}],"requires":{},"icon":"coffee"},{"id":"co-overtime","weight":20,"text":["又是 22 点走的一天，打车费自己出。"],"effects":[{"op":"cash","delta":-80},{"op":"stat","key":"energy","delta":-15}],"requires":{},"icon":"night"},{"id":"co-praise","weight":15,"text":["你做的方案被客户当场夸了。这在职场里属于稀有事件。"],"effects":[{"op":"stat","key":"mood","delta":20},{"op":"rankCoefficientDelta","delta":0.05}],"requires":{},"icon":"star"},{"id":"co-welfare","weight":10,"text":["行政部在茶水间发节日礼包，手快有手慢无。"],"effects":[{"op":"drawCard","deck":"item","count":1}],"requires":{},"icon":"box"}],"vacation2":[{"id":"v2-remote","weight":40,"text":["今天允许远程办公，你在小区里走了 8000 步假装在散步。"],"effects":[{"op":"stat","key":"mood","delta":8},{"op":"stat","key":"energy","delta":5}],"requires":{},"icon":"home"}]}},"ui_text":{"version":"1.0.0","app":{"title":"大富翁 · 工位版","subtitle":"打工人资产争霸赛"},"modes":{"solo":{"title":"单人练习","desc":"1 人 + AI，同屏操作，随时重开"},"hotseat":{"title":"本地热座","desc":"2~6 人轮流用同一台电脑"},"lan":{"title":"局域网对战","desc":"多台设备同一房间，主机权威"}},"ranks":{"intern":"实习生","specialist":"专员","supervisor":"主管","manager":"经理","director":"总监"},"tileNames":{"start":"起点工位","company":"公司","rent":"租房","eat":"吃饭","clothes":"买衣服","vehicle":"买车","property":"买房","promotion":"升职","demotion":"降职","raise":"加薪","cut":"降薪","chance":"机会","fate":"命运","vacation":"公休"},"phase":{"TURN_START":"回合开始","ROLL":"掷骰子","MOVING":"移动中","TILE_EVENT":"格子事件","POST_ACTION":"交易与道具","TURN_END":"回合结束","MONTH_SETTLE":"月度结算","BANKRUPT_CHECK":"破产清算","GAME_OVER":"游戏结束"},"settle":{"title":"月度结算 · 第 {month} 个月","salary":"应发工资","rentIncome":"收租收入","living":"生活开销","debt":"月供支出","interestPaid":"贷款利息","interestEarned":"存款利息","net":"本月净收支","assets":"资产重估","rankUp":"恭喜升职","rankDown":"职级下调","bankrupt":"资不抵债，清算资产","rescued":"宽限期结束仍未补足，本月支出 −{amount}","pawned":"被迫变卖 {asset}，回收 {amount}"},"gameOver":{"rounds":"{rounds} 回合结束，资产最高者胜出。","bankruptcy":"活到最后的人赢。","winner":"恭喜 {name} 通关","rank":"最终职级"},"trade":{"title":"发起交易","give":"我给出","want":"我想要","cash":"现金","property":"房产/地皮","vehicle":"车辆","confirm":"确认提议","accept":"接受","reject":"拒绝","expired":"对方已下线，交易取消"},"net":{"room":"房间号","hosting":"创建房间","joining":"加入房间","waiting":"等待其他玩家加入…","reconnecting":"重连中…","offline":"掉线中，AI 将暂代操作","migrating":"房主掉线，正在重新选举…","passExport":"导出回合包","passImport":"导入回合包","passHint":"把文件发给下一位玩家，对方导入后即可继续","passMismatch":"回合包校验失败：状态不一致或已被篡改"},"audio":{"dice":"骰子","cash":"收银","sigh":"叹息","bgm":"背景音乐","on":"开","off":"关"},"toast":{"bankrupt":"{name} 破产出局了","rankUp":"{name} 升职为 {rank}","rankDown":"{name} 降职为 {rank}","tradeDone":"交易完成","needCash":"现金不足"}}}</script>
+<script>
+window.__GAME_DATA__ = (function(){
+  var raw = document.getElementById("gamedata").textContent;
+  return JSON.parse(raw);
+})();
+</script>
+<script>
+(()=>{var Se=Object.defineProperty;var Re=(e,t)=>{for(var n in t)Se(e,n,{get:t[n],enumerable:!0})};function L(e){if(e===null||typeof e!="object")return e;if(Array.isArray(e)){let n=e.length,s=new Array(n);for(let i=0;i<n;i++){let a=e[i];s[i]=a!==null&&typeof a=="object"?L(a):a}return s}let t={};for(let n in e){let s=e[n];t[n]=s!==null&&typeof s=="object"?L(s):s}return t}function bt(e,t,n){return e<t?t:e>n?n:e}function v(e){return Math.round(e*100)/100}function Q(e){let t=K(e),n=2166136261;for(let s=0;s<t.length;s++)n^=t.charCodeAt(s),n=Math.imul(n,16777619)>>>0;return"fnv1a-"+n.toString(16).padStart(8,"0")}function K(e){return e===null||typeof e!="object"?JSON.stringify(e):Array.isArray(e)?"["+e.map(K).join(",")+"]":"{"+Object.keys(e).sort().map(n=>JSON.stringify(n)+":"+K(e[n])).join(",")+"}"}var wt=e=>e.grants.some(t=>t.op==="shield");function Dt(e){let t=e.grants.find(n=>n.op==="shield");return t?(t.count=(t.count||1)-1,t.count<=0&&e.grants.splice(e.grants.indexOf(t),1),!0):!1}var nt=new Set(["cash","deposit","transferCash","cashLossRatio","payRent","rankCheck","rankCoefficientDelta","salaryCoefficientDelta","stat","passiveIncome","livingCostDelta","loanRateDelta","skipNext","moveTo","loan","repay","drawCard","none"]);function it(e,t,n,s){if(t)for(let i of t)Me(e,i,n,s)}function Me(e,t,n,s){if(!t||!nt.has(t.op))return;let i=n.actorId,a=n.data;switch(t.op){case"none":break;case"cash":{let o=A(e,i);if(!o)break;if(t.delta<0&&wt(o)){Dt(o),n.log&&n.log(`${o.name} 撑开折叠伞，挡下了 ${-t.delta} 元损失`),s.push({t:"shield",id:i});break}let r=o.cash;o.cash=v(o.cash+t.delta),s.push({t:"cash",id:i,from:r,to:o.cash});break}case"deposit":{let o=A(e,i);if(!o)break;let r=t.delta;if(o.deposit+r<0){let l=-(o.deposit+r);if(o.cash>=l)o.cash=v(o.cash-l),o.deposit=0;else break}else o.deposit=v(o.deposit+r);s.push({t:"deposit",id:i,to:o.deposit});break}case"payRent":{let o=A(e,i);if(!o)break;let r=t.tileId!=null?t.tileId:o.pos,l=e.board.tiles.find(h=>h.id===r),d=t.delta||l&&l.payload.rent||0,c=Math.min(o.cash,d);o.cash=v(o.cash-c),s.push({t:"cash",id:i,to:o.cash}),n.log&&n.log(`${o.name} 支付房租 ${Math.round(c)} 元`);break}case"cashLossRatio":{let o=A(e,i);if(!o)break;if(wt(o)){Dt(o),n.log&&n.log(`${o.name} 撑开折叠伞，挡下了一次比例现金损失`),s.push({t:"shield",id:i});break}let r=Math.min(o.cash,Math.max(0,o.cash*(t.ratio||0)));o.cash=v(o.cash-r),s.push({t:"cash",id:i,to:o.cash}),n.log&&n.log(`${o.name} 损失现金 ${Math.round(r)} 元`);break}case"transferCash":{let o=Te(e,t.target,i,n);for(let r of o){if(r.id===i)continue;let l=Math.min(r.cash,Math.abs(t.delta||0));r.cash=v(r.cash-l),s.push({t:"cash",id:r.id,to:r.cash});let d=Math.round(l*.375),c=A(e,i);c&&(c.cash=v(c.cash+d),s.push({t:"cash",id:i,to:c.cash})),n.log&&n.log(`${r.name} 被扣 ${Math.round(l)} 元`)}break}case"rankCoefficientDelta":{let o=A(e,i);if(!o)break;o.rankCoefficient=v(Math.max(.3,o.rankCoefficient+t.delta)),s.push({t:"rankCoefficient",id:i,to:o.rankCoefficient});break}case"salaryCoefficientDelta":{let o=A(e,i);if(!o)break;o.salaryCoefficient=v(Math.max(.4,o.salaryCoefficient+t.delta)),s.push({t:"salaryCoefficient",id:i,to:o.salaryCoefficient});break}case"stat":{let o=A(e,i);if(!o)break;o.stats[t.key]=bt((o.stats[t.key]||0)+t.delta,0,100),s.push({t:"stat",id:i,key:t.key,to:o.stats[t.key]});break}case"passiveIncome":{let o=A(e,i);if(!o)break;o.passiveIncome=v((o.passiveIncome||0)+t.delta),s.push({t:"passiveIncome",id:i,to:o.passiveIncome});break}case"livingCostDelta":{let o=A(e,i);if(!o)break;o.livingCostDelta=v(bt((o.livingCostDelta||0)+t.delta,-.5,1.5)),s.push({t:"livingCostDelta",id:i,to:o.livingCostDelta});break}case"loanRateDelta":{let o=A(e,i);if(!o)break;o.loanRateDelta=v((o.loanRateDelta||0)+t.delta),s.push({t:"loanRateDelta",id:i,to:o.loanRateDelta});break}case"rankCheck":{Ie(e,i,t.delta||1,n,s);break}case"skipNext":{let o=A(e,i);if(!o)break;o.flags.skipNextTurn=(o.flags.skipNextTurn||0)+(t.count||1),s.push({t:"flags",id:i});break}case"moveTo":{let o=A(e,i);if(!o)break;o.pos=t.tileId,s.push({t:"move",id:i,to:o.pos,teleport:!0});break}case"loan":{let o=A(e,i);if(!o)break;let r=t.principal||0;o.loan.principal=v(o.loan.principal+r),o.loan.monthsLeft=Math.max(o.loan.monthsLeft,t.months||12),o.cash=v(o.cash+r),s.push({t:"loan",id:i,to:o.loan}),s.push({t:"cash",id:i,to:o.cash});break}case"repay":{let o=A(e,i);if(!o)break;let r=Math.min(o.cash,t.principal||o.loan.principal);o.cash=v(o.cash-r),o.loan.principal=v(Math.max(0,o.loan.principal-r)),s.push({t:"loan",id:i,to:o.loan}),s.push({t:"cash",id:i,to:o.cash});break}case"drawCard":{let o=t.count||1,r=n.deckApi(e,t.deck,n,s);for(let l=0;l<o;l++)r();break}}}function Ie(e,t,n,s,i){let a=A(e,t);if(!a)return;let o=s.data.config.ranks,r=o.findIndex(c=>c.id===a.rankId);r<0&&(r=0);let l=s.netWorth(e,t),d=r+n;if(!(d<0||d>=o.length)){if(n>0&&l<o[d].minNetWorth){s.log&&s.log(`${a.name} 资产还不够升到 ${o[d].name}`);return}a.rankId=o[d].id,a.rankCoefficient=o[d].coefficient,i.push({t:"rank",id:t,to:a.rankId}),s.log&&s.log(`${a.name} ${n>0?"升职为":"降职为"} ${o[d].name}`)}}function Te(e,t,n,s){let i=e.players.filter(a=>a.alive&&a.id!==n);switch(t){case"self":return e.players.filter(a=>a.id===n);case"randomOther":{if(!i.length)return[];let[,a]=s.pickRandom(i.length);return s.rngRef.rng=a,[i[s.lastPick]]}case"richest":return e.players.filter(o=>o.alive&&o.id!==n).sort((o,r)=>s.netWorth(e,r.id)-s.netWorth(e,o.id)).slice(0,1);case"poorest":return e.players.filter(o=>o.alive&&o.id!==n).sort((o,r)=>s.netWorth(e,o.id)-s.netWorth(e,r.id)).slice(0,1);case"other":case"pick":return i.slice(0,1);default:return[]}}function A(e,t){return e.players.find(n=>n.id===t)}function Lt(e){let t=[],{config:n,board:s,cards:i,events:a}=e;if(!s.tiles||!s.tiles.length)return t.push("board.tiles 为空"),t;let o=s.tiles.length;(o<40||o>50)&&t.push(`格子数 ${o} 超出 40~50 的设计区间`);let r=new Set;for(let h of s.tiles)r.has(h.id)&&t.push(`格子 id 重复：${h.id}`),r.add(h.id),h.type||t.push(`格子 ${h.id} 缺少 type`),(h.type==="property"||h.type==="company")&&(h.payload&&h.payload.price>0||t.push(`地皮 ${h.id} 缺少 price`),h.payload&&h.payload.rent>0||t.push(`地皮 ${h.id} 缺少 rent`)),h.type==="vehicle"&&(h.payload&&Array.isArray(h.payload.options)&&h.payload.options.length||t.push(`买车格 ${h.id} 缺少 options`));let l=s.tiles.map(h=>h.id).sort((h,p)=>h-p);for(let h=0;h<o;h++)if(l[h]!==h){t.push("格子 id 必须是 0..n-1 的连续整数（环形移动依赖）");break}for(let h of["opportunity","fate","item"]){let p=i[h]||[];if(!p.length){t.push(`牌堆 ${h} 为空`);continue}let f=new Set;for(let u of p){f.has(u.id)&&t.push(`卡牌 id 重复：${u.id}`),f.add(u.id),u.weight>0||t.push(`卡牌 ${u.id} weight 非法`),u.name||t.push(`卡牌 ${u.id} 缺少 name`),(!Array.isArray(u.text)||!u.text.length)&&t.push(`卡牌 ${u.id} 缺少 text`);for(let g of u.effects||[])nt.has(g.op)||t.push(`卡牌 ${u.id} 使用了未知 op：${g.op}`);for(let g of u.grants||[])Ee.has(g.op)||t.push(`卡牌 ${u.id} 使用了未知 grant：${g.op}`);u.deck!==h&&t.push(`卡牌 ${u.id} 的 deck 字段(${u.deck}) 与所在牌堆(${h}) 不符`)}}for(let[h,p]of Object.entries(a||{}))for(let f of p){f.id||t.push(`事件池 ${h} 中有事件缺少 id`),f.weight>0||t.push(`事件 ${f.id} weight 非法`);for(let u of f.effects||[])nt.has(u.op)||t.push(`事件 ${f.id} 使用了未知 op：${u.op}`)}let d=n.ranks||[];d.length||t.push("ranks 为空");let c=-1;for(let h of d)h.minNetWorth<=c&&t.push(`职级 ${h.name} 的 minNetWorth 必须递增`),c=h.minNetWorth;return d[0]&&d[0].coefficient!==.6&&t.push("实习生系数应为 0.6"),t}var Ee=new Set(["reroll","drawCard","skipMove","exemptLiving","halveLiving","peekRichest","stat","cash","moveBonus","skipNext","shield","passiveIncome"]);async function Nt(e="/data/"){let t,n=typeof window<"u"?window.__GAME_DATA__:null;if(n)t=n;else{let a=["config","board","events","cards.opportunity","cards.fate","cards.item","ai_profiles","ui_text"];t={},await Promise.all(a.map(async o=>{let r=await fetch(`${e}${o}.json`);if(!r.ok)throw new Error(`无法加载 ${o}.json (${r.status})`);t[o]=await r.json()}))}let s={config:t.config,board:t.board,cards:{opportunity:t["cards.opportunity"].cards,fate:t["cards.fate"].cards,item:t["cards.item"].cards},events:t.events.pools,aiProfiles:t.ai_profiles,uiText:t.ui_text};s.config.__events=s.events;let i=Lt(s);return i.length&&console.warn("[数据校验] 发现问题：",i),s}var R={TURN_START:"TURN_START",ROLL:"ROLL",MOVING:"MOVING",TILE_EVENT:"TILE_EVENT",POST_ACTION:"POST_ACTION",TURN_END:"TURN_END",MONTH_SETTLE:"MONTH_SETTLE",BANKRUPT_CHECK:"BANKRUPT_CHECK",GAME_OVER:"GAME_OVER"},m={NEW_GAME:"NEW_GAME",ROLL_DICE:"ROLL_DICE",RESOLVE_MOVE:"RESOLVE_MOVE",RESOLVE_TILE:"RESOLVE_TILE",DISMISS_MODAL:"DISMISS_MODAL",USE_ITEM:"USE_ITEM",PLAY_CARD:"PLAY_CARD",BUY_PROPERTY:"BUY_PROPERTY",BUY_VEHICLE:"BUY_VEHICLE",DEPOSIT:"DEPOSIT",WITHDRAW:"WITHDRAW",PROPOSE_TRADE:"PROPOSE_TRADE",RESPOND_TRADE:"RESPOND_TRADE",CANCEL_TRADE:"CANCEL_TRADE",END_TURN:"END_TURN",AI_DECIDE:"AI_DECIDE",CLAIM_ASSET:"CLAIM_ASSET",LOAN_REQ:"LOAN_REQ",DRAW_CARD:"DRAW_CARD",IMPULSE_SPEND:"IMPULSE_SPEND"},$e={TURN_START:[m.ROLL_DICE,m.USE_ITEM,m.PLAY_CARD,m.END_TURN,m.AI_DECIDE],ROLL:[m.ROLL_DICE,m.USE_ITEM,m.PLAY_CARD,m.AI_DECIDE],MOVING:[m.BUY_VEHICLE,m.AI_DECIDE],TILE_EVENT:[m.RESOLVE_TILE,m.BUY_PROPERTY,m.BUY_VEHICLE,m.USE_ITEM,m.PLAY_CARD,m.DISMISS_MODAL,m.AI_DECIDE],POST_ACTION:[m.USE_ITEM,m.PLAY_CARD,m.DEPOSIT,m.WITHDRAW,m.PROPOSE_TRADE,m.RESPOND_TRADE,m.CANCEL_TRADE,m.BUY_PROPERTY,m.BUY_VEHICLE,m.DISMISS_MODAL,m.LOAN_REQ,m.IMPULSE_SPEND,m.END_TURN,m.AI_DECIDE],TURN_END:[],MONTH_SETTLE:[],BANKRUPT_CHECK:[m.CLAIM_ASSET],GAME_OVER:[m.NEW_GAME]},Ot=(e,t)=>($e[e]||[]).includes(t),U={newGame:e=>({type:m.NEW_GAME,...e}),rollDice:e=>({type:m.ROLL_DICE,...e}),useItem:e=>({type:m.USE_ITEM,...e}),playCard:e=>({type:m.PLAY_CARD,...e}),buyProperty:e=>({type:m.BUY_PROPERTY,tileId:e}),buyVehicle:(e,t)=>({type:m.BUY_VEHICLE,tileId:e,optionId:t}),deposit:e=>({type:m.DEPOSIT,amount:e}),withdraw:e=>({type:m.WITHDRAW,amount:e}),proposeTrade:e=>({type:m.PROPOSE_TRADE,...e}),respondTrade:(e,t)=>({type:m.RESPOND_TRADE,tradeId:e,accept:t}),cancelTrade:e=>({type:m.CANCEL_TRADE,tradeId:e}),endTurn:()=>({type:m.END_TURN}),loanReq:e=>({type:m.LOAN_REQ,amount:e}),drawCard:e=>({type:m.DRAW_CARD,deckName:e}),aiDecide:e=>({type:m.AI_DECIDE,playerId:e}),dismissModal:()=>({type:m.DISMISS_MODAL}),claimAsset:e=>({type:m.CLAIM_ASSET,...e})};function H(e){e=e+1831565813>>>0;let t=e;return t=Math.imul(t^t>>>15,1|t),t=t+Math.imul(t^t>>>7,61|t)^t,[((t^t>>>14)>>>0)/4294967296,e]}function J(e,t){let[n,s]=H(e);return[Math.floor(n*t)+1,s]}function Bt(e,t,n="weight"){let s=0;for(let r of t)s+=r[n]>0?r[n]:0;if(s<=0)return[null,e];let[i,a]=H(e),o=i*s;for(let r of t)if(o-=r[n]>0?r[n]:0,o<=0)return[r,a];return[t[t.length-1],a]}function yt(e,t){let n=t.slice();for(let s=n.length-1;s>0;s--){let[i,a]=H(e);e=a;let o=Math.floor(i*(s+1)),r=n[s];n[s]=n[o],n[o]=r}return{rng:e,arr:n}}function X(e,t){let n=B(e,t),s=e.config,i=s.ranks.find(l=>l.id===n.rankId)||s.ranks[0],a=s.economy.loanInterestRate+(n.loanRateDelta||0),r=s.economy.baseSalary*i.coefficient*n.salaryCoefficient*(1-s.economy.salaryTaxRate);return v(r)}function vt(e,t){let n=B(e,t),s=e.config,i=s.ranks.find(r=>r.id===n.rankId)||s.ranks[0],a=s.economy.livingCostByRank[i.name]||1e3;a*=1+(n.livingCostDelta||0);let o=n.vehicles.reduce((r,l)=>r+(l.livingDiscount||0),0);return a-=o,n.grants.some(r=>r.op==="exemptLiving")?a=0:n.grants.some(r=>r.op==="halveLiving")&&(a=v(a*.5)),v(Math.max(0,a))}function kt(e,t){let n=B(e,t),s=0;for(let i of n.properties)s+=i.monthly||0;for(let i of n.vehicles)s+=i.monthly||0;return s+=n.loan.monthly||0,v(s)}function _e(e,t){let n=B(e,t),s=0;for(let i of n.properties){let a=i.visitsThisMonth||0,o=1+(i.upgradeMonths||0)*.02;s+=(i.rent||0)*o*a}return v(s)}function xe(e,t){let n=B(e,t);return v(n.deposit*e.config.economy.depositInterestRate)}function Pe(e,t){let n=B(e,t),s=e.config.economy.loanInterestRate+(n.loanRateDelta||0);return v(n.loan.principal*s)}function E(e,t){let n=B(e,t);if(!n)return 0;let s=n.cash+n.deposit;for(let a of n.properties)s+=Ce(n,a);for(let a of n.vehicles)s+=De(a);let i=Ae(n);return v(s-i)}function Ae(e){let t=e.loan.principal||0;for(let n of e.properties){let s=n.financed||0;t+=s}for(let n of e.vehicles)t+=n.financed||0;return t}function Ce(e,t){let n=Math.max(0,t.heldMonths||0),s=e.meta.appreciation||0,i=n>=6?3:n>=4?2:n>=3?1:0,a=s*we[i];return v(t.price*(1+s*n)*(1+a*n))}var we=[0,1,2,3];function De(e){let t=e.heldMonths||0;return v(e.price*Math.pow(1-(e.depreciation||.02),t))}function Wt(e,t,n,s){let i=B(e,t),a=e.config.economy,o={month:i.meta.month,player:i.name,salary:0,rentIncome:0,living:0,debt:0,interestPaid:0,interestEarned:0,passive:0,net:0,assetChange:0,rankUp:null,rankDown:null,rescued:0,pawned:[]};o.salary=X(e,t),i.cash=v(i.cash+o.salary),o.rentIncome=_e(e,t),i.cash=v(i.cash+o.rentIncome),o.passive=v(i.passiveIncome||0),i.cash=v(i.cash+o.passive),o.living=vt(e,t),i.cash=v(i.cash-o.living),o.debt=kt(e,t),i.cash=v(i.cash-o.debt),o.interestPaid=Pe(e,t),i.cash=v(i.cash-o.interestPaid),o.interestEarned=xe(e,t),i.deposit=v(i.deposit+o.interestEarned),o.net=v(o.salary+o.rentIncome+o.passive+o.interestEarned-o.living-o.debt-o.interestPaid);for(let c of i.properties)c.monthsLeft>0&&(c.monthsLeft--,c.monthsLeft===0&&(c.monthly=0,c.principalLeft=0));i.loan.monthsLeft>0&&(i.loan.monthsLeft--,i.loan.monthsLeft===0&&(i.loan.monthly=0,i.loan.principal=0));let r=E(e,t);i.meta.appreciation=a.propertyAppreciation;for(let c of i.vehicles)c.heldMonths=(c.heldMonths||0)+1;for(let c of i.properties)c.upgradeMonths!=null&&(c.upgradeMonths+=1),c.heldMonths=(c.heldMonths||0)+1;let l=E(e,t);o.assetChange=v(l-r);let d=i.rankId;Le(e,t,s);for(let c of i.properties)c.visitsThisMonth=0;return i.grants=i.grants.filter(c=>c.op!=="exemptLiving"&&c.op!=="halveLiving"),l>r+1&&(o.rankUp=i.rankId),d!==i.rankId&&!o.rankUp&&(o.rankDown=i.rankId),o}function Le(e,t,n){let s=B(e,t),i=e.config.ranks,a=i.findIndex(r=>r.id===s.rankId);a<0&&(a=0);let o=E(e,t);for(;a+1<i.length&&o>=i[a+1].minNetWorth;)a++,s.rankId=i[a].id,s.rankCoefficient=i[a].coefficient,n&&n(`${s.name} 自动升职为 ${i[a].name}`)}function B(e,t){return e.players.find(n=>n.id===t)}function Ut(e,t){let n=e.players.find(a=>a.id===t);if(!n||!n.alive)return{bankrupt:!1,warned:!1,pawned:[],rescued:0};let s=e.config.game.bankruptcy;if(n.cash>=s.minCashAfterLiquidation)return n.flags.lastWarn=!1,{bankrupt:!1,warned:!1,pawned:[],rescued:0};if(!n.flags.lastWarn&&s.graceRounds>0)return n.flags.lastWarn=!0,n.flags.warnMonth=n.meta.month,{bankrupt:!1,warned:!0,pawned:[],rescued:0};let i={bankrupt:!1,rescued:0,pawned:[]};for(let a of s.liquidationOrder){if(n.cash>=s.minCashAfterLiquidation)break;if(a==="vehicle")for(;n.vehicles.length&&n.cash<s.minCashAfterLiquidation;){let o=n.vehicles.pop(),r=v(o.price*e.config.economy.sellPropertyRatio);n.cash=v(n.cash+r),i.pawned.push({kind:"vehicle",name:o.name,amount:r})}else if(a==="property")for(;n.properties.length&&n.cash<s.minCashAfterLiquidation;){n.properties.sort((d,c)=>c.price-d.price);let o=n.properties.shift(),r=v(o.price*e.config.economy.sellPropertyRatio);n.cash=v(n.cash+r);let l=e.board.tiles.find(d=>d.id===o.tileId);l&&l.owner===t&&(l.owner=null),i.pawned.push({kind:"property",name:o.name,amount:r})}else if(a==="deposit"&&n.deposit>0&&n.cash<s.minCashAfterLiquidation){let o=n.deposit;n.cash=v(n.cash+o),n.deposit=0,i.pawned.push({kind:"deposit",name:"存款",amount:o})}}return n.cash<s.minCashAfterLiquidation?(n.alive=!1,n.bankruptAtRound=e.meta.turn,i.bankrupt=!0):(i.rescued=v(-n.cash),n.flags.lastWarn=!1),i}function qt(e,t){let n={};for(let s of["opportunity","fate","item"]){let i=t[s]||[],a=e.config.decks[s]||i.length,o=[];for(let d of i){let c=d.maxCopies||1;for(let h=0;h<c;h++)o.push(d)}let r=o,l=0;for(;r.length<a&&l<50;){let d=yt(e.meta.rngState,o);e.meta.rngState=d.rng,r=r.concat(d.arr),l++}n[s]={draw:r.slice(0,a).map(d=>d.id),discard:[],catalog:Object.fromEntries(i.map(d=>[d.id,d]))}}return n}function ot(e,t,n,s){let i=e.decks[t];if(!i)return null;if(i.draw.length===0){if(i.discard.length===0)return null;let r=yt(e.meta.rngState,i.discard);e.meta.rngState=r.rng,i.draw=r.arr,i.discard=[]}let a=i.draw.pop();return i.catalog[a]||null}function j(e,t,n,s,i){let a=e.players.find(l=>l.id===n);if(!a)return;let o=Oe(e,t.target,n,s),r={...s,actorId:o};if(it(e,t.effects,r,i),t.grants)for(let l of t.grants)Ne(a,l,r,i);s.log&&s.log(`${a.name} 使用了【${t.name}】`)}function Ne(e,t,n,s){switch(t.op){case"stat":{let i=(e.stats[t.key]||0)+t.delta;e.stats[t.key]=Math.max(0,Math.min(100,i));break}case"cash":e.cash=v(e.cash+t.delta);break;case"passiveIncome":e.passiveIncome=v((e.passiveIncome||0)+t.delta),s.push({t:"passiveIncome",id:e.id,to:e.passiveIncome});break;case"moveBonus":e.grants.push({op:"moveBonus",count:t.count||1,turnsLeft:1});break;case"drawCard":{let i=t.count||1;for(let a=0;a<i;a++){let o=ot(n.state,t.deck,n,s);if(!o)break;s.push({t:"card",id:e.id,deck:t.deck,cardId:o.id,draw:!0}),o.timing==="immediate"?j(n.state,o,e.id,n,s):e.cards[o.deck].push(o.id)}break}case"skipNext":{e.flags.skipNextTurn=(e.flags.skipNextTurn||0)+(t.count||1),s.push({t:"flags",id:e.id});break}default:e.grants.push({...t,turnsLeft:t.turnsLeft||null})}}function at(e,t,n=1){let s=e.grants.find(i=>i.op===t&&(i.count||0)>=n);if(!s)return!1;if(s.count-=n,s.count<=0){let i=e.grants.indexOf(s);e.grants.splice(i,1)}return!0}function St(e,t){return e.grants.some(n=>n.op===t)}function Oe(e,t,n,s){let i=e.players.filter(a=>a.alive&&a.id!==n);switch(t){case"self":return n;case"richest":return i.length?i.slice().sort((a,o)=>s.netWorth(e,o.id)-s.netWorth(e,a.id))[0].id:n;case"poorest":return i.length?i.slice().sort((a,o)=>s.netWorth(e,a.id)-s.netWorth(e,o.id))[0].id:n;default:return i.length?i[0].id:n}}function Ht(e){e.grants=e.grants.filter(t=>t.turnsLeft==null?!0:(t.turnsLeft--,t.turnsLeft>0))}function rt(e,t,n){let s=e.players.find(y=>y.id===t);if(!s)return null;let i=n.aiProfiles.profiles.find(y=>y.id===s.aiProfile)||n.aiProfiles.profiles[0],a=i.weights,o=e.meta.maxRounds,r=X(e,t),l=E(e,t),d;a.buyProperty>.8?d=l+r*o*.85:a.buyProperty>.5?d=l+r*o*.65:d=l+r*o*.45;let c=Math.max(2500,Math.round(r*.45)),h=y=>Math.round(c*(1+y/o*1.2)),p=Be(e,s,i,a,n),[f,u]=H(e.meta.rngState);e.meta.rngState=u;let g=Ue(p.length,o,a.buyProperty,f),k=3.5,b=Math.max(1,e.players.filter(y=>y.alive).length-1),S=Math.max(1,o/e.config.game.roundsPerMonth),T=k*o*b/e.board.tiles.length/S;return{targetNW:Math.round(d),floorBase:c,expectedVisits:T,milestones:p.map((y,x)=>({tileId:y.tileId,name:y.name,price:y.price,rent:y.rent,round:Math.max(2,g[x]+Math.floor(f*3)-1),done:!1})),depositTarget:a.deposit>.6?Math.round(r*6):0,depositDone:!1,aggression:a.buyProperty,riskTolerance:a.takeLoan}}function Vt(e,t,n){return Math.round(e.floorBase*(1+t/n*1.2))}function Be(e,t,n,s,i){let o=i.config.game.roundsPerMonth,r=e.meta.maxRounds,l=Math.max(1,e.players.filter(f=>f.alive).length-1),d=Math.max(1,r/o),c=e.board.tiles.filter(f=>(f.type==="property"||f.type==="company")&&f.owner==null&&!(t.properties||[]).some(u=>u.tileId===f.id)).map(f=>{let u=f.payload.price,g=f.payload.rent||0,k=3.5*r*l/e.board.tiles.length/d,b=We(e,f.id),S=k*b,T=g*S*o;return{tileId:f.id,name:f.name,price:u,rent:g,roi:T/u,heat:b,visits:S}}),h=s.buyProperty>.8?4:s.buyProperty>.6?3:s.buyProperty>.4?2:1,p=c.sort((f,u)=>u.roi-f.roi);return p.slice(0,Math.min(h,p.length))}function We(e,t){let n=e.board.tiles.length;return t===0?1.6:Math.min(t,n-t)<=6?1.3:Math.abs(t%10)===0?1.25:1}function Ue(e,t,n,s){if(e<=0)return[];let i=Math.round(t*.82),a=3;if(e===1)return[Math.round(a+(i-a)*(1.2-n)*.8)];let o=[];for(let r=0;r<e;r++){let l=r/(e-1),d=n>.8?Math.pow(l,.7):l;o.push(Math.round(a+(i-a)*d))}return o.sort((r,l)=>r-l)}function lt(e,t){if(!e)return null;for(let n of e.milestones)if(!n.done)return n;return null}function jt(e){return Math.max(0,e.meta.maxRounds-e.meta.turn)}function qe(e,t,n){let s=e.players.find(i=>i.id===t);return s?(s.aiPlan||(s.aiPlan=rt(e,t,n)),s.aiPlan):null}function Z(e,t,n){let s=e.meta.rngState;try{let i=He(e,t,n),a=i.filter(o=>!((o.type==="DEPOSIT"||o.type==="WITHDRAW")&&!(o.amount>=1)));return a.length!==i.length&&!a.some(o=>o.type==="END_TURN")&&a.push({type:"END_TURN"}),a}finally{e.meta.rngState=s}}function He(e,t,n){let s=e.players.find(I=>I.id===t);if(!s||!s.alive)return[];let i=n.aiProfiles.profiles.find(I=>I.id===s.aiProfile)||n.aiProfiles.profiles[0],a={...i.weights},o={...i.thresholds},r=qe(e,t,n);if(!r)return[{type:"END_TURN"}];let l=E(e,t),d=X(e,t),c=vt(e,t),h=kt(e,t),p=c+h,f=jt(e),u=Vt(r,e.meta.turn,e.meta.maxRounds),g=Ve(r,e.meta.turn,e.meta.maxRounds),k=g>0?(g-l)/g:0,b=s.cash<p*.5,S=l>0?s.loan.principal/l:0,T={state:e,data:n,prof:i,w:a,th:o,plan:r,log:()=>{}},y=[],x=e.meta.phase;if(x===R.TILE_EVENT||x===R.MOVING){let I=e.board.tiles.find(P=>P.id===s.pos);if(I){if((I.type==="property"||I.type==="company")&&I.owner==null){let P=lt(r,e.meta.turn),C=I.payload.price,D=I.payload.rent||0;je(e,s,C,D,r,u,d,f,a,o,P)&&y.push({type:"BUY_PROPERTY",tileId:I.id})}if(I.type==="vehicle"){let P=Ge(I,a,s.stats);if(P){let C=1-e.config.economy.mortgageRatio,D=Math.round(P.price*C),W=Math.max(1,Math.round(f/e.config.game.roundsPerMonth)),O=(P.livingDiscount||0)*W>=P.price*.5,gt=a.keepCash<.25&&(P.face||0)+(P.mood||0)>=8;(O||gt)&&s.cash>=D+u*.3&&y.push({type:"BUY_VEHICLE",tileId:I.id,optionId:P.id})}}}return y.push({type:"DISMISS_MODAL"}),y}if(x===R.POST_ACTION){if(b){if(s.deposit>2e3)return y.push({type:"WITHDRAW",amount:Math.min(s.deposit,Math.round(p))}),y.push({type:"END_TURN"}),y;if(S<o.loanMaxRatio)return y.push({type:"LOAN_REQ",amount:Math.round(p*2)}),y.push({type:"END_TURN"}),y}let I=lt(r,e.meta.turn),P=I&&I.round-e.meta.turn<=3;if(I&&P){let O=I.price-s.cash;if(O>0&&O<I.price*.35&&a.buyProperty>.6&&s.properties.length>1)return y.push({type:"END_TURN"}),y;if(O>0&&s.cash<I.price){if(k>.25&&s.deposit>5e3)return y.push({type:"WITHDRAW",amount:Math.min(s.deposit,Math.round(O*.8))}),y.push({type:"END_TURN"}),y;if(k>.35&&S<o.loanMaxRatio*.8)return y.push({type:"LOAN_REQ",amount:Math.round(O*.7)}),y.push({type:"END_TURN"}),y}}let C=Fe(e,s,a,I);if(C)return y.push({type:"USE_ITEM",cardId:C.id,targetId:t}),y;let D=Gt(e,s,"opportunity",a.cardOpportunity);if(D)return y.push({type:"PLAY_CARD",cardId:D.id,targetId:t}),y;if(s.cash>p*3){let O=Gt(e,s,"fate",a.cardFate);if(O){let[gt,Ct]=H(e.meta.rngState);if(e.meta.rngState=Ct,gt<a.cardFate*.35)return y.push({type:"PLAY_CARD",cardId:O.id,targetId:t}),y}}if(r.depositTarget&&!r.depositDone&&s.cash>r.depositTarget*1.3)return y.push({type:"DEPOSIT",amount:Math.min(s.cash-u,r.depositTarget)}),y.push({type:"END_TURN"}),y;let W=s.cash-u-p;return a.deposit>.4&&W>12e3&&y.push({type:"DEPOSIT",amount:Math.round(W*.6)}),!lt(r,e.meta.turn)&&s.cash>u*2.5&&s.deposit>2e4&&a.deposit>.5&&y.push({type:"WITHDRAW",amount:1e4}),y.push({type:"END_TURN"}),y}return[{type:"END_TURN"}]}function Ve(e,t,n){let s=Math.max(0,Math.min(1,t/n));return e.targetNW*s}function je(e,t,n,s,i,a,o,r,l,d,c){let h=E(e,t.id),p=1-e.config.economy.mortgageRatio,f=Math.round(n*p),u=t.cash-f;if(u<0){let x=-u,I=s*i.expectedVisits*12;if(Math.ceil(n/Math.max(1,I/12))>r)return!1;let C=h+x,D=t.loan.principal+x;if((C>0?D/C:1)>Math.min(d.loanMaxRatio,.75)||l.takeLoan<.3&&t.loan.principal>0)return!1}else if(u<a&&r>6||u<a*.5&&n>o*3)return!1;let g=s*i.expectedVisits*12/n,k=e.config.economy.depositInterestRate*12;if(g<k*.9)return!1;let b=e.config.ranks,S=b.findIndex(x=>x.id===t.rankId),T=b[S+1];if(T&&h<T.minNetWorth&&h+n>=T.minNetWorth)return!0;let y=.0025+(1-l.buyProperty)*.004;return g>k+y}function Ge(e,t,n){let s=(e.payload.options||[]).filter(Boolean);return s.length?t.buyProperty>.8?s[s.length-1]:t.buyProperty>.5?s[Math.floor(s.length/2)]:s.slice().sort((i,a)=>(a.livingDiscount||0)/a.price-(i.livingDiscount||0)/i.price)[0]:null}function Fe(e,t,n,s){if(n.useItem<.5)return null;let i=t.cards.item||[];if(s&&t.cash<s.price&&i.includes("coffee"))return null;for(let a of i)return{id:a};return null}function Gt(e,t,n,s){if(s<.4)return null;let i=t.cards[n]||[];return i.length?{id:i[0]}:null}function Ft(e,t,n){let s=n.players.find(a=>a.id===e);if(!s||!s.aiPlan)return;let i=s.aiPlan.milestones.find(a=>a.tileId===t);i&&(i.done=!0)}function Yt(e,t){let n=t.players.find(s=>s.id===e);!n||!n.aiPlan||n.deposit>=n.aiPlan.depositTarget&&(n.aiPlan.depositDone=!0)}function G(e,t,n){if(t.type===m.NEW_GAME)return ze(t,n);if(!Ot(e.meta.phase,t.type))return{state:e,diff:[],reject:`当前阶段 ${e.meta.phase} 不允许 ${t.type}`};if(Ye(t.type)){let r=dt(e);if(r&&t.playerId&&t.playerId!==r.id)return{state:e,diff:[],reject:"不是你的回合"}}let s=L(e),i=[],a=Jt(s,n,i);return Xt(s,t,a,i)===!1?{state:e,diff:[],reject:"动作非法"}:(s.meta.seq++,s.actionLog.push({seq:s.meta.seq,seat:s.meta.currentSeat,action:t}),s.actionLog.length>500&&s.actionLog.shift(),s.log.length>200&&s.log.splice(0,s.log.length-200),s.meta.rngState=a.rngRef.rng,te(s),{state:s,diff:i,reject:null})}var Ye=e=>[m.ROLL_DICE,m.USE_ITEM,m.PLAY_CARD,m.BUY_PROPERTY,m.BUY_VEHICLE,m.DEPOSIT,m.WITHDRAW,m.END_TURN,m.LOAN_REQ,m.DISMISS_MODAL,m.PROPOSE_TRADE,m.RESPOND_TRADE,m.CANCEL_TRADE,m.IMPULSE_SPEND].includes(e);function ze(e,t){let n=e.config||t.config,s=e.seed>>>0,i={meta:{seed:s,rngState:s,phase:R.TURN_START,turn:1,month:1,roundInMonth:1,currentSeat:0,seq:0,fromMonthSettle:!1,version:t.uiText.version||"1.0.0",appreciation:n.economy.propertyAppreciation,mode:e.mode||"solo",winCondition:e.winCondition||n.winCondition.default,maxRounds:e.maxRounds||n.game.maxRounds},config:L(n),board:L(t.board),players:[],decks:{},pending:{modal:null,trade:null,bankrupt:null},log:[],actionLog:[],report:null};for(let[o,r]of e.players.entries())i.players.push(Ke(r,o,n,t,i));i.decks=qt(i,t.cards);for(let o of i.players)o.isAI&&(o.aiPlan=rt(i,o.id,t));let a=n.startingDeck&&n.startingDeck.item;if(a)for(let o of i.players)for(let r of a)o.cards.item.push(r);return i.log.push({seq:0,round:1,seat:0,text:`游戏开始，${i.players.length} 名玩家各持 ${n.economy.initialCash} 元入场。`,kind:"system"}),te(i),Zt(i,Jt(i,t,[]),t),{state:i,diff:[],reject:null}}function Ke(e,t,n,s,i){return{id:e.id,seat:t,name:e.name,avatar:e.avatar||"panda",color:e.color||s.board.colorTokens[t%6],isAI:!!e.isAI,aiProfile:e.aiProfile||null,alive:!0,pos:0,cash:n.economy.initialCash,deposit:n.economy.initialDeposit,loan:{principal:0,monthsLeft:0,monthly:0},properties:[],vehicles:[],rankId:"intern",rankCoefficient:.6,salaryCoefficient:1,salaryCoefficientHistory:[],cards:{opportunity:[],fate:[],item:[]},grants:[],flags:{skipNextTurn:!1,lastWarn:!1,offline:!1},stats:{face:0,energy:60,mood:50},passiveIncome:0,livingCostDelta:0,loanRateDelta:0,meta:{month:1,appreciation:n.economy.propertyAppreciation},bankruptAtRound:null,aiPlan:null}}function Jt(e,t,n){let s={rng:e.meta.rngState,lastPick:0},i=[];return{state:e,data:t,diff:n,rngRef:s,log:a=>{i.push(a),e.log.push({seq:e.meta.seq,round:e.meta.turn,seat:e.meta.currentSeat,text:a,kind:"info"})},netWorth:(a,o)=>E(a,o),pickRandom:a=>{let[o,r]=J(s.rng,a);return s.lastPick=o-1,[o,r]},deckApi:(a,o,r,l)=>()=>{let d=ot(a,o,r,l);if(d){let c=a.players.find(h=>h.id===r.actorId);c&&(d.timing==="immediate"?j(a,d,r.actorId,r,l):(c.cards[d.deck].push(d.id),r.log(`${c.name} 获得【${d.name}】`),l.push({t:"card",id:c.id,deck:d.deck,cardId:d.id})))}}}}function Xt(e,t,n,s){let i=dt(e);switch(t.type){case m.ROLL_DICE:return Qe(e,i,n,s);case m.BUY_PROPERTY:return es(e,i,t,n,s);case m.BUY_VEHICLE:return ss(e,i,t,n,s);case m.DEPOSIT:return ns(e,i,t,n,s);case m.WITHDRAW:return is(e,i,t,n,s);case m.LOAN_REQ:return os(e,i,t,n,s);case m.USE_ITEM:return as(e,i,t,n,s);case m.PLAY_CARD:return rs(e,i,t,n,s);case m.PROPOSE_TRADE:return ls(e,i,t,n,s);case m.RESPOND_TRADE:return ds(e,i,t,n,s);case m.CANCEL_TRADE:return hs(e,i,t,n,s);case m.DISMISS_MODAL:return fs(e,i,n,s);case m.CLAIM_ASSET:return us(e,i,t,n,s);case m.END_TURN:return ps(e,i,n,s);case m.IMPULSE_SPEND:return ms(e,i,t,n,s);case m.AI_DECIDE:return gs(e,t,n,s);case m.RESOLVE_TILE:return!0;default:return!0}}function Qe(e,t,n,s){if(!t)return!1;let i;if(St(t,"reroll")){at(t,"reroll",1);let[h,p]=J(e.meta.rngState,6),[f,u]=J(p,6);e.meta.rngState=u,i=Math.max(h,f),n.log(`${t.name} 灌了杯咖啡，掷 ${h} 重掷得 ${f}，取 ${i}！`)}else{let[h,p]=J(e.meta.rngState,6);e.meta.rngState=p,i=h}let a=Je(t,"moveBonus"),o=i+a;s.push({t:"dice",id:t.id,value:i,bonus:a}),e.pending.dice=i;let r=t.pos,l=e.board.tiles.length,d=(r+o)%l,c=r+o>=l;return e.pending.move={from:r,to:d,steps:o,crossedStart:c},t.pos=d,s.push({t:"move",id:t.id,from:r,to:d,steps:o}),e.log.push({seq:e.meta.seq,round:e.meta.turn,seat:e.meta.currentSeat,text:`${t.name} 掷出 ${i}${a?` +${a}（道具）`:""}，移动 ${o} 格 → ${e.board.tiles[d].name}`,kind:"move"}),e.meta.phase=R.TILE_EVENT,Xe(e,t,n,s),!0}function Je(e,t){let n=e.grants.find(i=>i.op===t);if(!n)return 0;let s=n.count||1;return n.count-=1,n.count<=0&&e.grants.splice(e.grants.indexOf(n),1),s}function Xe(e,t,n,s){let i=e.board.tiles[t.pos];if(St(t,"skipMove")){at(t,"skipMove",1),n.log(`${t.name} 摸了会儿鱼，这格跳过。`),e.pending.modal={kind:"skip",title:"摸鱼成功",text:"你把格子摸了，利润保住了。"};return}if(e.pending.move&&e.pending.move.crossedStart&&i.type!=="start"){let o=e.board.tiles[0].payload.salaryBonus||0;t.cash=v(t.cash+o),n.log(`${t.name} 经过起点，补贴 ${o} 元`),s.push({t:"cash",id:t.id,to:t.cash})}let a=Ze(e,i,n,s);e.pending.modal=a}function Ze(e,t,n,s){let i=dt(e),a=e.config.__events;switch(t.type){case"start":{let o=t.payload.salaryBonus||0;return o>0&&(i.cash=v(i.cash+o),s.push({t:"cash",id:i.id,to:i.cash}),n.log(`${i.name} 正好落在起点，领补贴 ${o} 元`)),{kind:"event",title:t.name,text:t.payload.text,icon:"start"}}case"company":case"property":return t.owner==null?{kind:"buy",title:t.name,icon:"house",text:`${t.payload.text}
+价格 ${t.payload.price} 元，月供 ${Math.round(t.payload.mortgage?t.payload.mortgage*.01:0)} 元/月。`,tileId:t.id,price:t.payload.price}:t.owner===i.id?{kind:"event",title:t.name,text:"这是你的地皮，什么也没发生。",icon:"house"}:ts(e,t,i,n,s);case"chance":case"fate":{let o=t.type,r=ot(e,o,n,s);return r?r.timing==="immediate"?(j(e,r,i.id,n,s),{kind:"card",title:t.name,deck:o,cardName:r.name,text:r.text,detail:r.detail,icon:r.icon}):(i.cards[r.deck].push(r.id),s.push({t:"card",id:i.id,deck:r.deck,cardId:r.id}),{kind:"card",title:t.name,deck:o,cardName:r.name,text:r.text,detail:r.detail,icon:r.icon}):{kind:"event",title:t.name,text:"牌堆空了，什么也没发生。"}}case"vehicle":return{kind:"vehicle",title:t.name,icon:"car",tileId:t.id,text:t.payload.text,options:t.payload.options||[]};default:{let o=a&&a[t.type]||[];if(!o.length)return{kind:"event",title:t.name,text:t.payload.text||"平静地走过去了。"};let[r,l]=Bt(n.rngRef.rng,o);if(n.rngRef.rng=l,!r)return{kind:"event",title:t.name,text:t.payload.text||""};let d=(r.effects||[]).map(c=>({...c,delta:c.delta,tileId:c.op==="payRent"?t.id:c.tileId}));return it(e,d,{...n,actorId:i.id},s),{kind:"event",title:t.name,text:(r.text||[t.payload.text]).join(`
+`),icon:r.icon}}}}function ts(e,t,n,s,i){let a=e.players.find(d=>d.id===t.owner);if(!a)return{kind:"event",title:t.name,text:t.payload.text||""};let o=t.payload.rent||0,r=a.properties.find(d=>d.tileId===t.id);r&&(o=Math.round(o*(1+(r.upgradeMonths||0)*.02)));let l=Math.min(n.cash,o);return n.cash=v(n.cash-l),a.cash=v(a.cash+l),i.push({t:"cash",id:n.id,to:n.cash}),i.push({t:"cash",id:a.id,to:a.cash}),r&&(r.visitsThisMonth=(r.visitsThisMonth||0)+1),s.log(`${n.name} 向 ${a.name} 支付租金 ${Math.round(l)} 元${l<o?"（现金不足，未付满）":""}`),{kind:"rent",title:t.name,icon:"rent",text:`${n.name} 落在了 ${a.name} 的 ${t.name}，租金 ${o} 元。`,amount:Math.round(l),ownerName:a.name}}function es(e,t,n,s,i){let a=e.board.tiles.find(u=>u.id===n.tileId);if(!a||a.owner!=null||a.type!=="property"&&a.type!=="company")return!1;let o=a.payload.price,r=e.config.economy,l=Math.round(o*(1-r.mortgageRatio)),d=r.mortgageMonths||36,c=o-l;if(c>0){let u=.6,g=s.data&&s.data.aiProfiles&&s.data.aiProfiles.profiles||[];if(t.isAI&&t.aiProfile){let T=g.find(y=>y.id===t.aiProfile);T&&T.thresholds&&(u=T.thresholds.loanMaxRatio)}else g.length&&(u=Math.max(...g.map(T=>T.thresholds&&T.thresholds.loanMaxRatio||.6)));u=Math.min(u,.75);let b=E(e,t.id)+c,S=t.loan.principal+c;if(b<=0||S/b>u)return e.pending.modal={kind:"error",title:"杠杆过高",text:`这笔贷款会让负债率达到 ${Math.round(S/b*100)}%，超过你 ${Math.round(u*100)}% 的上限。再攒攒，或者找个有钱的爸妈（开玩笑的）。`},!1}if(t.cash<l)return e.pending.modal={kind:"error",title:"现金不足",text:`首付需 ${l} 元，还差 ${Math.ceil(l-t.cash)} 元。`},!1;t.cash=v(t.cash-l);let h=c,p=r.loanInterestRate,f=h>0?Math.round(h*p/(1-Math.pow(1+p,-d))):0;return t.properties.push({tileId:a.id,name:a.name,type:a.type,price:o,rent:a.payload.rent||0,group:a.payload.group,monthly:f,monthsLeft:f>0?d:0,financed:h,boughtMonth:t.meta.month,heldMonths:0,visitsThisMonth:0,mortgage:l,upgradeMonths:0}),a.owner=t.id,i.push({t:"cash",id:t.id,to:t.cash}),i.push({t:"buyProperty",id:t.id,tileId:a.id}),s.log(`${t.name} 买下了 ${a.name}（${o} 元，月供 ${f} 元）`),Ft(t.id,a.id,e),e.pending.modal={kind:"event",title:"成交",text:`${a.name} 归你了。每月收租 ${a.payload.rent} 元。`,icon:"house"},!0}function ss(e,t,n,s,i){let a=e.board.tiles.find(f=>f.id===n.tileId);if(!a||a.type!=="vehicle")return!1;let o=(a.payload.options||[]).find(f=>f.id===n.optionId);if(!o)return!1;let r=e.config.economy,l=Math.round(o.price*(1-r.mortgageRatio)),d=o.price-l;if(d>0){let f=.6,u=s.data&&s.data.aiProfiles&&s.data.aiProfiles.profiles||[];if(t.isAI&&t.aiProfile){let b=u.find(S=>S.id===t.aiProfile);b&&b.thresholds&&(f=b.thresholds.loanMaxRatio)}else u.length&&(f=Math.max(...u.map(b=>b.thresholds&&b.thresholds.loanMaxRatio||.6)));f=Math.min(f,.75);let g=E(e,t.id)+d,k=t.loan.principal+d+t.vehicles.reduce((b,S)=>b+(S.financed||0),0);if(g<=0||k/g>f)return e.pending.modal={kind:"error",title:"车贷也批不下",text:`买车会让负债率达到 ${Math.round(k/g*100)}%，超过你的上限。`},!1}if(t.cash<l)return e.pending.modal={kind:"error",title:"现金不足",text:`首付需 ${l} 元，还差 ${Math.ceil(l-t.cash)} 元。`},!1;t.cash=v(t.cash-l);let c=r.vehicleMonths||24,h=r.loanInterestRate,p=d>0?Math.round(d*h/(1-Math.pow(1+h,-c))):0;return t.vehicles.push({id:o.id,name:o.name,price:o.price,monthly:p,monthsLeft:p>0?c:0,livingDiscount:o.livingDiscount||0,depreciation:o.depreciation||.02,heldMonths:0,financed:d,face:o.face||0,mood:o.mood||0,tag:o.tag||""}),o.face&&(t.stats.face=Math.min(100,(t.stats.face||0)+o.face)),o.mood&&(t.stats.mood=Math.min(100,(t.stats.mood||0)+o.mood)),i.push({t:"cash",id:t.id,to:t.cash}),i.push({t:"buyVehicle",id:t.id,vehicleId:o.id}),s.log(`${t.name} 买了${o.name}（${o.price} 元，月供 ${p} 元）`),e.pending.modal={kind:"event",title:"提车",text:`${o.name} 停在了公司车位上。
+月供 ${p} 元，每月省生活开销 ${o.livingDiscount} 元，面子 +${o.face}，心情 +${o.mood}。
+${o.tag||""}`,icon:"car"},!0}function ns(e,t,n,s,i){let a=Math.min(Math.round(n.amount),t.cash);return a<=0?!1:(t.cash=v(t.cash-a),t.deposit=v(t.deposit+a),i.push({t:"cash",id:t.id,to:t.cash}),i.push({t:"deposit",id:t.id,to:t.deposit}),Yt(t.id,e),!0)}function is(e,t,n,s,i){let a=Math.min(Math.round(n.amount),t.deposit);return a<=0?!1:(t.deposit=v(t.deposit-a),t.cash=v(t.cash+a),i.push({t:"cash",id:t.id,to:t.cash}),i.push({t:"deposit",id:t.id,to:t.deposit}),!0)}function os(e,t,n,s,i){let a=Math.round(n.amount||0);return a<=0||a>1e5?!1:(t.cash=v(t.cash+a),t.loan.principal=v(t.loan.principal+a),t.loan.monthsLeft=12,t.loan.monthly=Math.round(a/12),i.push({t:"cash",id:t.id,to:t.cash}),i.push({t:"loan",id:t.id,to:t.loan}),s.log(`${t.name} 贷款 ${a} 元，分 12 期`),!0)}function as(e,t,n,s,i){let a=t.cards.item.indexOf(n.cardId);if(a<0)return!1;let o=e.decks.item.catalog[n.cardId];if(!o)return!1;if(t.cards.item.splice(a,1),j(e,o,t.id,s,i),n.cardId==="gossipCard"){let r=e.players.filter(l=>l.alive&&l.id!==t.id).sort((l,d)=>E(e,d.id)-E(e,l.id))[0];r&&(at(t,"peekRichest",1),e.pending.modal={kind:"peek",title:"茶水间情报",icon:"eye",text:`${r.name} 的家底被你看光了：`,target:{name:r.name,netWorth:E(e,r.id),cash:r.cash,deposit:r.deposit,properties:r.properties.map(l=>l.name),vehicles:r.vehicles.map(l=>l.name)}})}return i.push({t:"useCard",id:t.id,cardId:n.cardId}),!0}function rs(e,t,n,s,i){let a=null,o=-1;for(let l of["opportunity","fate"]){let d=t.cards[l].indexOf(n.cardId);if(d>=0){a=l,o=d;break}}if(o===null||o<0)return!1;t.cards[a].splice(o,1);let r=e.decks[a].catalog[n.cardId];return e.decks[a].discard.push(n.cardId),r&&j(e,r,t.id,s,i),i.push({t:"useCard",id:t.id,cardId:n.cardId}),!0}function ls(e,t,n,s,i){let a=e.players.find(o=>o.id===n.toId);return!a||!a.alive?!1:(e.pending.trade={id:`t${e.meta.seq+1}`,fromId:t.id,toId:a.id,offer:n.offer||{},want:n.want||{},status:"pending"},i.push({t:"trade",id:t.id,status:"proposed"}),!0)}function ds(e,t,n,s,i){let a=e.pending.trade;return!a||a.id!==n.tradeId||a.toId!==t.id?!1:(n.accept?(cs(e,a,s,i),a.status="done",s.log("交易达成")):(a.status="rejected",s.log(`${t.name} 拒绝了交易`)),e.pending.trade=null,i.push({t:"trade",id:t.id,status:a.status}),!0)}function cs(e,t,n,s){let i=e.players.find(r=>r.id===t.fromId),a=e.players.find(r=>r.id===t.toId),o=(t.offer.cash||0)-(t.want.cash||0);if(!(o>0&&i.cash<o)&&!(o<0&&a.cash<-o)){i.cash=v(i.cash-o),a.cash=v(a.cash+o);for(let r of t.offer.properties||[])zt(e,i,a,r);for(let r of t.want.properties||[])zt(e,a,i,r);for(let r of t.offer.vehicles||[])Kt(e,i,a,r);for(let r of t.want.vehicles||[])Kt(e,a,i,r);s.push({t:"cash",id:i.id,to:i.cash}),s.push({t:"cash",id:a.id,to:a.cash})}}function zt(e,t,n,s){let i=t.properties.findIndex(r=>r.tileId===s);if(i<0)return;let a=t.properties.splice(i,1)[0];a.heldMonths=0,n.properties.push(a);let o=e.board.tiles.find(r=>r.id===s);if(o&&(o.owner=n.id),a.financed>0){let r=e.config.economy.loanInterestRate,l=Math.max(1,a.monthsLeft);a.monthly=Math.round(a.financed*r/(1-Math.pow(1+r,-l)))}}function Kt(e,t,n,s){let i=t.vehicles.findIndex(o=>o.id===s);if(i<0)return;let a=t.vehicles.splice(i,1)[0];a.heldMonths=0,n.vehicles.push(a)}function hs(e,t,n,s,i){return e.pending.trade&&e.pending.trade.fromId===t.id?(e.pending.trade=null,!0):!1}function fs(e,t,n,s){return e.pending.modal=null,e.meta.phase===R.TILE_EVENT&&(e.meta.phase=R.POST_ACTION),!0}function ps(e,t,n,s){return e.meta.phase=t.cash<0?R.BANKRUPT_CHECK:R.TURN_END,Zt(e,n,n.data),!0}function us(e,t,n,s,i){return!0}function ms(e,t,n,s,i){let a=Math.max(0,Math.round(n.amount||0));if(!a)return!0;let o=Math.min(t.cash,a);return t.cash=v(t.cash-o),t.stats.mood=Math.max(0,Math.min(100,(t.stats.mood||50)+4)),i.push({t:"cash",id:t.id,to:t.cash}),s.log(`${t.name} 冲动消费 ${Math.round(o)} 元（爽是爽了）`),!0}function gs(e,t,n,s){let i=Z(e,t.playerId,n.data);return i.length?Xt(e,i[0],n,s):!0}function Zt(e,t,n){let s=t.diff,i=0;for(;i++<200;){let a=e.meta.phase,o=dt(e);switch(a){case R.TURN_START:{if(!o){e.meta.phase=R.GAME_OVER;break}if(Ht(o),o.flags.skipNextTurn){o.flags.skipNextTurn=!1,t.log(`${o.name} 请假/公休，跳过本回合`),e.meta.phase=R.END_TURN;break}if(o.cash<0){e.meta.phase=R.BANKRUPT_CHECK;break}e.meta.phase=R.ROLL;break}case R.ROLL:return;case R.TILE_EVENT:if(!e.pending.modal){e.meta.phase=R.POST_ACTION;break}return;case R.POST_ACTION:return;case R.TURN_END:{if(bs(e),Qt(e,t)){e.meta.phase=R.GAME_OVER;break}e.meta.roundInMonth++,e.meta.roundInMonth>e.config.game.roundsPerMonth?e.meta.phase=R.MONTH_SETTLE:e.meta.phase=R.TURN_START;break}case R.MONTH_SETTLE:{let r=[],l=e.meta.month;for(let d of e.players.filter(c=>c.alive))r.push(Wt(e,d.id,s,t.log)),d.meta.month++,d.meta.appreciation=e.config.economy.propertyAppreciation;e.report={month:l,reports:r},e.meta.fromMonthSettle=!0,e.meta.phase=R.BANKRUPT_CHECK;break}case R.BANKRUPT_CHECK:{let r=!1;for(let l of e.players.filter(d=>d.alive)){let d=Ut(e,l.id);d.bankrupt?(r=!0,t.log(`${l.name} 破产出局了（第 ${e.meta.turn} 回合）`),s.push({t:"bankrupt",id:l.id})):d.warned?(t.log(`${l.name} 现金为负，进入宽限期——请在下个月前自救`),s.push({t:"warn",id:l.id})):d.pawned.length&&t.log(`${l.name} 变卖资产 ${d.pawned.length} 项，勉强过关`)}if(r){e.meta.phase=R.BANKRUPT_CHECK;for(let l of e.players){if(!l.alive)for(let d of l.properties){let c=e.board.tiles.find(h=>h.id===d.tileId);c&&(c.owner=null)}l.properties=[]}if(Qt(e,t)){e.meta.phase=R.GAME_OVER;break}e.meta.phase=R.TURN_START;break}e.meta.fromMonthSettle?(e.meta.fromMonthSettle=!1,e.meta.roundInMonth=1,e.meta.month++,e.meta.phase=R.TURN_START):e.meta.phase=R.TURN_END;break}case R.GAME_OVER:return;default:e.meta.phase=R.TURN_START}}}function bs(e){let t=e.players.length;for(let n=1;n<=t;n++){let s=(e.meta.currentSeat+n)%t,i=e.players[s];if(i&&i.alive){e.meta.currentSeat=s,e.meta.turn++,e.meta.turn>e.meta.maxRounds&&(e.meta.phase=R.GAME_OVER);return}}e.meta.phase=R.GAME_OVER}function Qt(e,t){let n=e.players.filter(s=>s.alive);if(e.players.length>1&&n.length<=1)return e.winner=n[0]?n[0].id:null,t.log&&t.log(`${n[0]?n[0].name:"无人"} 是最后的胜者`),!0;if(e.meta.turn>e.meta.maxRounds){let s=e.players.slice().sort((i,a)=>E(e,a.id)-E(e,i.id));return e.winner=s[0]?s[0].id:null,t.log&&t.log(`${e.meta.maxRounds} 回合结束，${s[0]?s[0].name:"无人"} 资产最高`),!0}return!1}function dt(e){return e.players[e.meta.currentSeat]||null}function te(e){for(let t of e.players)t.netWorth=E(e,t.id)}var Rt={start:{bg:"#5cb868",fg:"#ffffff",edge:"#3f8048",hi:"#8fd896",tone:"起点"},company:{bg:"#4f80d8",fg:"#ffffff",edge:"#345d9b",hi:"#8fb0e8",tone:"地产"},property:{bg:"#345d9b",fg:"#ffffff",edge:"#1f3d6b",hi:"#6f90c8",tone:"房产"},rent:{bg:"#3f8048",fg:"#ffffff",edge:"#2a5a32",hi:"#6fb078",tone:"租房"},eat:{bg:"#a07050",fg:"#ffffff",edge:"#75513a",hi:"#c89e80",tone:"吃饭"},clothes:{bg:"#e8804f",fg:"#ffffff",edge:"#a55a35",hi:"#f0a888",tone:"购物"},vehicle:{bg:"#a55a35",fg:"#ffffff",edge:"#7a4023",hi:"#d28868",tone:"买车"},promotion:{bg:"#e8c66c",fg:"#3d2f00",edge:"#a98a4a",hi:"#f0dca0",tone:"升职"},demotion:{bg:"#e85a5a",fg:"#ffffff",edge:"#a83a3a",hi:"#f08882",tone:"降职"},raise:{bg:"#f0dca0",fg:"#3d2f00",edge:"#a98a4a",hi:"#fff0c8",tone:"加薪"},cut:{bg:"#75513a",fg:"#ffffff",edge:"#523823",hi:"#a07050",tone:"降薪"},chance:{bg:"#9268d4",fg:"#ffffff",edge:"#674695",hi:"#bca0e8",tone:"机会"},fate:{bg:"#674695",fg:"#ffffff",edge:"#43305f",hi:"#9678c0",tone:"命运"},vacation:{bg:"#8fd896",fg:"#3d2f00",edge:"#5cb868",hi:"#b8e8be",tone:"公休"}},ee={start:"#8fd896",company:"#8fb0e8",property:"#6f90c8",rent:"#6fb078",eat:"#c89e80",clothes:"#f0a888",vehicle:"#d28868",promotion:"#f0dca0",demotion:"#f08882",raise:"#fff0c8",cut:"#a07050",chance:"#bca0e8",fate:"#9678c0",vacation:"#b8e8be"},se={cubicle:{kind:"cubicle",tint:"#8fb8e8",dark:"#5a87bd"},teaRoom:{kind:"teaRoom",tint:"#f0c98a",dark:"#b8934f"},meetingRoom:{kind:"meeting",tint:"#a9c9e8",dark:"#6b8cae"},bossOffice:{kind:"boss",tint:"#e8a898",dark:"#a86a58"},printer:{kind:"printer",tint:"#c2ccd6",dark:"#8592a0"},plant:{kind:"plant",tint:"#8fc99a",dark:"#579a63"},whiteboard:{kind:"board",tint:"#dfe5ea",dark:"#9aa5b0"},pantry:{kind:"pantry",tint:"#e8c4a0",dark:"#a67f5c"},window:{kind:"window",tint:"#a8d4ea",dark:"#6b9fbb"},sofa:{kind:"sofa",tint:"#cfc0e0",dark:"#8f7fa6"},watercooler:{kind:"water",tint:"#a8d8e0",dark:"#6b9aa8"},gym:{kind:"gym",tint:"#8fc99a",dark:"#579a63"},serverRoom:{kind:"server",tint:"#9fb4c8",dark:"#5a7186"},reception:{kind:"reception",tint:"#f0dca0",dark:"#b8934f"}},ne={"#e85a5a":{hi:"#f08585",lo:"#a33f3f",glyph:"●"},"#4f80d8":{hi:"#7ea8e8",lo:"#345d9b",glyph:"●"},"#5cb868":{hi:"#8fd896",lo:"#3f8048",glyph:"●"},"#e8c66c":{hi:"#f0dca0",lo:"#a98b3f",glyph:"●"},"#9268d4":{hi:"#b69fe0",lo:"#674695",glyph:"●"},"#e8804f":{hi:"#f4a47c",lo:"#a55a35",glyph:"●"}},ie={panda:"🐼",shark:"🦈",turtle:"🐢",cat:"🐱",dog:"🐶",fox:"🦊",bear:"🐻",rabbit:"🐰",chicken:"🐔",frog:"🐸",owl:"🦉",mouse:"🐭"},ct={greedy:"boss",steady:"coder",spender:"sis"},w={coder:{name:"眼镜小哥",hair:"short",hairColor:"#2b2b33",skin:"#f2cfad",shirt:"#4f80d8",glasses:!0},lady:{name:"红裙丽人",hair:"long",hairColor:"#5f4230",skin:"#f6d7ba",shirt:"#d4537e"},intern:{name:"丸子头妹妹",hair:"buns",hairColor:"#23202a",skin:"#f8dcc0",shirt:"#e8c66c"},uncle:{name:"绿衫大叔",hair:"short",hairColor:"#3d3d43",skin:"#eac49b",shirt:"#1d9e75",beard:!0},boss:{name:"金表老板",hair:"bald",hairColor:"#7d7d86",skin:"#eec9a4",shirt:"#3a3947",tie:"#f5c842"},sis:{name:"高马尾小柒",hair:"ponytail",hairColor:"#8a4a2a",skin:"#f7d8bd",shirt:"#e8804f"}},Mt=["coder","lady","intern","uncle","boss","sis"],tt={intern:"实习生",specialist:"专员",supervisor:"主管",manager:"经理",director:"总监"},It={intern:"#6e6a7c",specialist:"#4f80d8",supervisor:"#5cb868",manager:"#e8c66c",director:"#9268d4"},F={start:"🏁",company:"🏢",property:"🏠",rent:"🔑",eat:"🍜",clothes:"👕",vehicle:"🚗",promotion:"📈",demotion:"📉",raise:"💰",cut:"✂",chance:"✨",fate:"🎲",vacation:"🌴",event:"💬",card:"🎴",buy:"🤝",skip:"🐟",error:"⚠️",house:"🏠",car:"🚗",bento:"🍱",meal:"🍽",noodle:"🍜",delivery:"🛵",buffet:"🍲",shirt:"👕",suit:"🧥",shoes:"👞",repair:"🔧",leave:"🌴",meeting:"👥",coffee:"☕",night:"🌙",star:"⭐",cert:"📜",money:"💴",coin:"🪙",down:"📉",up:"📈",help:"🤝",phone:"📞",mail:"✉️",mic:"🎤",doc:"📄",chart:"📈",laptop:"💻",drink:"🥤",box:"📦",blame:"👉",screen:"🖥",health:"🏥",search:"🔍",whisper:"🗣",server:"🖧",anger:"😠",chair:"🪑",pie:"🥧",fail:"❌",bank:"🏦",plant:"🌿",ticket:"🎫",eye:"👁",fish:"🐟",umbrella:"☂️",gift:"🎁",car:"🚗",money:"💴"};function Tt(e,t,n,s,i,a={}){i||(i={});let o=i.skin||"#f2cfad",r=i.hairColor||"#2b2b33";switch(e.save(),e.fillStyle=o,e.beginPath(),e.arc(t,n,s,0,Math.PI*2),e.fill(),e.strokeStyle="rgba(0,0,0,0.3)",e.lineWidth=Math.max(.8,s*.07),e.stroke(),e.fillStyle=r,e.beginPath(),e.arc(t,n-s*.06,s*1.04,Math.PI*1.06,Math.PI*1.94),e.closePath(),e.fill(),i.hair){case"long":e.fillRect(t-s*1.08,n-s*.4,s*.3,s*1.35),e.fillRect(t+s*.78,n-s*.4,s*.3,s*1.35);break;case"buns":e.beginPath(),e.arc(t-s*.74,n-s*.86,s*.34,0,Math.PI*2),e.fill(),e.beginPath(),e.arc(t+s*.74,n-s*.86,s*.34,0,Math.PI*2),e.fill();break;case"ponytail":{e.save(),e.translate(t+s*.95,n-s*.05),e.rotate(.55),e.beginPath(),e.ellipse(0,0,s*.28,s*.6,0,0,Math.PI*2),e.fill(),e.restore();break}case"bald":e.fillStyle=o,e.beginPath(),e.arc(t,n-s*.06,s*1.05,0,Math.PI*2),e.fill(),e.fillStyle=r,e.fillRect(t-s*1.04,n-s*.3,s*.24,s*.46),e.fillRect(t+s*.8,n-s*.3,s*.24,s*.46),e.fillStyle="rgba(255,255,255,0.22)",e.beginPath(),e.ellipse(t-s*.3,n-s*.45,s*.2,s*.1,-.5,0,Math.PI*2),e.fill();break;default:break}e.fillStyle="rgba(231,110,110,0.34)",e.beginPath(),e.arc(t-s*.56,n+s*.34,s*.15,0,Math.PI*2),e.fill(),e.beginPath(),e.arc(t+s*.56,n+s*.34,s*.15,0,Math.PI*2),e.fill();let l=s*.34,d=n+s*.14,c=Math.max(.8,s*.11);e.fillStyle="#2b2530",e.beginPath(),e.arc(t-l,d,c,0,Math.PI*2),e.fill(),e.beginPath(),e.arc(t+l,d,c,0,Math.PI*2),e.fill(),s>9&&(e.fillStyle="rgba(255,255,255,0.9)",e.beginPath(),e.arc(t-l+c*.35,d-c*.35,c*.35,0,Math.PI*2),e.fill(),e.beginPath(),e.arc(t+l+c*.35,d-c*.35,c*.35,0,Math.PI*2),e.fill()),i.glasses&&(e.strokeStyle="#3d3d46",e.lineWidth=Math.max(.7,s*.08),e.beginPath(),e.arc(t-l,d,s*.28,0,Math.PI*2),e.stroke(),e.beginPath(),e.arc(t+l,d,s*.28,0,Math.PI*2),e.stroke(),e.beginPath(),e.moveTo(t-s*.07,d),e.lineTo(t+s*.07,d),e.stroke()),e.strokeStyle="#8a4640",e.lineWidth=Math.max(.8,s*.09),e.beginPath(),e.arc(t,n+s*.3,s*.26,Math.PI*.18,Math.PI*.82),e.stroke(),i.beard&&(e.fillStyle=r,e.globalAlpha=.85,e.beginPath(),e.arc(t,n+s*.34,s*.42,Math.PI*.12,Math.PI*.88),e.closePath(),e.fill(),e.globalAlpha=1),a.body&&s>10&&(e.fillStyle=i.shirt||"#4f80d8",e.beginPath(),e.ellipse(t,n+s*1.72,s*1.06,s*.82,0,Math.PI,0),e.fill(),i.tie&&(e.fillStyle=i.tie,e.beginPath(),e.moveTo(t-s*.14,n+s*1.12),e.lineTo(t+s*.14,n+s*1.12),e.lineTo(t+s*.1,n+s*1.66),e.lineTo(t-s*.1,n+s*1.66),e.closePath(),e.fill())),e.restore()}function V(e,t,n){let s=n[t]||n.coder;if(!e||!s)return;let i=e.getContext("2d"),a=e.width,o=e.height;i.clearRect(0,0,a,o);let r=Math.min(a,o)*.27;Tt(i,a/2,o*.44,r,s,{body:!0})}var N='"PingFang SC","Microsoft YaHei",system-ui,sans-serif',Y='"SF Mono",Consolas,monospace',ht=class{constructor(t,n){this.canvas=t,this.ctx=t.getContext("2d"),this.board=n,this.dpr=window.devicePixelRatio||1,this.size=600,this.static=null,this.anim=new Map,this.dice=null,this.highlight=null,this.onTokenClick=null,this.stepMs=72,this.diceMs=1100,this._bind()}setBoard(t){this.board=t,this.static=null}_bind(){this.canvas.addEventListener("click",t=>{if(!this.onTokenClick)return;let n=this.canvas.getBoundingClientRect(),s=(t.clientX-n.left)*(this.size/n.width),i=(t.clientY-n.top)*(this.size/n.height);for(let a of this.tokens()){let o=s-a.cx,r=i-a.cy;if(o*o+r*r<(a.r+4)*(a.r+4)){this.onTokenClick(a.id);return}}})}layout(){let n=this.board.grid.cols,s=this.size/n,i=1.5;return this.board.tiles.map(a=>{let o=a.grid[0],r=a.grid[1];return{id:a.id,col:o,row:r,px:o*s+i,py:r*s+i,pw:s-i*2,cx:o*s+s/2,cy:r*s+s/2}})}resize(){let t=this.canvas.parentElement,n=Math.min(t.clientWidth-24,t.clientHeight-24,760);this.size=Math.max(280,n),this.canvas.style.width=this.size+"px",this.canvas.style.height=this.size+"px",this.canvas.width=Math.round(this.size*this.dpr),this.canvas.height=Math.round(this.size*this.dpr),this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0),this.static=null}buildStatic(){let t=document.createElement("canvas");t.width=this.canvas.width,t.height=this.canvas.height;let n=t.getContext("2d");n.setTransform(this.dpr,0,0,this.dpr,0,0);let s=this.board.grid.cols;this.cell=this.size/s,this.cells=this.layout(),n.fillStyle="#2b2a33",n.fillRect(0,0,this.size,this.size),this.drawOfficeFloor(n);for(let i of this.board.decor||[])this.drawDecor(n,i);for(let i of this.cells){let a=this.board.tiles[i.id];this.drawTile(n,i,a)}this.drawOuterEdge(n),this.static=t}drawOfficeFloor(t){let n=this.cell,s=n,i=n,a=this.size-n*2,o=this.size-n*2,r=s+a/2,l=i+o/2,d=t.createLinearGradient(s,i,s+a,i+o);d.addColorStop(0,"#4c4136"),d.addColorStop(1,"#372f28"),t.fillStyle=d,t.fillRect(s,i,a,o);let c=10;t.lineWidth=1;for(let b=0;b<c;b++){let S=i+o/c*b;t.fillStyle=b%2?"rgba(255,246,225,0.03)":"rgba(0,0,0,0.05)",t.fillRect(s,S,a,o/c),t.strokeStyle="rgba(0,0,0,0.18)",t.beginPath(),t.moveTo(s,S),t.lineTo(s+a,S),t.stroke(),t.strokeStyle="rgba(0,0,0,0.12)";let T=s+a*(.2+.28*(b%3));t.beginPath(),t.moveTo(T,S),t.lineTo(T,S+o/c),t.stroke()}let h=n*.6;t.fillStyle="rgba(255,246,225,0.065)",t.fillRect(s,l-h/2,a,h),t.fillRect(r-h/2,i,h,o),t.strokeStyle="rgba(245,200,66,0.12)",t.lineWidth=1.5,t.strokeRect(s,l-h/2,a,h),t.strokeRect(r-h/2,i,h,o);let p=a*.56,f=o*.56,u=t.createLinearGradient(r-p/2,l-f/2,r+p/2,l+f/2);u.addColorStop(0,"rgba(99,76,122,0.42)"),u.addColorStop(1,"rgba(66,52,88,0.42)"),t.fillStyle=u,this.roundRect(t,r-p/2,l-f/2,p,f,16),t.fill(),t.strokeStyle="rgba(245,200,66,0.42)",t.lineWidth=2,this.roundRect(t,r-p/2,l-f/2,p,f,16),t.stroke(),t.strokeStyle="rgba(245,200,66,0.16)",t.lineWidth=1,this.roundRect(t,r-p/2+5,l-f/2+5,p-10,f-10,12),t.stroke();let g=n*1,k=t.createRadialGradient(r,l,g*.15,r,l,g);k.addColorStop(0,"rgba(245,200,66,0.30)"),k.addColorStop(.7,"rgba(245,200,66,0.10)"),k.addColorStop(1,"rgba(245,200,66,0)"),t.fillStyle=k,t.beginPath(),t.arc(r,l,g,0,Math.PI*2),t.fill(),t.strokeStyle="rgba(245,200,66,0.55)",t.lineWidth=2.5,t.beginPath(),t.arc(r,l,g*.52,0,Math.PI*2),t.stroke(),t.strokeStyle="rgba(245,200,66,0.2)",t.lineWidth=1,t.beginPath(),t.arc(r,l,g*.62,0,Math.PI*2),t.stroke(),t.textAlign="center",t.textBaseline="middle",t.fillStyle="rgba(245,200,66,0.92)",t.font=`800 ${g*.52}px ${Y}`,t.shadowColor="rgba(0,0,0,0.55)",t.shadowBlur=5,t.fillText("¥",r,l-g*.05),t.shadowBlur=0,t.fillStyle="rgba(245,200,66,0.6)",t.font=`700 ${Math.max(8,n*.26)}px ${N}`,t.fillText("工 位 大 亨",r,l+g*.72),t.fillStyle="rgba(255,255,255,0.25)",t.font=`600 ${Math.max(6,n*.15)}px ${Y}`,t.fillText("MONOPOLY · OFFICE",r,l+g*.98)}drawTile(t,n,s){let i=Rt[s.type]||Rt.company,a=n.px,o=n.py,r=n.pw,l=n.pw,d=Math.max(2,this.cell*.055);t.fillStyle="rgba(0,0,0,0.4)",this.roundRect(t,a+1,o+d+1.5,r,l,5),t.fill(),t.fillStyle=i.edge,this.roundRect(t,a,o+d,r,l,5),t.fill();let c=t.createLinearGradient(a,o,a,o+l);c.addColorStop(0,i.hi),c.addColorStop(.4,i.bg),c.addColorStop(1,i.bg),t.fillStyle=c,this.roundRect(t,a,o,r,l-d*.35,5),t.fill(),t.fillStyle="rgba(255,255,255,0.32)",this.roundRect(t,a+r*.07,o+r*.055,r*.86,Math.max(1.4,l*.035),2),t.fill();let h=Math.max(6.5,l*.14);t.fillStyle=ee[s.type]||i.bg,this.roundRect(t,a+r*.06,o+l*.12,h,h*.66,2.5),t.fill(),t.fillStyle="rgba(0,0,0,0.58)",t.font=`700 ${Math.max(5.5,h*.58)}px ${N}`,t.textAlign="center",t.textBaseline="middle",t.fillText(i.tone,a+r*.06+h/2,o+l*.12+h*.33+.5),this.fittedText(t,s.name,a+r/2,o+l*.29,r-5,i.fg,6);let p=o+l*.87;if(s.payload&&s.payload.price)t.font=`700 ${Math.max(6.5,this.cell*.14)}px ${Y}`,t.fillStyle="#fff7d6",t.shadowColor="rgba(0,0,0,0.8)",t.shadowBlur=2.5,t.fillText(`¥${this.fmtPrice(s.payload.price)}`,a+r/2,p),t.shadowBlur=0;else if(s.type==="start")t.font=`700 ${Math.max(6.5,this.cell*.14)}px ${Y}`,t.fillStyle="#ffe27a",t.shadowColor="rgba(0,0,0,0.8)",t.shadowBlur=2.5,t.fillText(`+${s.payload.salaryBonus}`,a+r/2,p),t.shadowBlur=0;else if(s.payload&&(s.payload.rent||s.payload.price)){let f=s.payload.rent||s.payload.price;t.font=`600 ${Math.max(6,this.cell*.12)}px ${N}`,t.fillStyle="rgba(255,255,255,0.92)",t.shadowColor="rgba(0,0,0,0.75)",t.shadowBlur=2,t.fillText(`−${this.fmtPrice(f)}`,a+r/2,p),t.shadowBlur=0}if(s.owner){let f=this.players&&this.players.find(y=>y.id===s.owner),u=f?f.color:"#fff",g=o+l-d-1.5,k=Math.max(4.5,l*.13),b=a+r*.12;t.strokeStyle="rgba(255,255,255,0.9)",t.lineWidth=Math.max(.9,l*.014),t.beginPath(),t.moveTo(b,g),t.lineTo(b,g-k),t.stroke(),t.fillStyle=u,t.beginPath(),t.moveTo(b,g-k),t.lineTo(b+k*1.05,g-k*.72),t.lineTo(b,g-k*.44),t.closePath(),t.fill();let S=Math.max(5,r*.3),T=a+r*.94-S;t.fillStyle=u,t.fillRect(T,g-k*.62,S,k*.62),t.beginPath(),t.moveTo(T-S*.1,g-k*.62),t.lineTo(T+S/2,g-k*1.06),t.lineTo(T+S*1.1,g-k*.62),t.closePath(),t.fill(),t.strokeStyle="rgba(255,255,255,0.55)",t.lineWidth=.7,t.strokeRect(T,g-k*.62,S,k*.62)}}drawOuterEdge(t){let n=this.cell;t.strokeStyle="rgba(0,0,0,0.5)",t.lineWidth=Math.max(3,n*.1),this.roundRect(t,n*.06,n*.06,this.size-n*.12,this.size-n*.12,8),t.stroke(),t.strokeStyle="rgba(255,255,255,0.10)",t.lineWidth=1.5,this.roundRect(t,n*.14,n*.14,this.size-n*.28,this.size-n*.28,6),t.stroke()}drawDecor(t,n){let s=this.cell,i=se[n.kind];if(!i)return;let a=n.span||1,o=s*(a>1?.1:.16),r=n.grid[0]*s+o,l=n.grid[1]*s+o,d=s*a-o*2,c=s*a-o*2;t.save();let h=t.createLinearGradient(r,l,r,l+c);h.addColorStop(0,"rgba(255,255,255,0.06)"),h.addColorStop(1,"rgba(255,255,255,0.02)"),t.fillStyle=h,this.roundRect(t,r,l,d,c,6),t.fill(),t.strokeStyle="rgba(0,0,0,0.35)",t.lineWidth=1.2,t.stroke(),this.roundRect(t,r,l,d,c,6),t.clip(),this.drawScene(t,i.kind,r,l,d,c,i,a),t.restore(),a>1&&n.label&&(t.fillStyle="rgba(255,255,255,0.5)",t.font=`600 ${Math.max(7,s*.13)}px ${N}`,t.textAlign="center",t.textBaseline="middle",t.fillText(n.label,r+d/2,l+c-s*.14))}drawScene(t,n,s,i,a,o,r,l=1){switch(n){case"cubicle":this.sceneCubicle(t,s,i,a,o,r);break;case"teaRoom":this.sceneTea(t,s,i,a,o,r,l);break;case"meeting":this.sceneMeeting(t,s,i,a,o,r,l);break;case"boss":this.sceneBoss(t,s,i,a,o,r,l);break;case"printer":this.scenePrinter(t,s,i,a,o,r);break;case"plant":this.scenePlant(t,s,i,a,o,r);break;case"board":this.sceneBoard(t,s,i,a,o,r);break;case"pantry":this.scenePantry(t,s,i,a,o,r);break;case"window":this.sceneWindow(t,s,i,a,o,r);break;case"sofa":this.sceneSofa(t,s,i,a,o,r);break;case"water":this.sceneWater(t,s,i,a,o,r);break;case"gym":this.sceneGym(t,s,i,a,o,r);break;case"server":this.sceneServer(t,s,i,a,o,r);break;case"reception":this.sceneReception(t,s,i,a,o,r);break}}sceneCubicle(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.16)",t.fillRect(n,s,i,a);let r=i/2,l=a/2;for(let d=0;d<4;d++){let c=n+d%2*r,h=s+Math.floor(d/2)*l;t.fillStyle="#c9a06a",t.fillRect(c+r*.08,h+l*.5,r*.84,l*.34),t.fillStyle="rgba(255,255,255,0.22)",t.fillRect(c+r*.08,h+l*.5,r*.84,l*.08),t.fillStyle="#2f3946",t.fillRect(c+r*.3,h+l*.14,r*.4,l*.3),t.fillStyle="#7fd8e8",t.fillRect(c+r*.33,h+l*.17,r*.34,l*.24),t.fillStyle=o.dark,t.fillRect(c+r*.04,h+l*.06,r*.05,l*.44)}t.strokeStyle="rgba(0,0,0,0.2)",t.lineWidth=1,t.beginPath(),t.moveTo(n+r,s),t.lineTo(n+r,s+a),t.moveTo(n,s+l),t.lineTo(n+i,s+l),t.stroke()}sceneTea(t,n,s,i,a,o,r=1){t.fillStyle="rgba(0,0,0,0.12)",t.fillRect(n,s,i,a),r>1&&(t.fillStyle="#6b4a30",t.fillRect(n,s+a*.76,i,a*.1),t.fillStyle="rgba(255,255,255,0.15)",t.fillRect(n,s+a*.76,i,a*.022));let l=i*.44,d=a*.6,c=n+i*.12,h=s+a*(r>1?.14:.22);t.fillStyle=o.dark,this.roundRect(t,c,h,l,d,3),t.fill(),t.fillStyle=o.tint,this.roundRect(t,c+l*.12,h+d*.08,l*.76,d*.5,2),t.fill(),t.fillStyle="#3d3a33",t.fillRect(c+l*.42,h+d*.55,l*.16,d*.14),t.fillStyle="#f0ece4",t.fillRect(c+l*.36,h+d*.68,l*.28,d*.16),t.fillStyle=o.tint,this.roundRect(t,n+i*.66,s+a*.26,i*.22,a*.5,2),t.fill();for(let p=0;p<3;p++)t.fillStyle=p%2?"#c96":"#6c9",t.fillRect(n+i*.68,s+a*(.32+p*.15),i*.18,a*.09);t.fillStyle="rgba(90,60,30,0.5)";for(let p=0;p<4;p++)t.beginPath(),t.arc(n+i*(.16+p*.06),s+a*.9,i*.02,0,Math.PI*2),t.fill()}sceneMeeting(t,n,s,i,a,o,r=1){t.fillStyle="rgba(0,0,0,0.12)",t.fillRect(n,s,i,a);let l=n+i/2,d=s+a/2;t.fillStyle=o.dark;for(let[h,p]of[[0,-.32],[0,.32],[-.34,0],[.34,0]])t.beginPath(),t.arc(l+i*h,d+a*p,i*.11,0,Math.PI*2),t.fill();let c=t.createRadialGradient(l-i*.06,d-a*.06,i*.05,l,d,i*.28);c.addColorStop(0,"#e0c49a"),c.addColorStop(1,"#b8956a"),t.fillStyle=c,t.beginPath(),t.arc(l,d,i*.26,0,Math.PI*2),t.fill(),t.strokeStyle="rgba(0,0,0,0.25)",t.lineWidth=1,t.stroke(),t.fillStyle="#f5f5f0",t.fillRect(l-i*.12,d-a*.08,i*.14,a*.1),t.fillStyle="#7ec8e3",t.fillRect(l+i*.02,d+a*.02,i*.12,a*.09)}sceneBoss(t,n,s,i,a,o,r=1){t.fillStyle="rgba(0,0,0,0.14)",t.fillRect(n,s,i,a),t.fillStyle="#5a3f38",this.roundRect(t,n+i*.1,s+a*.12,i*.26,a*.44,3),t.fill();let l=n+i*.3,d=s+a*.42;t.fillStyle="#7a4a2e",this.roundRect(t,l,d,i*.56,a*.3,3),t.fill(),t.fillStyle="#96613c",this.roundRect(t,l+2,d+2,i*.56-4,a*.12,2),t.fill(),t.fillStyle="#2b2b30",t.fillRect(l+i*.06,d-a*.14,i*.18,a*.14),t.fillStyle="#d4b02c",t.fillRect(l+i*.34,d-a*.08,i*.1,a*.08),t.fillStyle="#8a5a3a",this.roundRect(t,n+i*.84,s+a*.68,i*.12,a*.18,2),t.fill(),t.fillStyle="#4a8a4a",t.beginPath(),t.arc(n+i*.9,s+a*.62,i*.1,0,Math.PI*2),t.fill()}scenePrinter(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.1)",t.fillRect(n,s,i,a);let r=n+i*.18,l=s+a*.26,d=i*.64,c=a*.48;t.fillStyle=o.dark,this.roundRect(t,r,l,d,c,2),t.fill(),t.fillStyle=o.tint,this.roundRect(t,r+d*.08,l+c*.1,d*.84,c*.42,2),t.fill(),t.fillStyle="#f8f8f4",t.fillRect(r+d*.3,l+c,d*.4,c*.3),t.fillStyle="#5cd35c",t.beginPath(),t.arc(r+d*.82,l+c*.24,i*.035,0,Math.PI*2),t.fill()}scenePlant(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.08)",t.fillRect(n,s,i,a);let r=n+i/2,l=s+a*.82;t.fillStyle="#a8613a",t.beginPath(),t.moveTo(r-i*.17,l-a*.2),t.lineTo(r+i*.17,l-a*.2),t.lineTo(r+i*.12,l),t.lineTo(r-i*.12,l),t.closePath(),t.fill(),t.fillStyle=o.dark;for(let d=-2;d<=2;d++)t.beginPath(),t.ellipse(r+d*i*.09,l-a*.28-Math.abs(d)*-a*.04,i*.08,a*.14,d*.4,0,Math.PI*2),t.fill();t.fillStyle=o.tint;for(let d=-1;d<=1;d++)t.beginPath(),t.ellipse(r+d*i*.07,l-a*.36,i*.07,a*.12,d*.3,0,Math.PI*2),t.fill()}sceneBoard(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.08)",t.fillRect(n,s,i,a),t.fillStyle=o.dark,t.fillRect(n+i*.46,s+a*.66,i*.08,a*.24),t.fillStyle="#8a8f96",this.roundRect(t,n+i*.12,s+a*.16,i*.76,a*.52,2),t.fill(),t.fillStyle="#f4f6f5",this.roundRect(t,n+i*.15,s+a*.19,i*.7,a*.46,2),t.fill(),t.strokeStyle="#d9534f",t.lineWidth=Math.max(.8,i*.02),t.beginPath(),t.moveTo(n+i*.24,s+a*.34),t.lineTo(n+i*.62,s+a*.34),t.moveTo(n+i*.24,s+a*.46),t.lineTo(n+i*.72,s+a*.46),t.stroke(),t.strokeStyle="#3a7ca5",t.beginPath(),t.moveTo(n+i*.24,s+a*.57),t.lineTo(n+i*.52,s+a*.57),t.stroke()}scenePantry(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.1)",t.fillRect(n,s,i,a);let r=n+i*.14,l=s+a*.16,d=i*.72,c=a*.68;t.fillStyle=o.dark,this.roundRect(t,r,l,d,c,2),t.fill(),t.fillStyle="rgba(255,255,255,0.12)",t.fillRect(r+2,l+2,d-4,c*.4);let h=["#e86","#6c9","#ec3","#96c","#e9a"];for(let p=0;p<6;p++)t.fillStyle=h[p%h.length],t.fillRect(r+d*.1+p%3*d*.28,l+c*(.15+Math.floor(p/3)*.34),d*.2,c*.22);t.strokeStyle="rgba(0,0,0,0.3)",t.lineWidth=1,t.beginPath(),t.moveTo(r+d/2,l),t.lineTo(r+d/2,l+c),t.stroke()}sceneWindow(t,n,s,i,a,o){let r=t.createLinearGradient(n,s,n,s+a);r.addColorStop(0,"#7ec8e3"),r.addColorStop(.6,"#b8e0f0"),r.addColorStop(1,"#d8c8a8"),t.fillStyle=r,t.fillRect(n,s,i,a),t.fillStyle="rgba(255,255,255,0.85)",t.beginPath(),t.arc(n+i*.3,s+a*.24,i*.12,0,Math.PI*2),t.fill(),t.beginPath(),t.arc(n+i*.44,s+a*.2,i*.1,0,Math.PI*2),t.fill(),t.fillStyle="#9aa8b4";for(let l=0;l<5;l++){let d=i*(.12+l%2*.05);t.fillRect(n+i*(.06+l*.19),s+a*(.55+l%3*.08),d,a*.3)}t.strokeStyle=o.dark,t.lineWidth=Math.max(1.2,i*.035),this.roundRect(t,n+i*.06,s+a*.08,i*.88,a*.76,2),t.stroke(),t.beginPath(),t.moveTo(n+i*.5,s+a*.08),t.lineTo(n+i*.5,s+a*.84),t.moveTo(n+i*.06,s+a*.46),t.lineTo(n+i*.94,s+a*.46),t.stroke()}sceneSofa(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.1)",t.fillRect(n,s,i,a),t.fillStyle=o.dark,this.roundRect(t,n+i*.1,s+a*.28,i*.8,a*.3,4),t.fill(),t.fillStyle=o.tint,this.roundRect(t,n+i*.1,s+a*.52,i*.8,a*.26,4),t.fill(),t.fillStyle="#e88",this.roundRect(t,n+i*.18,s+a*.36,i*.18,a*.18,3),t.fill(),t.fillStyle="#8ce",this.roundRect(t,n+i*.62,s+a*.36,i*.18,a*.18,3),t.fill(),t.fillStyle=o.dark,t.fillRect(n+i*.04,s+a*.42,i*.08,a*.36),t.fillRect(n+i*.88,s+a*.42,i*.08,a*.36)}sceneWater(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.08)",t.fillRect(n,s,i,a);let r=n+i/2;t.fillStyle="#8a9096",this.roundRect(t,r-i*.16,s+a*.66,i*.32,a*.24,2),t.fill();let l=t.createLinearGradient(r-i*.16,s,r+i*.16,s);l.addColorStop(0,"rgba(160,220,240,0.9)"),l.addColorStop(.5,"rgba(220,245,255,0.95)"),l.addColorStop(1,"rgba(140,200,225,0.9)"),t.fillStyle=l,this.roundRect(t,r-i*.17,s+a*.16,i*.34,a*.5,3),t.fill(),t.fillStyle="rgba(90,170,210,0.55)",t.fillRect(r-i*.15,s+a*.42,i*.3,a*.22),t.fillStyle="#6a7076",t.fillRect(r+i*.14,s+a*.6,i*.14,a*.06),t.fillStyle="#e8e8e0",t.fillRect(r+i*.08,s+a*.72,i*.12,a*.14)}sceneGym(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.08)",t.fillRect(n,s,i,a),t.fillStyle="#6b727c",this.roundRect(t,n+i*.08,s+a*.52,i*.52,a*.16,3),t.fill(),t.fillStyle="#454a52",t.fillRect(n+i*.11,s+a*.58,i*.46,a*.07),t.fillStyle="#565d68",t.fillRect(n+i*.5,s+a*.24,i*.05,a*.32),t.fillStyle="#39404a",this.roundRect(t,n+i*.42,s+a*.15,i*.2,a*.1,2),t.fill(),t.fillStyle="#8fe0f0",t.fillRect(n+i*.45,s+a*.175,i*.14,a*.045),t.fillStyle=o.dark,t.fillRect(n+i*.68,s+a*.6,i*.26,a*.06);for(let r=0;r<2;r++){let l=n+i*(.73+r*.14);t.fillStyle="#3a3f46",t.fillRect(l,s+a*.47,i*.035,a*.15),t.beginPath(),t.arc(l+i*.018,s+a*.46,i*.036,0,Math.PI*2),t.fill(),t.beginPath(),t.arc(l+i*.018,s+a*.63,i*.036,0,Math.PI*2),t.fill()}t.fillStyle="#7ac0a0",this.roundRect(t,n+i*.1,s+a*.8,i*.52,a*.09,3),t.fill()}sceneServer(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.14)",t.fillRect(n,s,i,a);let r=n+i*.16,l=s+a*.1,d=i*.68,c=a*.8;t.fillStyle="#2c323b",this.roundRect(t,r,l,d,c,2),t.fill(),t.strokeStyle="rgba(255,255,255,0.12)",t.lineWidth=.8,t.stroke();for(let h=0;h<4;h++){let p=l+c*(.07+h*.23);t.fillStyle="#3c444f",t.fillRect(r+d*.08,p,d*.84,c*.17),t.fillStyle=h%2?"#5cd35c":"#e8c66c",t.beginPath(),t.arc(r+d*.17,p+c*.085,Math.max(1,i*.022),0,Math.PI*2),t.fill(),t.fillStyle="rgba(255,255,255,0.14)";for(let f=0;f<4;f++)t.fillRect(r+d*(.32+f*.14),p+c*.06,d*.09,c*.05)}t.strokeStyle="#4a5560",t.lineWidth=1.2,t.beginPath(),t.moveTo(r+d*.5,l+c),t.quadraticCurveTo(r+d*.7,l+c+a*.06,r+d*.95,l+c*.9),t.stroke()}sceneReception(t,n,s,i,a,o){t.fillStyle="rgba(0,0,0,0.1)",t.fillRect(n,s,i,a),t.fillStyle=o.dark,this.roundRect(t,n+i*.28,s+a*.08,i*.44,a*.28,2),t.fill(),t.fillStyle="#f5c842",t.font=`700 ${Math.max(6,i*.15)}px ${N}`,t.textAlign="center",t.textBaseline="middle",t.fillText("GO",n+i*.5,s+a*.22),t.fillStyle="#a8672f",t.beginPath(),t.ellipse(n+i*.5,s+a*.72,i*.37,a*.2,0,Math.PI,0),t.fill(),t.fillStyle="#c8834a",t.beginPath(),t.ellipse(n+i*.5,s+a*.7,i*.37,a*.2,0,Math.PI,0),t.fill(),t.fillStyle="rgba(255,255,255,0.16)",t.beginPath(),t.ellipse(n+i*.5,s+a*.7,i*.3,a*.12,0,Math.PI,0),t.fill(),t.fillStyle="#6b8cae",this.roundRect(t,n+i*.05,s+a*.64,i*.14,a*.22,2),t.fill(),this.roundRect(t,n+i*.81,s+a*.64,i*.14,a*.22,2),t.fill()}tokens(){if(!this.cells||!this.players)return[];let t=[],n={};for(let i of this.players)(n[i.pos]=n[i.pos]||[]).push(i);let s=Math.max(7,this.cell*.19);for(let[i,a]of Object.entries(n)){let o=this.cells[i];if(!o)continue;let r=a.length,l=o.cy+this.cell*.08,d=this.cell*.5-s-1.5;a.forEach((c,h)=>{let p=this.anim.get(c.id),f=p?p.cx:o.cx,u=p?p.cy:o.cy,g=0,k=this.cell*.08;if(r===1)g=0;else if(r===2)g=(h-.5)*Math.min(s*2.1,d*2),k=this.cell*(h===0?.02:.15);else if(r<=4){let b=h%2?1:-1,S=h<2?0:1;g=b*Math.min(s*1.05,d),k=this.cell*.04+S*Math.min(s*1.1,this.cell*.16)}else{let b=-Math.PI/2+h/r*Math.PI*2,S=Math.min(s*1.5,d*.9);g=Math.cos(b)*S,k=this.cell*.1+Math.sin(b)*S*.6}t.push({id:c.id,color:c.color,cx:f+g,cy:u+k,r:s,p:c,tagLevel:r===1||h%2===0?0:1,tagSide:r>1?h<r/2?-1:1:0})})}return t}moveToken(t,n,s,i,a){let o=[];for(let r=1;r<=i;r++)o.push((n+r)%this.board.tiles.length);this.anim.set(t,{cx:0,cy:0,seq:o,i:0,t:0,done:a}),this._raf||this._loop()}showDice(t,n){this.dice={value:t,t:0,done:n},this._raf||this._loop()}setHighlight(t){this.highlight=t}_loop(){let t=n=>{this._raf=requestAnimationFrame(t);let s=this.last?n-this.last:16;this.last=n;let i=!1;for(let[a,o]of this.anim){let r=this.stepMs||72;if(o.t+=s,o.t>=r&&(o.t=0,o.i++,o.i>=o.seq.length)){let f=o.done;this.anim.delete(a),f&&f();continue}let l=o.i===0?this.board.tiles.length-1:o.seq[o.i-1],d=o.seq[o.i],c=this.cells[l],h=this.cells[d];if(!c||!h)continue;let p=Math.min(1,o.t/r);o.cx=c.cx+(h.cx-c.cx)*p,o.cy=c.cy+(h.cy-c.cy)*p,i=!0}if(this.dice)if(this.dice.t+=s,this.dice.t>(this.diceMs||320)){let a=this.dice.done;this.dice=null,a&&a()}else i=!0;this.draw(),!i&&this.anim.size===0&&!this.dice&&(cancelAnimationFrame(this._raf),this._raf=null,this.last=null,this.draw())};this._raf=requestAnimationFrame(t)}draw(t,n){if(t){this.state=t,this.players=n,this.static=null;let i=n[t.meta.currentSeat];this.currentId=i?.id||null}this.static||this.buildStatic();let s=this.ctx;if(s.clearRect(0,0,this.size,this.size),s.drawImage(this.static,0,0,this.size,this.size),this.highlight!=null&&this.cells[this.highlight]){let i=this.cells[this.highlight];s.strokeStyle="#ffe27a",s.lineWidth=2.5,this.roundRect(s,i.px+1,i.py+1,i.pw-2,i.pw-2,5),s.stroke(),s.globalAlpha=.22,s.fillStyle="#ffe27a",this.roundRect(s,i.px+1,i.py+1,i.pw-2,i.pw-2,5),s.fill(),s.globalAlpha=1}if(this.state){let i=this.state.players[this.state.meta.currentSeat];if(i&&i.alive){let a=this.cells[i.pos],o=.5+.5*Math.sin(Date.now()/320);s.strokeStyle=`rgba(255,226,122,${.3+o*.55})`,s.lineWidth=2.4,this.roundRect(s,a.px+2,a.py+2,a.pw-4,a.pw-4,5),s.stroke()}}this.dice&&this.drawDice(s,this.dice);for(let i of this.tokens())this.drawToken(s,i);this.drawCurrentArrow(s),this.drawNameTags(s)}drawToken(t,n){let s=ne[n.color]||{hi:"#fff",lo:"#666"},i=n.r,a=n.p.alive?0:i*.45;t.fillStyle="rgba(0,0,0,0.35)",t.beginPath(),t.ellipse(n.cx,n.cy+i*.82,i*.95,i*.32,0,0,Math.PI*2),t.fill(),n.p.alive||(t.globalAlpha=.5);let o=i*1.7,r=i*.6,l=n.cy+i*.52-r/2+a,d=t.createLinearGradient(0,l,0,l+r);d.addColorStop(0,s.hi),d.addColorStop(1,s.lo),t.save(),t.shadowColor="rgba(0,0,0,0.5)",t.shadowBlur=5,t.shadowOffsetY=1.5,t.fillStyle=d,this.roundRect(t,n.cx-o/2,l,o,r,r*.5),t.fill(),t.restore(),t.strokeStyle="rgba(255,255,255,0.65)",t.lineWidth=1.2,t.stroke();let c=i*.92,h=i*.82,p=l-h+i*.12,f=t.createLinearGradient(n.cx-c/2,p,n.cx+c/2,p+h);f.addColorStop(0,s.hi),f.addColorStop(.5,n.color),f.addColorStop(1,s.lo),t.fillStyle=f,this.roundRect(t,n.cx-c/2,p,c,h,c*.36),t.fill();let u=w[n.p.avatar]||w.coder,g=p-i*.38;t.fillStyle="#fdfaf2",t.beginPath(),t.arc(n.cx,g,i*.62,0,Math.PI*2),t.fill(),Tt(t,n.cx,g,i*.56,u,{body:!1}),t.strokeStyle="rgba(0,0,0,0.42)",t.lineWidth=1.3,t.beginPath(),t.arc(n.cx,g,i*.62,0,Math.PI*2),t.stroke(),t.fillStyle="rgba(255,255,255,0.94)",t.beginPath(),t.arc(n.cx,l+r/2,i*.27,0,Math.PI*2),t.fill(),t.fillStyle="#2b2a33",t.font=`700 ${i*.44}px ${N}`,t.textAlign="center",t.textBaseline="middle",t.fillText(String(n.p.seat+1),n.cx,l+r/2+.5),n.p.alive||(t.strokeStyle="#e24b4a",t.lineWidth=2.6,t.beginPath(),t.moveTo(n.cx-i*.7,g-i*.7),t.lineTo(n.cx+i*.7,l+r),t.moveTo(n.cx+i*.7,g-i*.7),t.lineTo(n.cx-i*.7,l+r),t.stroke()),t.globalAlpha=1}drawCurrentArrow(t){if(!this.currentId||!this.players)return;let n=this.tokens().find(r=>r.id===this.currentId);if(!n||!n.p.alive)return;let s=Math.sin(Date.now()/240)*2.2,i=n.cx,a=n.cy-n.r*2.1+s,o=Math.max(4,n.r*.55);t.save(),t.shadowColor="rgba(245,200,66,0.8)",t.shadowBlur=6,t.fillStyle="#f5c842",t.beginPath(),t.moveTo(i,a+o*.8),t.lineTo(i-o*.75,a-o*.2),t.lineTo(i-o*.28,a-o*.2),t.lineTo(i-o*.28,a-o*.8),t.lineTo(i+o*.28,a-o*.8),t.lineTo(i+o*.28,a-o*.2),t.lineTo(i+o*.75,a-o*.2),t.closePath(),t.fill(),t.restore(),t.strokeStyle="rgba(90,60,0,0.55)",t.lineWidth=.8,t.stroke()}drawNameTags(t){if(!this.cells||!this.players)return;let n={};for(let s of this.players)(n[s.pos]=n[s.pos]||[]).push(s);for(let[s,i]of Object.entries(n)){let a=this.cells[s];if(!a)continue;let o=a.pw||this.cell,r=Math.max(7.5,Math.min(o*.118,10.5)),l=r*1.95,d=3,h=i.slice(0,6).map(y=>{let x=y.name||`P${y.seat+1}`,I=Math.round(y.netWorth||0),P=I>=1e4?(I/1e4).toFixed(1)+"万":String(I);t.font=`600 ${r}px ${N}`;let C=t.measureText(x).width;t.font=`500 ${r*.85}px ${Y}`;let D=t.measureText(P).width,W=l*.32;return{p:y,nm:x,wt:P,dotR:W,w:Math.max(C,D)+W*2+r*.95}}),p=h.reduce((y,x)=>y+x.w,0)+d*(h.length-1),f=o*.98,u=p>f?f/p:1,g=p*u,k=a.cx-g/2,b=o*.5,S=a.cy-b+r*1.35,T=S-l>1?S-l:a.cy+b-r*1.35;for(let y of h){let x=y.w*u,I=this.currentId===y.p.id;t.save(),t.globalAlpha=y.p.alive?1:.45,t.fillStyle=I?"rgba(245,200,66,0.92)":"rgba(14,13,20,0.88)",this.roundRect(t,k,T,x,l,l*.44),t.fill(),I&&(t.lineWidth=1.6,t.strokeStyle="#fff3c4",t.stroke());let P=k+y.dotR*u+r*.24,C=T+l/2;t.fillStyle=y.p.color,t.beginPath(),t.arc(P,C,y.dotR*u,0,Math.PI*2),t.fill(),t.strokeStyle="rgba(255,255,255,0.55)",t.lineWidth=.8,t.stroke();let D=P+y.dotR*u+r*.3;t.textAlign="left",t.textBaseline="middle",t.fillStyle=I?"#241f00":"#eae8f2",t.font=`600 ${r*u}px ${N}`,t.fillText(y.nm,D,C-r*.42),t.fillStyle=I?"rgba(36,31,0,0.7)":"rgba(255,255,255,0.55)",t.font=`500 ${r*.82*u}px ${Y}`,t.fillText(y.wt,D,C+r*.48),t.restore(),k+=x+d}}}drawDice(t,n){let s=Math.max(38,this.size*.095),i=this.diceMs||1100,a=i*.62,o=n.t<a,r=o?1+Math.floor(Date.now()/90%6):n.value,l=s*.16,d=1,c=0,h=0;if(n.t<140)d=1.55-.55*(n.t/140),h=-10*(1-n.t/140);else if(o)c=Math.sin(n.t*.085)*3.4,h=-Math.abs(Math.sin(n.t*.055))*5;else{let S=Math.min(1,(n.t-a)/(i-a));d=1+.16*Math.sin(S*Math.PI)}let p=this.size-s-18+c,f=16+h;t.save(),t.translate(p+s/2,f+s/2),t.scale(d,d),t.translate(-(p+s/2),-(f+s/2)),t.fillStyle="rgba(0,0,0,0.4)",this.roundRect(t,p+2,f+l+2,s,s,s*.22),t.fill(),t.fillStyle="#9a1f1c",this.roundRect(t,p,f+l,s,s,s*.22),t.fill();let u=t.createLinearGradient(p,f,p+s,f+s);u.addColorStop(0,"#ff8a85"),u.addColorStop(.5,"#e24b4a"),u.addColorStop(1,"#b8302d"),t.fillStyle=u,this.roundRect(t,p,f,s,s-l*.3,s*.22),t.fill(),t.fillStyle="rgba(255,255,255,0.28)",this.roundRect(t,p+s*.12,f+s*.1,s*.4,s*.12,s*.06),t.fill();let g=[[],[[1,1]],[[0,0],[2,2]],[[0,0],[1,1],[2,2]],[[0,0],[2,0],[0,2],[2,2]],[[0,0],[2,0],[1,1],[0,2],[2,2]],[[0,0],[2,0],[0,1],[2,1],[0,2],[2,2]]][r],k=s*.085,b=s*.27;for(let[S,T]of g){let y=p+b+S*(s-b*2)/2,x=f+b+T*(s-b*2)/2-l*.15;t.fillStyle="rgba(0,0,0,0.3)",t.beginPath(),t.arc(y,x+1,k,0,Math.PI*2),t.fill(),t.fillStyle="#fff8e6",t.beginPath(),t.arc(y,x,k,0,Math.PI*2),t.fill()}t.restore()}roundRect(t,n,s,i,a,o){let r=Math.min(o,i/2,a/2);t.beginPath(),t.moveTo(n+r,s),t.arcTo(n+i,s,n+i,s+a,r),t.arcTo(n+i,s+a,n,s+a,r),t.arcTo(n,s+a,n,s,r),t.arcTo(n,s,n+i,s,r),t.closePath()}fmtPrice(t){return t?t>=1e4?(t/1e4).toFixed(t%1e4===0?0:1)+"万":(t/1e3).toFixed(t%1e3===0?0:1)+"k":"0"}fittedText(t,n,s,i,a,o,r=6.5){if(!n)return;let l=Math.max(8,a),d=n,c=Math.max(8,this.cell*.19),h=0;for(t.font=`700 ${c}px ${N}`;t.measureText(d).width>l&&d.length>1&&c>r&&h++<24;)d=d.slice(0,-1),c-=.4,t.font=`700 ${c}px ${N}`;if(t.measureText(d).width>l&&d.length>1){for(;d.length>1&&t.measureText(d+"…").width>l;)d=d.slice(0,-1);d+="…"}t.font=`700 ${c}px ${N}`,t.fillStyle=o,t.textAlign="center",t.textBaseline="middle",t.shadowColor="rgba(0,0,0,0.5)",t.shadowBlur=2,t.fillText(d,s,i),t.shadowBlur=0}};var q=e=>440*Math.pow(2,e/12),ft=class{constructor(){this.ctx=null,this.enabled=localStorage.getItem("sf_sound")!=="0",this.bgmOn=localStorage.getItem("sf_bgm")!=="0",this.master=null,this.bgmNodes=null}_ensure(){if(this.ctx)return!0;try{return this.ctx=new(window.AudioContext||window.webkitAudioContext),this.master=this.ctx.createGain(),this.master.gain.value=.22,this.master.connect(this.ctx.destination),!0}catch{return!1}}resume(){this._ensure()&&this.ctx.state==="suspended"&&this.ctx.resume()}toggle(){return this.enabled=!this.enabled,localStorage.setItem("sf_sound",this.enabled?"1":"0"),!this.enabled&&this.bgmNodes&&this.stopBgm(),this.enabled}toggleBgm(){return this.bgmOn=!this.bgmOn,localStorage.setItem("sf_bgm",this.bgmOn?"1":"0"),this.bgmOn?this.startBgm():this.stopBgm(),this.bgmOn}tone(t,n,s="sine",i=.5,a=0,o=null){if(!this.enabled||!this._ensure())return;let r=this.ctx.currentTime+a,l=this.ctx.createOscillator(),d=this.ctx.createGain();l.type=s,l.frequency.setValueAtTime(t,r),o&&l.frequency.exponentialRampToValueAtTime(Math.max(20,o),r+n),d.gain.setValueAtTime(0,r),d.gain.linearRampToValueAtTime(i,r+.012),d.gain.exponentialRampToValueAtTime(1e-4,r+n),l.connect(d),d.connect(this.master),l.start(r),l.stop(r+n+.03)}noise(t,n=.4,s=0,i=800){if(!this.enabled||!this._ensure())return;let a=this.ctx.currentTime+s,o=Math.floor(this.ctx.sampleRate*t),r=this.ctx.createBuffer(1,o,this.ctx.sampleRate),l=r.getChannelData(0);for(let p=0;p<o;p++)l[p]=(Math.random()*2-1)*(1-p/o);let d=this.ctx.createBufferSource();d.buffer=r;let c=this.ctx.createBiquadFilter();c.type="highpass",c.frequency.value=i;let h=this.ctx.createGain();h.gain.value=n,d.connect(c),c.connect(h),h.connect(this.master),d.start(a)}dice(t=3){[0,70,150,240,340].slice(0,3+Math.min(2,Math.floor(t/2))).forEach((s,i)=>{this.noise(.09,.32,s,1400),this.tone(420+i*45+t*18,.1,"triangle",.22,s)})}cash(){this.tone(q(16),.12,"triangle",.34,0),this.tone(q(23),.16,"triangle",.28,.075),this.tone(q(28),.3,"sine",.2,.15),this.noise(.16,.12,.02,2600)}sigh(){this.tone(320,.6,"triangle",.24,0,150),this.noise(.4,.06,.05,500)}up(){[0,4,7,12].forEach((t,n)=>this.tone(q(t),.16,"sine",.3,n*.085))}down(){[0,-3,-7,-12].forEach((t,n)=>this.tone(q(t),.18,"sine",.28,n*.1)),this.tone(q(-17),.4,"triangle",.2,.42)}bankrupt(){[0,-5,-9,-14,-19].forEach((t,n)=>this.tone(q(t),.3,"sawtooth",.16,n*.13)),this.noise(.7,.1,.1,300)}click(){this.tone(660,.05,"square",.12)}popup(){this.tone(520,.08,"sine",.2),this.tone(780,.1,"sine",.18,.05)}startBgm(){if(!this.bgmOn||!this._ensure()||this.bgmNodes)return;this.resume();let t=this.ctx.currentTime,n=[0,4,7,9,7,4,2,4,5,9,7,4],s=this.ctx.createGain();s.gain.value=.075,s.connect(this.master);let i=[];n.forEach((r,l)=>{let d=this.ctx.createOscillator();d.type="sine",d.frequency.value=q(r-5),d.connect(s),d.start(t+l*.34),i.push(d)});let a=n.length*.34;setTimeout(()=>{this.bgmNodes===o&&(this.stopBgm(),this.bgmOn&&this.startBgm())},a*1e3);let o={oscs:i,gain:s};this.bgmNodes=o}stopBgm(){if(this.bgmNodes){try{this.bgmNodes.oscs.forEach(t=>t.stop())}catch{}try{this.bgmNodes.gain.disconnect()}catch{}this.bgmNodes=null}}};function ae(e,t,n){let s=t.board.colorTokens,i=t.aiProfiles.profiles,a=JSON.parse(localStorage.getItem("sf_setup")||"{}"),o={mode:a.mode||"solo",winCondition:a.winCondition||"rounds",humanCount:a.humanCount||1,names:a.names||["我","小明","阿珍","老王","小美","大壮"],colors:a.colors||s.slice(),avatars:a.avatars||Mt.slice(),aiProfiles:a.aiProfiles||["greedy","steady","spender"]};e.innerHTML=`
+    <div class="setup">
+      <div class="setup-inner">
+        <h1>大富翁 · 工位版</h1>
+        <div class="sub">打工人资产争霸赛 · 40 回合见真章</div>
+
+        <div class="setup-sec">
+          <h2>选择模式</h2>
+          <div class="mode-grid" id="modeGrid">
+            <div class="mode-card" data-mode="solo">
+              <div class="mode-ico">🎮</div>
+              <div class="mode-name">单人练习</div>
+              <div class="mode-desc">你 + 1~3 名 AI，同屏操作，随时重开</div>
+            </div>
+            <div class="mode-card" data-mode="hotseat">
+              <div class="mode-ico">👥</div>
+              <div class="mode-name">本地热座</div>
+              <div class="mode-desc">2~6 人轮流用同一台电脑，屏幕传给下一位</div>
+            </div>
+            <div class="mode-card" data-mode="lan">
+              <div class="mode-ico">📡</div>
+              <div class="mode-name">局域网对战</div>
+              <div class="mode-desc">多台设备同一房间，主机权威；不支持时可降级为回合包传递</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-sec" id="setupBody"></div>
+      </div>
+    </div>
+  `;let r=e.querySelector("#modeGrid"),l=e.querySelector("#setupBody"),d=()=>{if([...r.children].forEach(f=>f.classList.toggle("sel",f.dataset.mode===o.mode)),o.mode==="lan"){l.innerHTML=`
+        <h2>局域网</h2>
+        <div class="field">
+          <label>房号</label>
+          <input type="text" id="roomId" value="${(o.roomId||oe()).toUpperCase()}" maxlength="6">
+          <button class="btn sm ghost" id="genRoom">换个房号</button>
+        </div>
+        <div class="field">
+          <label>昵称</label>
+          <input type="text" id="lanName" value="${o.names[0]}" maxlength="8">
+          <button class="btn sm" id="lanRole">我要建房间</button>
+        </div>
+        <div class="field">
+          <label>玩家数</label>
+          <div class="seg" id="countSeg">
+            ${[2,3,4,5,6].map(g=>`<button data-n="${g}" class="${(o.humanCount||4)===g?"on":""}">${g} 人</button>`).join("")}
+          </div>
+        </div>
+        <div class="setup-foot">
+          <button class="btn primary" id="startBtn">进入房间</button>
+          <span class="note">
+            同一房间号的人用同一份数据文件即可。
+            不想装服务器？开局后用顶栏的「📤 导出 / 📥 导入」传递回合包，
+            微信发文件就行。
+          </span>
+        </div>
+      `,e.querySelector("#genRoom").onclick=()=>{o.roomId=e.querySelector("#roomId").value,e.querySelector("#roomId").value=oe()},e.querySelector("#countSeg").onclick=g=>{let k=g.target.closest("button");k&&(o.humanCount=+k.dataset.n,d())},o.lanRole=o.lanRole||"host";let f=e.querySelector("#lanRole"),u=()=>{f.textContent=o.lanRole==="host"?"我是房主":"我加入"};u(),f.onclick=()=>{o.lanRole=o.lanRole==="host"?"join":"host",u()},e.querySelector("#lanName").oninput=g=>{o.names[0]=g.target.value},e.querySelector("#startBtn").onclick=()=>{o.names[0]=e.querySelector("#lanName").value.trim()||"玩家",o.roomId=e.querySelector("#roomId").value.toUpperCase(),localStorage.setItem("sf_setup",JSON.stringify(o)),n(o)};return}let c=o.mode==="solo"?1+(o.aiCount??3):o.humanCount;l.innerHTML=`
+      <h2>对局设置</h2>
+      <div class="field">
+        <label>${o.mode==="solo"?"AI 数量":"玩家人数"}</label>
+        <div class="seg" id="countSeg">
+          ${o.mode==="solo"?[1,2,3].map(f=>`<button data-n="${f}" class="${(o.aiCount??3)===f?"on":""}">${f} 名 AI</button>`).join(""):[2,3,4,5,6].map(f=>`<button data-n="${f}" class="${o.humanCount===f?"on":""}">${f} 人</button>`).join("")}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>胜利条件</label>
+        <div class="seg" id="winSeg">
+          <button data-w="rounds" class="${o.winCondition==="rounds"?"on":""}">固定 40 回合</button>
+          <button data-w="bankruptcy" class="${o.winCondition==="bankruptcy"?"on":""}">破产淘汰制</button>
+        </div>
+      </div>
+
+      ${o.mode==="solo"?`
+      <div class="field">
+        <label>AI 性格</label>
+        <div class="aipick" id="aiPick">
+          ${i.map(f=>`<span class="chip" data-p="${f.id}">${w[ct[f.id]]?.name||""}·${f.name}</span>`).join("")}
+        </div>
+      </div>`:""}
+
+      <div class="field">
+        <label>你的角色</label>
+        <input type="text" id="p0name" value="${o.names[0]}" maxlength="8">
+        <div class="swatches" id="sw0">
+          ${s.map(f=>`<div class="swatch ${f===o.colors[0]?"sel":""}" data-c="${f}" style="background:${f}"></div>`).join("")}
+        </div>
+        <div class="swatches" id="av0">
+          ${Mt.map(f=>`<div class="swatch char-swatch ${f===o.avatars[0]?"sel":""}" data-a="${f}" title="${w[f].name}"><canvas width="44" height="44" data-char="${f}"></canvas></div>`).join("")}
+        </div>
+      </div>
+
+      ${o.mode==="hotseat"?`
+      <div class="field">
+        <label>其他玩家</label>
+        ${Array.from({length:c-1},(f,u)=>`
+          <input type="text" id="pn${u+1}" value="${o.names[u+1]||"玩家"+(u+2)}" maxlength="8">
+          <div class="swatches" data-pick="${u+1}">
+            ${s.map(g=>`<div class="swatch ${g===o.colors[u+1]?"sel":""}" data-c="${g}" style="background:${g}"></div>`).join("")}
+          </div>`).join("")}
+      </div>`:""}
+
+      <div class="setup-foot">
+        <button class="btn primary" id="startBtn">开始游戏</button>
+        <span class="note">初始现金 20000 元 · 实习生职级 · 每 4 回合发一次工资</span>
+      </div>
+    `,e.querySelector("#countSeg").onclick=f=>{let u=f.target.closest("button");if(!u)return;let g=+u.dataset.n;o.mode==="solo"?o.aiCount=g:o.humanCount=g,d()},e.querySelector("#winSeg").onclick=f=>{let u=f.target.closest("button");u&&(o.winCondition=u.dataset.w,d())};let h=e.querySelector("#aiPick");h&&(h.onclick=f=>{let u=f.target.closest(".chip");if(!u)return;let g=o.aiProfiles.indexOf(u.dataset.p);g>=0?o.aiProfiles.splice(g,1):o.aiProfiles.push(u.dataset.p),[...h.children].forEach(k=>k.classList.toggle("on",o.aiProfiles.includes(k.dataset.p)))}),e.querySelector("#p0name").oninput=f=>{o.names[0]=f.target.value};for(let f=1;f<c;f++){let u=e.querySelector("#pn"+f);u&&(u.oninput=g=>{o.names[f]=g.target.value})}let p=(f,u)=>{let g=e.querySelector(f);g&&(g.onclick=k=>{let b=k.target.closest(".swatch");b&&(b.dataset.c!==void 0?(o.colors[u]=b.dataset.c,[...g.children].forEach(S=>S.classList.toggle("sel",S.dataset.c===b.dataset.c))):b.dataset.a!==void 0&&(o.avatars[u]=b.dataset.a,[...g.children].forEach(S=>S.classList.toggle("sel",S.dataset.a===b.dataset.a))))})};p("#sw0",0),p("#av0",0),l.querySelectorAll("[data-pick]").forEach(f=>{let u=+f.dataset.pick;f.onclick=g=>{let k=g.target.closest(".swatch");k&&(o.colors[u]=k.dataset.c,[...f.children].forEach(b=>b.classList.toggle("sel",b.dataset.c===k.dataset.c)))}}),e.querySelector("#startBtn").onclick=()=>{let f=e.querySelector("#p0name").value.trim()||"我";o.names[0]=f,localStorage.setItem("sf_setup",JSON.stringify(o)),n(o)},e.querySelectorAll("#av0 canvas").forEach(f=>{V(f,f.dataset.char,w)})};r.onclick=c=>{let h=c.target.closest(".mode-card");h&&(o.mode=h.dataset.mode,localStorage.setItem("sf_setup",JSON.stringify(o)),d())},d()}function oe(){let e="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",t="";for(let n=0;n<4;n++)t+=e[Math.floor(Math.random()*e.length)];return t}function M(e){let t=Math.round(e||0),n=Math.abs(t),s=t<0?"-":"";return n>=1e8?s+(n/1e8).toFixed(2)+"亿":n>=1e4?s+(n/1e4).toFixed(n>=1e5?0:1)+"万":s+n.toLocaleString("zh-CN")}var $=e=>String(e??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");function le(e,t,n){let s=t.meta,i=t.players[s.currentSeat],a={TURN_START:"回合开始",ROLL:"掷骰子",MOVING:"移动中",TILE_EVENT:"格子事件",POST_ACTION:"交易与道具",TURN_END:"回合结束",MONTH_SETTLE:"月度结算",BANKRUPT_CHECK:"破产清算",GAME_OVER:"游戏结束"}[s.phase]||s.phase,o=s.mode==="lan";e.innerHTML=`
+    <div class="brand">大富翁 · 工位版<small>${$(n.board.name)}</small></div>
+    <div class="turn">第 ${s.turn} / ${s.maxRounds} 回合 · 第 ${s.month} 个月 · ${a}</div>
+    <div class="spacer"></div>
+    <div class="mini-list" id="miniList"></div>
+    ${o?`
+      <button class="btn sm" id="btnImport" title="导入上一位发来的回合包">📥 导入</button>
+      <button class="btn sm" id="btnExport" title="导出回合包发给下一位">📤 导出</button>
+    `:""}
+    <button class="icon-btn" id="btnSound" title="音效开关">🔊</button>
+    <button class="icon-btn" id="btnBgm" title="背景音乐">🎵</button>
+    <button class="icon-btn" id="btnSettings" title="设置">⚙️</button>
+    <button class="icon-btn" id="btnHelp" title="玩法">?</button>
+  `;let r=e.querySelector("#miniList");for(let l of t.players){let d=document.createElement("div");d.className="mini"+(l.id===i?.id?" active":"")+(l.alive?"":" dead"),d.innerHTML=`<span class="dot" style="background:${l.color}"></span>${$(l.name)} <span style="color:var(--text-3)">${M(l.netWorth)}</span>`,r.appendChild(d)}}function de(e,t,n,s){let i=t.players[t.meta.currentSeat],a=[];a.push(`<div class="side-sec"><div class="sec-title">玩家 ${t.players.length} 名 · 第 ${t.meta.month} 个月</div>`);let o={intern:1,specialist:2,supervisor:3,manager:4,director:5};function r(c,h,p){let f=l(c,h,p),u=p.config?.ranks?.find(k=>k.id===c.rankId)?.level||o[c.rankId]||1,g=!!w[c.avatar];return`
+      <div class="portrait" style="--skin:${c.color};--rank:${It[c.rankId]||"#a8a4b4"}">
+        <div class="portrait-body">
+          ${g?`<canvas class="portrait-cv" width="46" height="46" data-char="${c.avatar}"></canvas>`:`<span class="portrait-emoji">${ie[c.avatar]||c.avatar||"👤"}</span>`}
+          ${h?`<span class="portrait-mood" title="${f.label}">${f.emoji}</span>`:""}
+        </div>
+        <span class="portrait-lv" title="${c.rankId}">Lv${u}</span>
+      </div>
+    `}function l(c,h,p){return h?c.cash<0?{emoji:"😵",label:"破产边缘"}:c.loan.principal>3e4?{emoji:"😰",label:"负债累累"}:c.turnsSinceLastPurchase!=null&&c.turnsSinceLastPurchase>6?{emoji:"😴",label:"久未出手"}:p&&p.ui_text?.phrases?.mood_default?p.ui_text.phrases.mood_default:{emoji:"😊",label:"状态良好"}:{emoji:"",label:""}}for(let c of t.players){let h=tt[c.rankId],p=c.id===i?.id,f=c.cash<0,u=n.config?.ranks?.find(b=>b.id===c.rankId)?.level||o[c.rankId]||1,g=c.loan.principal+c.vehicles.reduce((b,S)=>b+(S.financed||0),0)+c.properties.reduce((b,S)=>b+(S.financed||0),0),k=[];for(let b of["opportunity","fate","item"])for(let S of c.cards[b]||[]){let T=et(n,b,S);k.push(`<span class="chip card" title="${$(T?.detail||"")}" data-card="${b}:${S}">${$(T?.name||S)}</span>`)}a.push(`
+      <div class="pcard ${p?"active":""} ${c.alive?"":"dead"}" data-pid="${c.id}" style="--pc:${c.color}">
+        <div class="pcard-head">
+          ${r(c,p,n)}
+          <div class="pcard-id">
+            <div class="pcard-name">${$(c.name)}${c.isAI?" 🤖":""}</div>
+            <div class="pcard-rank" style="color:${It[c.rankId]||"#a8a4b4"}">${h}
+              <span class="rank-stars">${"★".repeat(u)}</span> · 月薪 ${M(vs(t,c,n))}</div>
+          </div>
+          <div class="pcard-nw">${M(c.netWorth)}<small>净资产</small></div>
+        </div>
+        <div class="pcard-row"><span>现金</span><b class="${c.cash<0?"neg":""}">${M(c.cash)}${f?" ⚠️":""}</b></div>
+        <div class="pcard-row"><span>存款</span><b>${M(c.deposit)}</b></div>
+        ${g>0?`<div class="pcard-row"><span>负债</span><b class="neg">-${M(g)}</b></div>`:""}
+        ${c.properties.length||c.vehicles.length?`
+        <div class="pcard-assets">
+          ${c.properties.map(b=>`<span class="chip">${$(b.name)}</span>`).join("")}
+          ${c.vehicles.map(b=>`<span class="chip">${$(b.name)}</span>`).join("")}
+        </div>`:""}
+        ${k.length?`<div class="pcard-assets">${k.join("")}</div>`:""}
+      </div>
+    `)}a.push("</div>");let d=t.log.slice(-9).reverse();a.push(`<div class="side-sec"><div class="sec-title">最近动态</div>
+    ${d.map(c=>`<div class="log-item"><span style="color:var(--text-3)">${c.round?"R"+c.round+" ":""}</span>${$(c.text)}</div>`).join("")}
+  </div>`),e.innerHTML=a.join(""),e.querySelectorAll("canvas.portrait-cv").forEach(c=>{V(c,c.dataset.char,w)}),e.querySelectorAll(".pcard").forEach(c=>{c.onclick=()=>s(c.dataset.pid)}),e.querySelectorAll("[data-card]").forEach(c=>{c.onclick=h=>{h.stopPropagation(),ys(c,n)}})}function ys(e,t){let[n,s]=e.dataset.card.split(":"),i=et(t,n,s);i&&(e.title=`${i.name}
+${(i.text||[]).join(`
+`)}
+
+${i.detail||""}`)}function et(e,t,n){return(e.cards[t]||[]).find(s=>s.id===n)||null}function vs(e,t,n){return(n.config.ranks.find(i=>i.id===t.rankId)||n.config.ranks[0]).coefficient*n.config.economy.baseSalary*t.salaryCoefficient*(1-n.config.economy.salaryTaxRate)}function ce(e,t,n,s){let i=n.players[n.meta.currentSeat],a=i&&!i.isAI,o=n.meta;if(e.innerHTML="",!i)return;let r=(d,c,h,p)=>{let f=document.createElement("button");return f.className="btn "+(c||""),f.textContent=d,f.disabled=!!p,f.onclick=()=>{t.audio.click(),h()},e.appendChild(f),f};if(!a){let d=document.createElement("span");d.className="ai-wait",d.innerHTML=i.alive?`<canvas class="ai-wait-cv" width="34" height="34" data-char="${w[i.avatar]?i.avatar:"coder"}"></canvas>
+         <span class="ai-wait-name">${$(i.name)} 正在思考</span>
+         <span class="ai-dots"><i></i><i></i><i></i></span>`:`<span class="ai-wait-name">${$(i.name)} 已出局</span>`,e.appendChild(d),e.querySelectorAll("canvas.ai-wait-cv").forEach(c=>{V(c,c.dataset.char,w)});return}let l=document.createElement("span");switch(l.className="hint",o.phase){case"ROLL":case"TURN_START":r("🎲 掷骰子","primary",()=>t.dispatch({type:"ROLL_DICE",playerId:i.id})),l.textContent="掷骰子开始这一回合";break;case"POST_ACTION":case"TILE_EVENT":{let d=i.cards.item||[];d.length&&r(`使用道具 (${d.length})`,"gold pulse",()=>ks(t,i,s)),i.cards.opportunity?.length&&r(`打机会卡 (${i.cards.opportunity.length})`,"purple",()=>Ss(t,i,"opportunity",s)),o.phase==="POST_ACTION"?(r("存款","blue",()=>re(t,i,"deposit",s)),i.deposit>0&&r("取款","green",()=>re(t,i,"withdraw",s)),r("结束回合","primary",()=>t.dispatch({type:"END_TURN",playerId:i.id})),l.textContent="处理完就结束回合"):l.textContent="先处理格子事件";break}default:l.textContent=""}e.appendChild(l)}function ks(e,t,n){let i=`<div class="opt-list">${t.cards.item.map(a=>{let o=et(n,"item",a);return`<button class="opt" data-act="use:${$(a)}" data-id="${$(a)}">
+      <div class="opt-head"><span class="opt-name">${$(o?.name||a)}</span></div>
+      <div class="opt-meta">${$(o?.detail||"")}</div>
+    </button>`}).join("")}</div>`;e.modal.open("用哪个道具？",i,"🎁",[{label:"取消",value:"__cancel__"}]),e.modal.onClick((a,o)=>{if(a==="__foot__"){e.modal.close();return}if(typeof a=="string"&&a.startsWith("use:")){let r=a.slice(4);e.modal.close(),e.dispatch({type:"USE_ITEM",cardId:r,playerId:t.id})}})}function Ss(e,t,n,s){let a=`<div class="opt-list">${t.cards[n].map(o=>{let r=et(s,n,o);return`<button class="opt" data-act="play:${$(o)}" data-id="${$(o)}">
+      <div class="opt-head"><span class="opt-name">${$(r?.name||o)}</span></div>
+      <div class="opt-meta">${$(r?.detail||"")}</div>
+    </button>`}).join("")}</div>`;e.modal.open("打出手里的牌",a,"🎴",[{label:"取消",value:"__cancel__"}]),e.modal.onClick(o=>{if(o==="__foot__"){e.modal.close();return}typeof o=="string"&&o.startsWith("play:")&&(e.modal.close(),e.dispatch({type:"PLAY_CARD",cardId:o.slice(5),playerId:t.id}))})}function re(e,t,n,s){let i=n==="deposit",a=i?t.cash:t.deposit,o=s.config.economy.depositInterestRate,r=`
+    <div class="opt-list">
+      <button class="opt" data-act="amt:${Math.round(a*.3)}">
+        <div class="opt-head"><span class="opt-name">30%</span><span class="opt-price">${M(a*.3)}</span></div></button>
+      <button class="opt" data-act="amt:${Math.round(a*.5)}">
+        <div class="opt-head"><span class="opt-name">50%</span><span class="opt-price">${M(a*.5)}</span></div></button>
+      <button class="opt" data-act="amt:${Math.round(a)}">
+        <div class="opt-head"><span class="opt-name">全部</span><span class="opt-price">${M(a)}</span></div></button>
+    </div>
+    <div class="modal-detail">当前现金 ${M(t.cash)} 元 · 存款 ${M(t.deposit)} 元，月利息约 ${M(t.deposit*o)} 元。
+      ${i?"存钱吃息。":"取出来周转。"}</div>`;e.modal.open(i?"存多少？":"取多少？",r,"🏦",[{label:"取消",value:"__cancel__"}]),e.modal.onClick(l=>{if(l==="__foot__"){e.modal.close();return}if(typeof l=="string"&&l.startsWith("amt:")){e.modal.close();let d=Math.max(0,Math.min(a,+l.slice(4)));d>0&&e.dispatch({type:i?"DEPOSIT":"WITHDRAW",amount:d,playerId:t.id})}})}var z=class{constructor(t){this.el=t,this.el.addEventListener("click",n=>{let s=n.target.closest("[data-act]");if(s&&this.onClickFn){this.onClickFn(s.dataset.act,s);return}let i=n.target.closest("[data-foot]");if(i&&this.onClickFn){this.onClickFn("__foot__",i),i.dataset.foot==="__x__"&&this.el.classList.contains("show")&&this.close();return}})}open(t,n,s="💬",i=[]){let a=i.map(o=>`<button class="btn ${o.cls||""}" data-foot="${o.value||o.label}">${$(o.label)}</button>`).join("");this.el.innerHTML=`
+      <div class="modal">
+        <div class="modal-head">
+          <button class="modal-x" data-foot="__x__" title="关闭">×</button>
+          <div class="modal-emoji">${s}</div>
+          <div class="modal-title">${$(t)}</div>
+        </div>
+        <div class="modal-body">${n}</div>
+        ${a?`<div class="modal-foot">${a}</div>`:""}
+      </div>`,this.el.classList.add("show")}onClick(t){this.onClickFn=t}close(){this.el.classList.remove("show"),this.el.innerHTML="",this.onClickFn=null}},pt=class{constructor(t){this.el=t}show(t,n=""){let s=document.createElement("div");s.className="toast "+n,s.textContent=t,this.el.appendChild(s),setTimeout(()=>s.remove(),2400)}};function Rs(e){return e?F[e.icon]||F[e.id]||"📦":"❔"}function he(e,t,n,s){let i=t.players[t.meta.currentSeat];if(!i)return;let a=[],o=(d,c)=>{let h=et(n,d,c);a.push({deck:d,id:c,def:h})};for((i.cards.item||[]).forEach(d=>o("item",d)),(i.cards.opportunity||[]).forEach(d=>o("opportunity",d)),(i.cards.fate||[]).forEach(d=>o("fate",d));a.length<6;)a.push(null);let r=`
+    <div class="inv-wrap">
+      <div class="inv-title"><span>🎒 道具栏</span><small>${a.filter(Boolean).length}/6</small></div>
+      <div class="inv-slots">
+        ${a.map((d,c)=>d?`<button class="inv-slot filled ${d.deck}" data-idx="${c}" data-card="${d.deck}:${d.id}" title="${$(d.def?.name||"")}">
+               <span class="inv-glyph">${Rs(d.def)}</span>
+               <span class="inv-name">${$((d.def?.name||"").slice(0,4))}</span>
+             </button>`:'<div class="inv-slot empty" title="空槽"><span class="inv-glyph">＋</span></div>').join("")}
+      </div>
+    </div>
+  `,l=document.getElementById("inventory");l||(l=document.createElement("div"),l.id="inventory",l.className="inv-fixed",e.parentElement?.appendChild(l)),l.className="inv-fixed"+(a.some(Boolean)?" has-items":""),l.innerHTML=r,l.querySelectorAll(".inv-slot.filled").forEach(d=>{d.onclick=c=>{c.stopPropagation(),s?.(d.dataset.card)}})}var _t={};Re(_t,{applyWire:()=>Ts,exportPassPackage:()=>Et,hashState:()=>Q,importPassPackage:()=>$t,publicView:()=>ut,restore:()=>fe,snapshot:()=>Ms,stableStringify:()=>K,wireState:()=>Is});function Ms(e){return L(e)}function fe(e,t){let n=L(e);return n.config.__events=t.events,n.decks.opportunity.catalog=Object.fromEntries((t.cards.opportunity||[]).map(s=>[s.id,s])),n.decks.fate.catalog=Object.fromEntries((t.cards.fate||[]).map(s=>[s.id,s])),n.decks.item.catalog=Object.fromEntries((t.cards.item||[]).map(s=>[s.id,s])),n}function Is(e){return{meta:e.meta,pending:e.pending,log:e.log.slice(-30),report:e.report,winner:e.winner||null,board:{tiles:e.board.tiles.map(t=>({id:t.id,owner:t.owner}))},players:e.players,decks:{opportunity:{drawCount:e.decks.opportunity.draw.length,discardCount:e.decks.opportunity.discard.length},fate:{drawCount:e.decks.fate.draw.length,discardCount:e.decks.fate.discard.length},item:{drawCount:e.decks.item.draw.length,discardCount:e.decks.item.discard.length}}}}function Ts(e,t,n){let s=L(e);s.meta=t.meta,s.pending=t.pending,s.log=t.log,s.report=t.report,s.winner=t.winner,s.players=t.players;for(let i of t.board.tiles){let a=s.board.tiles.find(o=>o.id===i.id);a&&(a.owner=i.owner)}return s}function Et(e,t=0){let n=e.actionLog.filter(a=>a.seq>t),s=Es(e),i=L(e);return delete i.decks.opportunity.catalog,delete i.decks.fate.catalog,delete i.decks.item.catalog,delete i.config.__events,i.log=i.log.slice(-50),i.actionLog=[],{type:"pass-package",room:e.meta.room||"",version:e.meta.version,seed:e.meta.seed,seq:e.meta.seq,turn:e.meta.turn,month:e.meta.month,stateHash:Q(ut(e)),state:i,actions:n,nextActor:s,expectAction:$s(e),exportedAt:e.meta.turn}}function ut(e){return{seed:e.meta.seed,turn:e.meta.turn,fromMonthSettle:!!e.meta.fromMonthSettle,month:e.meta.month,currentSeat:e.meta.currentSeat,rngState:e.meta.rngState,board:e.board.tiles.map(t=>({id:t.id,owner:t.owner})),players:e.players.map(t=>({id:t.id,seat:t.seat,pos:t.pos,cash:t.cash,deposit:t.deposit,alive:t.alive,rankId:t.rankId,salaryCoefficient:t.salaryCoefficient,rankCoefficient:t.rankCoefficient,loan:t.loan,properties:t.properties.map(n=>({tileId:n.tileId,monthsLeft:n.monthsLeft,visitsThisMonth:n.visitsThisMonth||0,financed:n.financed||0})),vehicles:t.vehicles.map(n=>({id:n.id,heldMonths:n.heldMonths,financed:n.financed||0,monthly:n.monthly||0,monthsLeft:n.monthsLeft||0,face:n.face||0,mood:n.mood||0})),cards:t.cards,grants:t.grants,flags:t.flags,passiveIncome:t.passiveIncome,livingCostDelta:t.livingCostDelta,loanRateDelta:t.loanRateDelta,aiPlan:t.aiPlan?{targetNW:t.aiPlan.targetNW,floorBase:t.aiPlan.floorBase,expectedVisits:t.aiPlan.expectedVisits,milestones:t.aiPlan.milestones,depositTarget:t.aiPlan.depositTarget,depositDone:t.aiPlan.depositDone}:null}))}}function $t(e,t,n,s){if(!e||e.type!=="pass-package")return{ok:!1,reason:"不是有效的回合包文件"};let i=t&&t.meta.version||n.uiText.version;if(e.version!==i)return{ok:!1,reason:`版本不符：包 ${e.version} vs 本地 ${i}`};if(e.state){let r;try{r=fe(e.state,n)}catch(d){return{ok:!1,reason:"状态快照损坏，无法恢复："+d.message}}let l=Q(ut(r));return l!==e.stateHash?{ok:!1,reason:`状态校验失败：快照哈希 ${l}，包声明 ${e.stateHash}（文件可能被改动）`}:{ok:!0,state:r,actor:e.nextActor}}let a=t;for(let r of e.actions){let l=s(a,r.action,n);if(l.reject)return{ok:!1,reason:`重放失败（seq ${r.seq}）：${l.reject}`};a=l.state}let o=Q(ut(a));return o!==e.stateHash?{ok:!1,reason:`状态校验失败：本机重放得 ${o}，包里是 ${e.stateHash}`}:{ok:!0,state:a,actor:e.nextActor}}function Es(e){let t=e.players[e.meta.currentSeat];return t?{seat:t.seat,playerId:t.id,name:t.name}:null}function $s(e){switch(e.meta.phase){case"ROLL":return"ROLL_DICE";case"TILE_EVENT":return"DISMISS_MODAL";case"POST_ACTION":return"END_TURN";default:return"END_TURN"}}function ue(e){let t=e.state,n=Et(t,0),s=JSON.stringify(n,null,2),i=n.nextActor,a=i&&i.playerId===t.players[t.meta.currentSeat]?.id,o=t.players[t.meta.currentSeat],r=`
+    <div class="quote">
+      <div>轮到 <b>${i?xt(i.name):"—"}</b> 操作了。</div>
+      <div>回合包含完整存档状态与操作记录，状态指纹
+        <code style="font-family:var(--mono);font-size:11px">${n.stateHash}</code>。</div>
+    </div>
+    ${o?`<div class="settle-table">
+      <div class="st-row"><span class="k">当前回合</span><span class="v">${t.meta.turn} / ${t.meta.maxRounds}</span></div>
+      <div class="st-row"><span class="k">${xt(o.name)} 的净资产</span><span class="v">${M(o.netWorth)}</span></div>
+    </div>`:""}
+    <div class="modal-detail">
+      把这个文件发给下一位玩家。对方在游戏里点「导入回合包」即可继续。
+      校验不通过（文件损坏 / 被改过 / 版本不符）会明确提示。
+    </div>
+    <div class="opt-list" style="margin-top:10px">
+      <button class="opt" data-act="dl">
+        <div class="opt-head"><span class="opt-name">下载回合包文件</span>
+        <span class="opt-price">${(s.length/1024).toFixed(1)} KB</span></div>
+        <div class="opt-meta">文件名 turn-${n.seq}.json</div>
+      </button>
+      <button class="opt" data-act="copy">
+        <div class="opt-head"><span class="opt-name">复制到剪贴板</span></div>
+        <div class="opt-meta">不方便传文件时用这个</div>
+      </button>
+    </div>`;e.modal.open("导出回合包",r,"📦",[{label:"关闭",value:"close",cls:"ghost"}]),e.modal.onClick(l=>{if(l==="close"||l==="__foot__"){e.modal.close();return}if(l==="dl"){let d=new Blob([s],{type:"application/json"}),c=document.createElement("a");c.href=URL.createObjectURL(d),c.download=`turn-${n.seq}.json`,c.click(),setTimeout(()=>URL.revokeObjectURL(c.href),1e3),e.toast.show("已下载，发给下一位吧","good")}else l==="copy"&&navigator.clipboard?.writeText(s).then(()=>e.toast.show("已复制到剪贴板","good")).catch(()=>e.toast.show("复制失败，改用下载吧","warn"))})}function me(e,t){e.modal.open("导入回合包",`
+    <div class="quote">
+      <div>选择上一位玩家发给你的回合包文件（<code>turn-*.json</code>）。</div>
+      <div>导入后会校验状态指纹，不一致会明确告知原因。</div>
+    </div>
+    <div class="opt-list" style="margin-top:10px">
+      <button class="opt" data-act="file">
+        <div class="opt-head"><span class="opt-name">选择文件</span></div>
+        <div class="opt-meta">从下载目录里挑 turn-开头的 json</div>
+      </button>
+      <button class="opt" data-act="paste">
+        <div class="opt-head"><span class="opt-name">粘贴内容</span></div>
+        <div class="opt-meta">对方用「复制到剪贴板」时用这个</div>
+      </button>
+    </div>
+    <input type="file" accept=".json,application/json" id="passFile" style="display:none">`,"📥",[{label:"取消",value:"cancel",cls:"ghost"}]),e.modal.onClick((i,a)=>{if(i==="cancel"||i==="__foot__"){e.modal.close();return}i==="file"?document.getElementById("passFile").click():i==="paste"&&navigator.clipboard?.readText().then(o=>pe(e,t,o)).catch(()=>e.toast.show("读不到剪贴板，改用选文件","warn"))});let s=document.getElementById("passFile");s&&(s.onchange=async()=>{let i=s.files&&s.files[0];if(!i)return;let a=await i.text();pe(e,t,a)})}function pe(e,t,n){let s;try{s=JSON.parse(n)}catch{e.toast.show("不是有效的 JSON 文件","bad");return}let i=$t(s,e.state,t,G);if(!i.ok){e.modal.open("校验失败",`
+      <div class="quote"><div>${xt(i.reason)}</div></div>
+      <div class="modal-detail">
+        常见原因：① 文件传输不完整；② 双方版本不一致（数据文件被改过）；
+        ③ 文件被修改过。请让对方重新导出。
+      </div>`,"⚠️",[{label:"知道了",value:"know",cls:"primary"}]),e.modal.onClick(a=>{(a==="know"||a==="__foot__")&&e.modal.close()});return}e.state=i.state,e.modal.close(),e.toast.show(`回合包校验通过，继续 ${i.actor?i.actor.name:""} 的回合`,"good"),e.reportShown=!1,e.render(),e.step()}var xt=e=>String(e??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");var ye="monopoly-office-settings",st=Object.freeze({sfx:!0,bgm:!0,focusDefault:!1,animSpeed:1});function mt(){try{let e=localStorage.getItem(ye);if(!e)return{...st};let t=JSON.parse(e);return{...st,...t}}catch{return{...st}}}function ge(e){try{localStorage.setItem(ye,JSON.stringify(e))}catch{}}function be(e,t=mt()){if(e.soundOn=!!t.sfx,e.bgmOn=!!t.bgm,e.settings={...t},e.audio.enabled=!!t.sfx,e.audio.bgmOn=!!t.bgm,e.board){let i=t.animSpeed||1;e.board.stepMs=Math.max(24,Math.round(72/i)),e.board.diceMs=Math.max(400,Math.round(1100/i))}try{t.bgm?e.audio.startBgm():e.audio.stopBgm()}catch{}let n=document.getElementById("btnSound");n&&(n.textContent=t.sfx?"🔊":"🔇");let s=document.getElementById("btnBgm");s&&(s.textContent=t.bgm?"🎵":"🔕")}function ve(e,t){let n=mt(),s=new z(document.getElementById("modalLayer")),i=`
+    <div class="set-wrap">
+      <div class="set-row">
+        <div class="set-label">
+          <div class="set-name">🔊 音效</div>
+          <div class="set-hint">掷骰、买地、破产等事件触发的短音</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="setSfx" ${n.sfx?"checked":""}>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="set-row">
+        <div class="set-label">
+          <div class="set-name">🎵 背景音乐</div>
+          <div class="set-hint">每回合推进时播放的循环 BGM</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="setBgm" ${n.bgm?"checked":""}>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="set-row">
+        <div class="set-label">
+          <div class="set-name">🎯 进入游戏默认专注模式</div>
+          <div class="set-hint">开启后只保留棋盘，按 F11 可随时切换</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="setFocus" ${n.focusDefault?"checked":""}>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="set-row">
+        <div class="set-label">
+          <div class="set-name">⚡ 动画速度</div>
+          <div class="set-hint">移动棋子、结算翻页的快慢</div>
+        </div>
+        <div class="seg" role="radiogroup">
+          <button data-speed="0.5" class="${n.animSpeed===.5?"on":""}">慢</button>
+          <button data-speed="1.0" class="${n.animSpeed===1?"on":""}">正常</button>
+          <button data-speed="2.0" class="${n.animSpeed===2?"on":""}">快</button>
+        </div>
+      </div>
+    </div>
+  `,a=[{label:"恢复默认",value:"reset",cls:"ghost"},{label:"保存",value:"save"}];s.open("⚙️ 设置",i,"⚙️",a),s.onClick((o,r)=>{let l=o==="__foot__"?r?.dataset?.foot:o;if(l==="save"){let d=document.querySelector(".seg button.on"),c={sfx:!!document.getElementById("setSfx")?.checked,bgm:!!document.getElementById("setBgm")?.checked,focusDefault:!!document.getElementById("setFocus")?.checked,animSpeed:d?parseFloat(d.dataset.speed):1};ge(c),be(e,c),t?.(c),s.close()}else l==="reset"&&(ge({...st}),be(e,{...st}),s.close())}),document.querySelectorAll(".seg button").forEach(o=>{o.addEventListener("click",()=>{document.querySelectorAll(".seg button").forEach(r=>r.classList.remove("on")),o.classList.add("on")})})}var _s=document.getElementById("app"),Pt=class{constructor(t){this.data=t,this.audio=new ft,this.modal=new z(document.getElementById("modalLayer")),this.toast=new pt(document.getElementById("toastLayer")),this.board=new ht(document.getElementById("board"),t.board),this.state=null,this.cfg=null,this.busy=!1,this.soundOn=!0,this.bgmOn=!0,this.settings=mt(),this.watchdogMs=2e4}start(t){this.cfg=t;let n=[];if(t.mode==="solo"){n.push({id:"p0",name:t.names[0],avatar:t.avatars[0],color:t.colors[0],isAI:!1});let o=t.aiCount??3;for(let r=0;r<o;r++){let l=t.aiProfiles[r%t.aiProfiles.length]||"greedy";n.push({id:"a"+r,name:this.data.aiProfiles.profiles.find(d=>d.id===l)?.name||"AI",avatar:ct[l],color:this.data.board.colorTokens[(r+1)%6],isAI:!0,aiProfile:l})}}else{let o=t.humanCount||(t.mode==="hotseat"?2:4),r=new Set;for(let l=0;l<o;l++){let d=(t.names[l]||"").trim(),c=t.colors[l];d||(d="玩家"+(l+1)),r.has(d)&&(d+="-"+(l+1)),r.has(c)&&(c=this.data.board.colorTokens.find(h=>!r.has(h))),r.add(d),r.add(c),n.push({id:"p"+l,name:d,avatar:t.avatars[l]||"panda",color:c,isAI:!1})}this.roomId=t.roomId||null}let i=t.winCondition==="bankruptcy"?999:this.data.config.game.maxRounds,a=G(null,{type:m.NEW_GAME,players:n,seed:Date.now()%2147483647,mode:t.mode,winCondition:t.winCondition,maxRounds:i},this.data);this.state=a.state,this.board.setBoard(this.data.board),this.board.resize(),this.board.draw(this.state,this.state.players),this.render(),this.bindTopButtons(),this.armWatchdog(),this.step()}get cur(){return this.state.players[this.state.meta.currentSeat]}get isMyTurn(){return this.cur&&!this.cur.isAI&&!this.state.netPlayerIds?.has(this.cur.id)}guardQueue(){let t=this.state?.meta?.currentSeat??-1;this.queueSeat!==t&&(this.queue=null,this.queueSeat=t)}dispatch(t){let n=G(this.state,t,this.data);return n.reject?(this.toast.show(n.reject,"warn"),this.queue&&(this.queue=null,this.step()),!1):(this.state=n.state,this.applyDiff(n.diff),this.render(),this.step(),!0)}applyDiff(t){for(let n of t)switch(n.t){case"dice":this.audio.dice(n.value),this.board.showDice(n.value);break;case"move":n.from!==void 0&&n.steps>0&&(this.board.moveToken(n.id,n.from,n.to,n.steps),this.board.setHighlight(n.to));break;case"cash":{let s=this.state.players.find(i=>i.id===n.id);s&&n.from!=null&&n.to!=null&&Math.abs(n.to-n.from)>300&&(n.to>n.from&&this.audio.cash(),this.floatText(s,(n.to>n.from?"+":"")+M(n.to-n.from),n.to>n.from?"pos":"neg"));break}case"rank":tt[n.to]==="专员"||n.to==="manager"||n.to==="director"?this.audio.up():this.audio.down();break;case"bankrupt":this.audio.bankrupt();break;case"warn":this.audio.sigh();break;case"buyProperty":case"buyVehicle":this.audio.cash();break;case"card":{let s=this.state.players.find(a=>a.id===n.id),i=(this.data.cards[n.deck]||[]).find(a=>a.id===n.cardId);s&&i&&(this.toast.show(`${s.name} ${n.draw?"抽到":"获得"}【${i.name}】`,"ok"),this.audio.popup());break}case"shield":this.toast.show("☂️ 折叠伞挡下了一次损失","good"),this.audio.popup();break;case"useCard":{let s=this.state.players.find(o=>o.id===n.id),a=[...this.data.cards.item||[],...this.data.cards.opportunity||[],...this.data.cards.fate||[]].find(o=>o.id===n.cardId);s&&a&&this.showCardSplash(a,s);break}}}showCardSplash(t,n){let s=document.getElementById("splashLayer");s||(s=document.createElement("div"),s.id="splashLayer",s.className="splash-layer",document.body.appendChild(s)),s.innerHTML=`<div class="item-splash">
+      <div class="splash-emoji">${F[t.icon]||"🎁"}</div>
+      <div class="splash-name">${_(n.name)} 使用了「${_(t.name)}」</div>
+      <div class="splash-detail">${_(t.detail||"")}</div>
+    </div>`,this.audio.popup(),clearTimeout(this._splashTimer),this._splashTimer=setTimeout(()=>{s.innerHTML=""},1400)}floatText(t,n,s){let i=this.board.tokens().find(o=>o.id===t.id);if(!i)return;let a=document.createElement("div");a.className="float-text "+s,a.textContent=n,a.style.left=i.cx*(this.board.size/this.board.canvas.clientWidth)+"px",a.style.top=i.cy*(this.board.size/this.board.canvas.clientHeight)-20+"px",a.style.color=s==="pos"?"var(--success)":"var(--danger)",document.querySelector(".board-wrap").appendChild(a),setTimeout(()=>a.remove(),1e3)}armWatchdog(){this.watchdogTimer&&clearInterval(this.watchdogTimer),this.watchKey=null,this.watchStart=0,this.watchFires=0,this.watchdogTimer=setInterval(()=>this.checkWatchdog(),1e3)}checkWatchdog(){let t=this.state;if(!t||t.meta.phase===R.GAME_OVER)return;let n=this.cur;if(!n)return;if(!n.isAI){this.watchKey=null,this.watchFires=0;return}if(document.hidden){this.watchStart=Date.now();return}let s=`${t.meta.currentSeat}:${t.meta.turn}`;if(this.watchKey!==s){this.watchKey=s,this.watchStart=Date.now(),this.watchFires=0;return}let i=Date.now()-this.watchStart;if(i<this.watchdogMs)return;this.watchFires++,this.watchStart=Date.now(),this.queue=null,this.aiRunning=!1,this.autoKey=null,this.autoTries=0,this.reportShown=!1,console.warn(`[watchdog] AI 回合卡住 ${Math.round(i/1e3)}s（seat=${t.meta.currentSeat} phase=${t.meta.phase}），第 ${this.watchFires} 次强制推进`);let a=n.id,o=t.meta.phase;if(t.pending.modal){this.toast.show("AI 反应超时，已自动推进","warn"),this.dispatch({type:m.DISMISS_MODAL,playerId:a});return}if(o===R.ROLL||o===R.TURN_START){this.toast.show("AI 反应超时，已自动推进","warn"),this.dispatch({type:m.ROLL_DICE,playerId:a});return}if(o===R.TILE_EVENT||o===R.MOVING){this.dispatch({type:m.DISMISS_MODAL,playerId:a});return}if(o===R.POST_ACTION){this.dispatch({type:m.END_TURN,playerId:a});return}this.step()}step(){if(this.state.meta.phase===R.GAME_OVER){this.showGameOver();return}let t=this.cur;if(t){if(this.guardQueue(),!t.isAI){if(this.state.pending.modal){if(this.board.dice){setTimeout(()=>this.step(),100);return}this.showModal(this.state.pending.modal);return}if(this.state.report&&!this.reportShown){this.reportShown=!0,this.showSettle(this.state.report);return}if(this.queue&&this.queue.length){this.runQueue();return}this.renderActions(),this.handoffShown||(this.handoffShown=!0,this.handoffPrompt(t));return}if(this.handoffShown=!1,this.queue&&this.queue.length){this.runQueue();return}if(this.state.pending.modal){this.autoResolveModal();return}if(this.state.report&&!this.reportShown)if(this.reportShown=!0,t.isAI)this.dismissReport();else{this.showSettle(this.state.report);return}this.aiRunning||(this.aiRunning=!0,setTimeout(()=>{if(this.aiRunning=!1,!this.state||this.state.meta.phase===R.GAME_OVER)return;let n=this.cur;if(!n||!n.isAI)return;let s=this.state.meta.phase;if(s===R.ROLL||s===R.TURN_START){this.dispatch({type:m.ROLL_DICE,playerId:n.id});return}let i=Z(this.state,n.id,this.data)||[];i.length?(this.queue=i.slice(1).map(a=>({...a,playerId:n.id})),this.dispatch({...i[0],playerId:n.id})):this.dispatch({type:m.END_TURN,playerId:n.id})},this.board.anim.size?90:16))}}autoResolveModal(){let t=this.state.pending.modal,n=this.cur;if(!t||!n)return;let s=`${this.state.meta.seq}:${t.kind}:${t.title}`;if(this.autoKey===s?this.autoTries=(this.autoTries||0)+1:(this.autoKey=s,this.autoTries=1),this.autoTries>6){this.autoKey=null,this.autoTries=0,this.dispatch({type:m.DISMISS_MODAL});return}if(!(t.kind==="buy"||t.kind==="vehicle")){this.dispatch({type:m.DISMISS_MODAL});return}let a=Z(this.state,n.id,this.data)||[];if(!a.some(l=>l.type===m.BUY_PROPERTY&&l.tileId===t.tileId||l.type===m.BUY_VEHICLE&&l.tileId===t.tileId)){this.dispatch({type:m.DISMISS_MODAL});return}let r=a.find(l=>l.type===m.BUY_PROPERTY&&l.tileId===t.tileId||l.type===m.BUY_VEHICLE&&l.tileId===t.tileId);this.dispatch({...r,playerId:n.id,targetId:n.id})}dismissReport(){this.reportShown=!1,this.modal.el.classList.contains("show")&&this.modal.close(),this.step()}runQueue(){let t=this.queue.shift();if(!t){this.step();return}if(this.cur?.isAI){setTimeout(()=>this.dispatch(t),16);return}this.dispatch(t)}showModal(t){let n=F,s=t.icon&&n[t.icon]?n[t.icon]:"💬",i="";if(t.kind==="buy"){let o=this.state.board.tiles.find(r=>r.id===t.tileId);i=`<div class="quote">${_((t.text||"").replace(/\n/g,"<br>"))}</div>`,i+=`<div class="opt-list">
+        <button class="opt" data-act="buy">
+          <div class="opt-head"><span class="opt-name">买下 ${_(t.title)}</span>
+          <span class="opt-price">${M(t.price)}</span></div>
+          <div class="opt-meta">首付 ${M(Math.round(t.price*(1-this.data.config.economy.mortgageRatio)))} ·
+            月供 ${M(this.monthlyOf(t.price))} · 月租 ${M(o.payload.rent||0)}（每月约 ${(o.payload.rent||0)*1.05|0} 到手）</div>
+        </button>
+        <button class="opt" data-act="skip">
+          <div class="opt-head"><span class="opt-name">再想想</span></div>
+          <div class="opt-meta">保持现金也是一种策略</div>
+        </button>
+      </div>`,this.modal.open(t.title||"要不要买？",i,s,[]),this.modal.onClick((r,l)=>{r==="buy"?this.dispatch(U.buyProperty(t.tileId)):this.dispatch(U.dismissModal()),this.afterModal()});return}if(t.kind==="vehicle"){let r=this.state.board.tiles.find(d=>d.id===t.tileId).payload.options||[],l=this.data.config.economy.vehicleMonths||24;i=`<div class="quote">${_((t.text||"").replace(/\n/g,"<br>"))}</div>`,i+='<div class="opt-list">';for(let d of r){let c=Math.round(d.price*(1-this.data.config.economy.mortgageRatio));i+=`<button class="opt" data-act="veh" data-id="${d.id}">
+          <div class="opt-head"><span class="opt-name">${_(d.name)}</span>
+          <span class="opt-price">${M(d.price)}</span></div>
+          <div class="opt-meta">首付 ${M(c)} · 月供 ${M(this.monthlyOf(d.price,l))} ·
+            月省生活 ${M(d.livingDiscount)} · 面子 +${d.face} 心情 +${d.mood}
+            ${d.tag?"· "+_(d.tag):""}</div>
+        </button>`}i+=`<button class="opt" data-act="skip">
+          <div class="opt-head"><span class="opt-name">先不买</span></div>
+          <div class="opt-meta">地铁也挺香的</div>
+        </button></div>`,i+=`<div class="modal-detail">车不只是代步：每月省下的生活开销会直接计入月结。月供按车贷 ${l} 期计算。</div>`,this.modal.open("看车",i,"🚗",[]),this.modal.onClick((d,c)=>{d==="veh"?this.dispatch(U.buyVehicle(t.tileId,c.dataset.id)):d==="skip"&&this.dispatch(U.dismissModal()),this.afterModal()});return}if(t.kind==="error"){this.modal.open(t.title,`<div class="quote">${_(t.text)}</div>`,"⚠️",[{label:"知道了",value:"know",cls:"primary"}]),this.modal.onClick(o=>{(o==="know"||o==="__foot__")&&(this.dispatch(U.dismissModal()),this.afterModal())}),this.audio.sigh();return}if(t.kind==="peek"){let o=t.target;i=`<div class="quote">${_(t.text)}</div>
+        <div class="settle-table">
+          <div class="st-row"><span class="k">净资产</span><span class="v">${M(o.netWorth)}</span></div>
+          <div class="st-row"><span class="k">现金</span><span class="v">${M(o.cash)}</span></div>
+          <div class="st-row"><span class="k">存款</span><span class="v">${M(o.deposit)}</span></div>
+          <div class="st-row"><span class="k">房产</span><span class="v">${o.properties.length?_(o.properties.join("、")):"无"}</span></div>
+          <div class="st-row"><span class="k">车辆</span><span class="v">${o.vehicles.length?_(o.vehicles.join("、")):"无"}</span></div>
+        </div>
+        <div class="modal-detail">知己知彼 —— 该找谁谈判，心里有数了。</div>`,this.modal.open(t.title,i,s||"👁️",[{label:"知道了",value:"know",cls:"primary"}]),this.modal.onClick(r=>{(r==="know"||r==="__foot__")&&(this.dispatch(U.dismissModal()),this.afterModal())});return}i=`<div class="quote">${(Array.isArray(t.text)?t.text:[t.text]).map(o=>`<div>${_(o)}</div>`).join("")}</div>`,t.detail&&(i+=`<div class="modal-detail">${_(t.detail)}</div>`),t.amount!=null&&(i+=`<div class="modal-detail">实付 ${M(t.amount)} 元${t.ownerName?"（对方："+_(t.ownerName)+"）":""}</div>`),this.modal.open(t.title||t.cardName||"发生了什么",i,s,[{label:"继续",value:"next",cls:"primary"}]),this.modal.onClick((o,r)=>{(o==="next"||o==="__foot__")&&(this.dispatch(U.dismissModal()),this.afterModal())})}monthlyOf(t,n){let s=this.data.config.economy,i=Math.round(t*s.mortgageRatio),a=s.loanInterestRate,o=n||s.mortgageMonths||36;return Math.round(i*a/(1-Math.pow(1+a,-o)))}afterModal(){if(this.modal.close(),this.state.meta.phase===R.GAME_OVER){this.showGameOver();return}this.step()}showSettle(t){let n=t.reports.map(a=>{let o=a.net;return`<div class="st-row"><span class="k">${_(a.player)}</span>
+        <span class="v ${o>=0?"pos":"neg"}">${o>=0?"+":""}${M(o)}</span></div>`}),s=t.reports[0],i=`
+      <div class="settle-table">
+        <div class="st-row"><span class="k">应发工资</span><span class="v pos">${M(s.salary)}</span></div>
+        <div class="st-row"><span class="k">收租收入</span><span class="v pos">${M(s.rentIncome)}</span></div>
+        <div class="st-row"><span class="k">生活开销</span><span class="v neg">-${M(s.living)}</span></div>
+        <div class="st-row"><span class="k">月供支出</span><span class="v ${s.debt?"neg":""}">-${M(s.debt)}</span></div>
+        <div class="st-row"><span class="k">贷款利息</span><span class="v ${s.interestPaid?"neg":""}">-${M(s.interestPaid)}</span></div>
+        <div class="st-row"><span class="k">存款利息</span><span class="v pos">+${M(s.interestEarned)}</span></div>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--text-2)">各玩家本月净收支</div>
+      <div class="settle-table">${n.join("")}</div>`;this.modal.open(`月度结算 · 第 ${t.month} 个月`,i,"💵",[{label:"继续",value:"next",cls:"primary"}]),this.modal.onClick(a=>{a!=="next"&&a!=="__foot__"||(this.modal.close(),this.reportShown=!1,this.state.report=null,this.step())})}showGameOver(){let t=this.state,n=t.players.slice().sort((c,h)=>c.alive!==h.alive?c.alive?-1:1:E(t,h.id)-E(t,c.id)),s=n[0],i=["🥇","🥈","🥉"],a=["92px","120px","68px"],r=`<div class="podium">${[n[1],n[0],n[2]].filter(Boolean).map(c=>{let h=n.indexOf(c);return`<div class="podium-col ${h===0?"champ":""}">
+        <canvas class="podium-cv" width="56" height="56" data-char="${w[c.avatar]?c.avatar:"coder"}"></canvas>
+        <div class="podium-name">${_(c.name)}${c.isAI?" 🤖":""}</div>
+        <div class="podium-worth">${M(E(t,c.id))}</div>
+        <div class="podium-block" style="height:${a[h]||"56px"}">
+          <span>${i[h]||h+1}</span>
+        </div>
+      </div>`}).join("")}</div>`,l=n.slice(3).map((c,h)=>`
+      <div class="rank-item">
+        <div class="rank-no">${h+4}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500">${_(c.name)}${c.isAI?" 🤖":""} ${c.alive?"":"（已出局）"}</div>
+          <div style="font-size:11px;color:var(--text-2)">${tt[c.rankId]} ·
+            房产 ${c.properties.length} · 车 ${c.vehicles.length}</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px">${M(E(t,c.id))}</div>
+      </div>`).join(""),d=t.meta.winCondition==="bankruptcy"?"活到最后的人赢。":`${this.data.config.game.maxRounds} 回合结束，资产最高者胜出。`;this.modal.open(`${s.name} 通关`,`<div class="sub" style="color:var(--text-2);margin-bottom:14px;text-align:center">${d}</div>
+       ${r}
+       ${l?`<div class="rank-list" style="margin-top:14px">${l}</div>`:""}`,"🏆",[{label:"🔄 再来一局",value:"restart",cls:"primary"},{label:"🚪 退出游戏",value:"exit",cls:"ghost"}]),this.modal.onClick((c,h)=>{let p=c==="__foot__"?h?.dataset?.foot:c;p==="restart"?(this.modal.close(),this.reportShown=!1,this.handoffShown=!1,this.start(this.cfg)):p==="exit"&&this.exitGame()}),document.querySelectorAll("#modalLayer canvas.podium-cv").forEach(c=>{V(c,c.dataset.char,w)}),this.audio.up()}exitGame(){this.audio.stopBgm();try{window.close()}catch{}setTimeout(()=>{document.body.innerHTML=`
+        <div class="farewell">
+          <div class="farewell-emoji">🏢</div>
+          <h1>感谢游玩《大富翁 · 工位版》</h1>
+          <p>现在可以安全地关闭这个页面了。</p>
+          <button class="btn primary" onclick="location.reload()">重新打开游戏</button>
+        </div>`},250)}render(){le(document.getElementById("topbar"),this.state,this.data),de(document.getElementById("side"),this.state,this.data,t=>{this.board.setHighlight(this.state.players.find(n=>n.id===t)?.pos),this.audio.click()}),this.board.draw(this.state,this.state.players),he(document.getElementById("board"),this.state,this.data,t=>{let[n,s]=t.split(":"),i=this.state.players[this.state.meta.currentSeat];if(!i||i.isAI){this.toast.show("现在不是你的回合","warn");return}if(!i.cards[n]?.includes(s)){this.toast.show("这张卡不在你手上","warn");return}if(n==="item"){this.dispatch({type:"USE_ITEM",cardId:s})?this.toast.show("已使用道具","ok"):this.toast.show("这个道具现在用不了","warn");return}let a=(this.data.cards[n]||[]).find(r=>r.id===s);if(!a)return;let o=n==="opportunity"?"机会卡（抽到时打）":"命运卡（命中格子时打）";this.modal.open(`📜 ${a.name}`,`<div class="quote">${_((a.text||[]).join(`
+`))}</div>
+         <p style="color:var(--text-3);margin-top:10px">${_(a.detail||"")}</p>
+         <p style="color:var(--gold);margin-top:10px;font-size:12px">${o}——在对应提示出现时点「打机会卡」即可</p>`,"📜",[{label:"知道了",value:"close"}]),this.modal.onClick(r=>{(r==="__foot__"||r==="close")&&this.modal.close()})}),this.renderActions()}bindTopButtons(){let t=document.getElementById("topbar");t.__bound||(t.__bound=!0,t.addEventListener("click",n=>{let s=n.target.id;s==="btnSound"?n.target.textContent=this.audio.toggle()?"🔊":"🔇":s==="btnBgm"?n.target.textContent=this.audio.toggleBgm()?"🎵":"🔕":s==="btnHelp"?this.showHelp():s==="btnExport"?ue(this):s==="btnImport"?me(this,this.data):s==="btnSettings"&&ve(this,i=>{this.toast.show("设置已保存","info",1500)})}))}showHelp(){let t=this.data.config.economy,n=(this.data.config.game.maxRounds/this.data.config.game.roundsPerMonth).toFixed(0);this.modal.open("怎么玩",`
+      <div style="line-height:1.95;font-size:13px">
+        <b>回合流程</b>：掷骰子 → 移动 → 落位事件 → 交易/用道具 → 结束回合<br>
+        每 <b>${this.data.config.game.roundsPerMonth} 回合 = 1 个月</b>，
+        月末结算：工资 + 收租 − 生活开销 − 月供 − 利息 + 存款利息<br><br>
+
+        <b>资产口径</b>：净资产 = 现金 + 存款 + 房产 + 车辆 − <b>负债</b><br>
+        资产最高者获胜。现金为负会先进入 <b>${t?this.data.config.game.bankruptcy.graceRounds:1} 个回合宽限期</b>，
+        仍不足则按 车 → 房 → 存款 顺序变卖，变卖后还不回来就出局。<br><br>
+
+        <b>房产怎么赚</b>：首付 ${((1-t.mortgageRatio)*100).toFixed(0)}%，贷款 ${t.mortgageMonths} 期。<br>
+        月收入 = 月租 × <b>本月被踩次数</b>；持有满 3 个月解锁升值溢价（第 6 个月满额，
+        ${n} 个月约涨 ${Math.round((Math.pow(1+t.propertyAppreciation,6)*(1+t.propertyAppreciation*6)-1)*100)}%）。<br>
+        <b>地块位置决定收入</b> —— 起点周边和转角人流量更高。<br><br>
+
+        <b>车怎么赚</b>：首付同比例、贷款 ${t.vehicleMonths} 期。价值在
+        <b>每月省生活开销 + 加面子/心情</b>，不是租金。<br><br>
+
+        <b>杠杆上限</b>：负债 / 总资产 超过上限就贷不出款了。<br>
+        <b>存款</b>月息 ${(t.depositInterestRate*100).toFixed(2)}%，<b>贷款</b>月息 ${(t.loanInterestRate*100).toFixed(2)}%。
+      </div>`,"❓",[{label:"知道了",value:"know",cls:"primary"}]),this.modal.onClick(s=>{(s==="know"||s==="__foot__")&&this.modal.close()})}renderActions(){let t=document.getElementById("actionbar");ce(t,this,this.state,this.data)}handoffPrompt(t){this.state.meta.mode==="solo"||!t||t.isAI||this.state.meta.mode!=="hotseat"&&this.state.meta.mode!=="lan"||(this.modal.open("请把设备交给下一位",`
+      <div class="quote" style="text-align:center;padding:18px 12px">
+        <div style="font-size:15px">轮到 <b>${_(t.name)}</b> 了</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--text-3)">
+          ${t.name} 看完屏幕后点「开始」</div>
+      </div>`,"🙋",[{label:"开始",value:"go",cls:"primary"}]),this.modal.onClick(n=>{(n==="go"||n==="__foot__")&&(this.modal.close(),this.renderActions())}))}};async function xs(){let e;try{e=await Nt("/data/")}catch(n){document.getElementById("setupRoot").innerHTML=`<div style="padding:40px;font-family:system-ui">
+        <h2>数据加载失败</h2><p>${_(n.message)}</p>
+        <p>请确认 data/ 目录存在，或用本地服务器打开（python -m http.server）。</p></div>`;return}let t=new Pt(e);window.__game=t,window.__reduce=G,window.__serialize=_t,Ps(),window.addEventListener("keydown",n=>{n.key==="F11"?(n.preventDefault(),At()):n.key==="Escape"&&document.body.classList.contains("focus-mode")&&At()}),ae(document.getElementById("setupRoot"),e,n=>{document.getElementById("setupRoot").innerHTML="",_s.classList.add("ready"),t.start(n),t.audio.resume(),t.bgmOn&&t.audio.startBgm()})}function At(){document.body.classList.toggle("focus-mode"),window.__game?.audio?.blip?.("soft")}function Ps(){if(document.querySelector(".focus-exit"))return;let e=document.createElement("button");e.className="focus-exit",e.textContent="退出专注 (F11)",e.onclick=()=>At(),document.body.appendChild(e)}function _(e){return String(e??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}xs();})();
+
+</script>
+</body>
+</html>

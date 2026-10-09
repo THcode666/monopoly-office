@@ -1,0 +1,1648 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="3eNPIT3vYqwZuLqR31GmZS">
+<head data-page-node-id="51o1XhBMhWZlPfkwuRjPhv">
+  <meta charset="utf-8" data-page-node-id="GfRIYcSFFUcHhUSFvJLywF">
+  <meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="jpUEujZfF8asyydmHqHt45">
+  <title>大富翁·工位版 · UI 概念设计文档</title>
+  <style>
+:root {
+  --bg: #1a1d24;
+  --bg-card: #242832;
+  --bg-soft: #2d313c;
+  --fg: #e8e6df;
+  --fg-mute: #9a9bab;
+  --fg-dim: #6c6f7d;
+  --accent: #f5c842;
+  --accent-2: #e8804f;
+  --blue: #4f80d8;
+  --purple: #9268d4;
+  --brown: #a07050;
+  --green: #5cb868;
+  --gold: #e8c66c;
+  --border: #3a3654;
+  --code-bg: #15171c;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+/* Cover */
+.cover {
+  background: linear-gradient(135deg, #2a2520 0%, #1a1d24 50%, #1f2530 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  margin-bottom: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--purple) 100%);
+}
+.cover h1:first-child { display: none; }
+.cover-meta {
+  display: flex; gap: 24px; flex-wrap: wrap;
+  font-size: 14px; color: var(--fg-mute);
+  margin-top: 16px;
+}
+.cover-meta span::before { content: '· '; color: var(--accent); }
+
+/* Typography */
+h1 { font-size: 36px; line-height: 1.2; margin: 0 0 24px; color: var(--fg); }
+h2 {
+  font-size: 26px; line-height: 1.3; margin: 56px 0 20px;
+  padding-bottom: 12px; border-bottom: 2px solid var(--border);
+  color: var(--fg);
+}
+h2::before {
+  content: '§'; color: var(--accent); margin-right: 12px;
+  font-family: 'DIN', monospace; font-weight: 700;
+}
+h3 {
+  font-size: 20px; line-height: 1.4; margin: 32px 0 12px;
+  color: var(--accent);
+}
+h3::before {
+  content: '▸'; color: var(--accent-2); margin-right: 8px;
+}
+h4 { font-size: 17px; margin: 24px 0 8px; color: var(--fg); }
+p { margin: 12px 0; color: var(--fg); }
+strong { color: var(--accent); }
+em { color: var(--fg-mute); font-style: normal; border-bottom: 1px dashed var(--fg-dim); }
+hr {
+  border: 0; height: 1px; background: var(--border);
+  margin: 48px 0;
+}
+
+/* Lists */
+ul, ol { padding-left: 24px; margin: 12px 0; }
+li { margin: 6px 0; }
+li::marker { color: var(--accent-2); }
+
+/* Code */
+code {
+  background: var(--code-bg);
+  color: #ffb86c;
+  padding: 2px 6px; border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 14px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px; margin: 20px 0;
+  overflow-x: auto;
+  font-size: 13px; line-height: 1.5;
+}
+pre code { background: transparent; padding: 0; color: var(--fg); }
+
+/* Tables */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 20px 0;
+  background: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+th, td {
+  text-align: left; padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+th {
+  background: var(--bg-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+tr:last-child td { border-bottom: 0; }
+tr:hover td { background: rgba(245, 200, 66, 0.05); }
+
+/* Blockquote */
+blockquote {
+  margin: 20px 0; padding: 16px 24px;
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  color: var(--fg-mute);
+}
+
+/* ASCII art boxes (start with ┌──┐ or ╔══╗) */
+pre:has(code) {
+  /* keep default */
+}
+
+/* Section anchors */
+h2, h3, h4 {
+  scroll-margin-top: 24px;
+}
+
+/* TOC */
+.toc {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 32px;
+  margin: 24px 0 48px;
+}
+.toc h2 { margin-top: 0; font-size: 18px; border: 0; padding: 0; }
+.toc h2::before { display: none; }
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { margin: 6px 0; }
+.toc a { color: var(--fg-mute); text-decoration: none; }
+.toc a:hover { color: var(--accent); }
+
+/* Color swatches in tables */
+td:has(strong:only-child) { font-weight: 600; }
+</style>
+</head>
+<body data-page-node-id="J1IwABr38D5Gtx1bi3Hv0L">
+  <div class="wrap" data-page-node-id="HrJ9pzxDZYdVhpyi37qwtQ">
+    <div class="cover" data-page-node-id="42sRt0Ho2wecJGKx7VTfAs">
+      <h1 data-page-node-id="vpwHYXFCFjYgp7Cvbf508p">🏢 「大富翁·工位版」UI 概念设计文档</h1>
+      <p data-page-node-id="6jwtYdF6WkwspBhFKFUTvt">版本：v1.0 · 交付给 UI / 视觉设计师的方案稿<br data-page-node-id="ZeiV0MdENWr7INVVzPtQ4Z">
+      视觉风格参考：网易《大富翁 11》（Q 版 2.5D 卡通、3D 半俯视棋盘、彩色分地段格子、中央装饰场景）<br data-page-node-id="mWzUwmamzaC6W7vWUUsr9P">
+      本文档目标：把"工位版"主题与参考图的高完成度视觉范式对齐，输出一份<strong data-page-node-id="ZwfIEZbL0qTwvX3CTjRebg">可直接照图施工</strong>的 UI 概念稿。</p>
+      <div class="cover-meta" data-page-node-id="ryvhThYittjeiatIYUEsRj">
+        <span data-page-node-id="GY6ABwap3sDDKxCBrArUHm">产品：大富翁·工位版</span>
+        <span data-page-node-id="F513HR8itDb2cAjchBBvb8">平台：Windows / Web</span>
+        <span data-page-node-id="UIUWfbnXH7RscClgFSjTAY">主题：写字楼办公室生态</span>
+        <span data-page-node-id="D55ZkCqLNa3gxVjJzQAM88">受众：2–6 人联机</span>
+        <span data-page-node-id="oO5Aznq4wuCYo2n8KZsXxn">2026-10-08</span>
+      </div>
+    </div>
+    <nav class="toc" data-page-node-id="Six8BBSk9E0Cmbrk0UzmQq">
+      <h2 data-page-node-id="hcRuo0BABTAFeaxeqkKbGC">📑 目录</h2>
+      <div class="toc" data-page-node-id="6qSjc9UKIhlIN1z5aaSQCj">
+<ul data-page-node-id="aZ37k6EPs7GVhEBt8Rc9Ck">
+<li data-page-node-id="TSRMBWKCf3deflyCVSBks0"><a href="#0" data-page-node-id="1Xg1TBIdaCnsWAxgCP8EjA">0. 项目速览</a></li>
+<li data-page-node-id="TvxoLkLO98hgBXdZ6lQcly"><a href="#1" data-page-node-id="cfrbJHlNKKwSxuwOwi5blu">1. 设计目标与灵感来源</a><ul data-page-node-id="Tcj6WA6ItXyQJqtTCSlIvS">
+<li data-page-node-id="WDGaulJqCRsR2suMDXDMMj"><a href="#11-11" data-page-node-id="FNC0KHmWbJ9mVYDUEKBAbw">1.1 大富翁 11 视觉范式拆解（来自参考截图）</a></li>
+<li data-page-node-id="VvOVG5ZL8XcvRTRKGOzBkX"><a href="#12" data-page-node-id="pmplnOu4AVYONcypObnR4P">1.2 工位版独有的视觉主张</a></li>
+</ul>
+</li>
+<li data-page-node-id="saaiSWuaigKdJDQT5F4H8n"><a href="#2" data-page-node-id="pWDnR3NkO6rwwCuoEctXbD">2. 视觉风格定义</a><ul data-page-node-id="OYxJjitNqHX8BbT9JWubCV">
+<li data-page-node-id="pKE6oUbQTG2zWZZ7hSKAGp"><a href="#21-color-tokens" data-page-node-id="4T7Uje9q6AQI33GxG6sTm0">2.1 色彩系统（Color Tokens）</a></li>
+<li data-page-node-id="iBM5oaOeUaSaY2lWXo3Yiq"><a href="#22" data-page-node-id="o76clpRJkJJ3i6ktyXG2XV">2.2 字体系统</a></li>
+<li data-page-node-id="ewlmUUGBMtrl5b5f7Nmeig"><a href="#23" data-page-node-id="J8Ktwu5PGSFDyQLTCIG5X2">2.3 图标风格</a></li>
+<li data-page-node-id="CaLTk5wXeaahYJeSUNfjPc"><a href="#24" data-page-node-id="nO7LKAX41t94sFP6VIjk32">2.4 光照与质感</a></li>
+<li data-page-node-id="vguR2v9SaVfPydDPVAm5Tn"><a href="#25" data-page-node-id="Nd8Z8feFagXkAPbA9Ak8Jy">2.5 动效原则</a></li>
+</ul>
+</li>
+<li data-page-node-id="3IUS63YSxLRMmSAPZCjAwR"><a href="#3" data-page-node-id="GRHEYOAlUYD7EJwWqcaAzA">3. 信息架构与界面布局</a><ul data-page-node-id="zsoY3AVtJoVMJmWdRwSe8S">
+<li data-page-node-id="XMrD0mtum3ZaXphrH0ntaE"><a href="#31-169-19201080" data-page-node-id="Jd1UzkZbtaptV0n4NCALVz">3.1 主界面分区（16:9 1920×1080 基线）</a></li>
+<li data-page-node-id="DD0v63PDlVFGE6xqHL7AUl"><a href="#32" data-page-node-id="l7o4TNJzALZwEpP2R3z1w9">3.2 各模块详细规范</a></li>
+<li data-page-node-id="J06dGymCTRhZa9y22STFEB"><a href="#33-40" data-page-node-id="6zovYonEpgUmkcCm3E0u0h">3.3 棋盘 40 格 + 中央场景</a></li>
+<li data-page-node-id="9KJV0IbvxEDqVVris8qGOl"><a href="#34-6" data-page-node-id="aCBG01mPzecZoGk5M4NX09">3.4 角色立绘规范（6 职级差异化设计）</a></li>
+</ul>
+</li>
+<li data-page-node-id="U5UCoVG4ojmSojwuuQYv5n"><a href="#4" data-page-node-id="tuqiNzVYVlVR8rUpo1foyU">4. 交互流程说明</a><ul data-page-node-id="39MngMTBeXJUTMVQR1UEiL">
+<li data-page-node-id="D3VRA2A6caebzfbscdtdtJ"><a href="#41" data-page-node-id="lBj1VXJAaa9QFqv9MeBMxB">4.1 总流程</a></li>
+<li data-page-node-id="UyvcTeMwcE7yWiraX6w37r"><a href="#42" data-page-node-id="M8KFlyYkrCRD257ALTjmkd">4.2 关键交互细节</a></li>
+<li data-page-node-id="PXBMVa79W3iYuAK3lAxLuc"><a href="#43" data-page-node-id="MaMKhFnWk8nVGwbc9am0c6">4.3 状态可视化</a></li>
+<li data-page-node-id="bvMxPlm8mk1BK08AwWjaqO"><a href="#44-focus-mode" data-page-node-id="zbwX9btAsaqF6Cz1ec21wh">4.4 专注模式（Focus Mode）</a></li>
+</ul>
+</li>
+<li data-page-node-id="1aV6lOiNS4IefyCmwsHDXH"><a href="#5-3" data-page-node-id="uc3mJFasnDSKv6XFgG5Q05">5. 典型场景草图（3 个）</a><ul data-page-node-id="j81maKpYgOwz013xPTDcZw">
+<li data-page-node-id="IKQy2FgwYtQvbKXQicpJ5H"><a href="#a" data-page-node-id="bNd45woUeThmKbfV3Bo2qd">场景 A · 起始页面（主菜单）</a></li>
+<li data-page-node-id="2DWfA9i0IfvEeaAfvsVwGn"><a href="#b" data-page-node-id="ZvhXeZqSSBaZIukkwCjIoB">场景 B · 回合进行中</a></li>
+<li data-page-node-id="cOKUlVSHhNWqLGUCR0mmqE"><a href="#c" data-page-node-id="P5xvCQ4dUxKap10OoEjKq2">场景 C · 事件触发（机遇卡）</a></li>
+</ul>
+</li>
+<li data-page-node-id="vM4Ujguwk5QhrJAWFqXKN2"><a href="#6_2" data-page-node-id="MePBU2ydmVjgUqDLuVYCPG">6. 资产清单（交付清单）</a></li>
+<li data-page-node-id="1mCxyO18fGJQAM59E9DrK4"><a href="#7_1" data-page-node-id="hA1KHslPHU1ou2Md0C1tR4">7. 设计原则与红线</a><ul data-page-node-id="8sP6mAeS6P0vPFsCg0PdVS">
+<li data-page-node-id="MghgPGfgO9Ssd7qa9YcNLC"><a href="#71" data-page-node-id="0DTzQxCxkjYhL1K1HoCmr5">7.1 一致性原则</a></li>
+<li data-page-node-id="3B9FSQa1wm6bp0krwjW7gl"><a href="#72" data-page-node-id="h40G8vj4XyJiGoWNnBs9le">7.2 可用性红线</a></li>
+<li data-page-node-id="QACKplxuNlHFveOlNvnzln"><a href="#73" data-page-node-id="hYL9FmFjwg3Bkmd4idiMtB">7.3 性能红线</a></li>
+</ul>
+</li>
+<li data-page-node-id="blACf8LJMmcRlShl6Ll01S"><a href="#8" data-page-node-id="3SKSlkKwQomgKqL3iCs8G3">8. 交付节点建议</a></li>
+<li data-page-node-id="1sLB4NLfp6UiydoHjLR00g"><a href="#9" data-page-node-id="YDKy864mpmGxvLuAevUoUK">9. 附录</a><ul data-page-node-id="F1JOZSAAwOesWerByRaU5l">
+<li data-page-node-id="PERdqR0cqREnY1y4YTnIzA"><a href="#91-figma" data-page-node-id="mpzDWEWO5wPXDVeV7g6S2H">9.1 Figma 文件结构建议</a></li>
+<li data-page-node-id="QBg8DKhfo5KQXZm4lQaANf"><a href="#92" data-page-node-id="mk0oBcFfZyI7wPuxJdfQaw">9.2 参考素材链接（设计师取用）</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+    </nav>
+    <main data-page-node-id="6EDzbRYCKwz6iuGu6fHM9u">
+      <h1 id="ui" data-page-node-id="jGenFgKn0nQSUFHRu28lgR">「大富翁·工位版」UI 概念设计文档</h1>
+<blockquote data-page-node-id="Hx60gBeJ3e7Ets3bBSRqOj">
+<p data-page-node-id="EiX6uU3ZwDAhevxEy6qcmw">版本：v1.1 · 交付给 UI / 视觉设计师的方案稿<br  data-page-node-id="efh28Fe4vLUqSqLrdkRUsu"/>
+视觉风格参考：网易《大富翁 11》（Q 版 2.5D 卡通、3D 半俯视棋盘、彩色分地段格子、中央装饰场景）<br  data-page-node-id="er5QeMD4S0qy1064CpJBQf"/>
+本文档目标：把"工位版"主题（写字楼、会议室、咖啡间、茶水间）与参考图的高完成度视觉范式对齐，输出一份<strong data-page-node-id="Qoc1DKfGRQ51GqKEcCHyTn">可直接交付给设计师</strong>的 UI 概念稿。</p>
+<p data-page-node-id="fLz20M3ErufoJpPC03NLph"><strong data-page-node-id="nZi5ng01SPgk31QcRXv3Bq">v1.1 变更（2026-10-08）</strong>：<br  data-page-node-id="4MJ6fGmzwusFBu2m7mqwZ3"/>
+- 中央场景从 6 主题 → <strong data-page-node-id="rEON6dlRFR0cdgIJFScccH">3 主题</strong>（茶水间 / 会议室 / 加班区），覆盖暖色日常/冷色商务/夜色反差三套情绪<br  data-page-node-id="OxSxnGlDhV0fOQOBuipWkg"/>
+- 角色立绘从"同底换配饰" → <strong data-page-node-id="7AjPzIjkxDa9BkrdqETEV7">6 职级差异化设计</strong>（实习生/专员/主管/经理/总监/总裁，6 个不同的人）<br  data-page-node-id="9x81WxbcqJmZ4CNrFAGMgC"/>
+- 表情从 6 种 → <strong data-page-node-id="eAo9HPqptoS89dAxWOEzkh">7 种</strong>（新增"加班""被 boss 骂"两个工位版独有表情）<br  data-page-node-id="jW9qA6W4aep9VIAzajfmUa"/>
+- 新增<strong data-page-node-id="kN6HICvCin72MJr7n89ytk">专注模式</strong>（§4.4）：F11 一键切换，副屏常驻 / 演示模式 / 低性能设备均可使用</p>
+</blockquote>
+<hr  data-page-node-id="1Z5sGZE8SLHscXzeDKqIC9"/>
+<h2 id="0" data-page-node-id="BUmMF0ElpxEfLzT0cxt6nc">0. 项目速览</h2>
+<table data-page-node-id="JtIaUYEmvn48s7xgCMhvGo">
+<thead data-page-node-id="ju7XpA0L5AjL0RtIqZnhx3">
+<tr data-page-node-id="KtXBlR6WwqlSo7GvcpVXdT">
+<th data-page-node-id="QRU1DWJWRzTXRbTYi3ZOwl">项</th>
+<th data-page-node-id="miPsDcykswBorchD1O1QIA">内容</th>
+</tr>
+</thead>
+<tbody data-page-node-id="IvrnrgpDyN5x2qsB8VCW82">
+<tr data-page-node-id="9dGK6EYvuv8wgMgvkWeYU3">
+<td data-page-node-id="YibAdrBWcrz9jCKmhUulvB">产品名</td>
+<td data-page-node-id="xiuXHNxi0Ipw7xHziTNVrO">大富翁·工位版</td>
+</tr>
+<tr data-page-node-id="o2jdSJwKZuiIIJGFCTHTXq">
+<td data-page-node-id="wccAcgQYMo6CYkfSP7RwkB">平台</td>
+<td data-page-node-id="imTyQFBBkGEzyAFdzSGaEo">Windows 桌面（Electron 打包） / Web（dist/monopoly-office.html）</td>
+</tr>
+<tr data-page-node-id="vRGYAvt9dx2942vBr867kj">
+<td data-page-node-id="PPE6HDTYnBDltzo7iejEfN">主题</td>
+<td data-page-node-id="wfGvC1ocAmSiGKsgcuHLmJ">写字楼办公室生态——格子间、会议室、机房、茶水间（3 个中央主题轮换）</td>
+</tr>
+<tr data-page-node-id="mhemur0jHCuJGbLPAUzJ0S">
+<td data-page-node-id="VYwGnSU1j1pRJTYv8AhHxj">风格</td>
+<td data-page-node-id="y4nN1citDMII8z23nMFcjj">Q 版 2.5D 卡通 + 3D 半俯视棋盘 + 暖色办公场景</td>
+</tr>
+<tr data-page-node-id="nwluSPqEkLllHzUbz853bl">
+<td data-page-node-id="CwT4jnY7snI14LN0nELeoi">受众</td>
+<td data-page-node-id="awp1aU5xwXpSj3PtKegByi">公司内部团建 / 局域网联机（2–6 人）</td>
+</tr>
+<tr data-page-node-id="s580hSjPgL0bHBIBT6FEoC">
+<td data-page-node-id="f20PsRkEx3gUONgg1snKkC">核心画面元素</td>
+<td data-page-node-id="mBxBW40Bja6dldoHDlXmJC">棋盘、玩家立绘、事件卡、道具栏、状态栏、弹窗</td>
+</tr>
+</tbody>
+</table>
+<hr  data-page-node-id="sBeOvwMuvs7YQaFBtTN32h"/>
+<h2 id="1" data-page-node-id="SDzzxZ44NUZLVDuope1U7o">1. 设计目标与灵感来源</h2>
+<h3 id="11-11" data-page-node-id="npqDLxOKTsqpeeygCv1NaG">1.1 大富翁 11 视觉范式拆解（来自参考截图）</h3>
+<table data-page-node-id="vlivBOZS7MDEDo95zr2Psf">
+<thead data-page-node-id="4rFc0ZVgdpZtGxNcRTYuQf">
+<tr data-page-node-id="EAl3k8DADt8K4XyIW1mwAm">
+<th data-page-node-id="phFlP6YkukYQcOxHxGIf2L">范式</th>
+<th data-page-node-id="N1xDMdHyZWiAMUYC0GDtx1">大富翁 11 做法</th>
+<th data-page-node-id="1bcFM1q6bWaE5Mp1yBoeuV">工位版如何"接住"</th>
+</tr>
+</thead>
+<tbody data-page-node-id="Lzg1wuX9DzcPNnjzHyp89n">
+<tr data-page-node-id="cUsFCunrMTdDATNGePrT0f">
+<td data-page-node-id="UH6DnA0mKiBt9e705Re6R5">棋盘视角</td>
+<td data-page-node-id="Pqep8lAWmgmUYlUJGOrxsc"><strong data-page-node-id="rmu7Ry4f5BHnIFRw10nz7w">3D 半俯视</strong>（约 50°），格子有底座 + 顶面 + 侧边三段</td>
+<td data-page-node-id="SSbKYC6BS1lMk9Jmd4I8a7">同 3D 半俯视；格子按"写字楼楼层平面图"风分色</td>
+</tr>
+<tr data-page-node-id="jC8qXTXwUlEdq6TStDs73x">
+<td data-page-node-id="9cPgSBWTVzNWT8HQ51fZbA">地块分类</td>
+<td data-page-node-id="2JIYsBM6Ar7osUJuIpFdZL">6 色（橙、蓝、绿、紫、红、黄）按地段分</td>
+<td data-page-node-id="R7ACLeCSJTvG64GZ004dCf">改为<strong data-page-node-id="US6iOmJTnbdmJQ3xTWD9Nu">写字楼工区色</strong>：研发区（蓝）、会议室区（紫）、咖啡区（咖啡）、高管区（金）、公共区（绿）、机动区（橙）</td>
+</tr>
+<tr data-page-node-id="O72W59yc1KDiVEvbFouaty">
+<td data-page-node-id="ExH5uYHWhA6F4FpfDGRrfG">格子装饰</td>
+<td data-page-node-id="trXmLiJXBh5FkZG9pi25bI">顶面有图标 + 价格 + 等级星标</td>
+<td data-page-node-id="EDAC4aAaTDYOp7qSbSpUjN">顶面：图标 + 价格 + 拥有等级（★0–★5）</td>
+</tr>
+<tr data-page-node-id="Hf0dsVB3VH4itfp0nryIBY">
+<td data-page-node-id="e5RhBJmUNAyB3781cMdpTI">中央区域</td>
+<td data-page-node-id="9LzTzoFY8DuyRJJG9pKEcl"><strong data-page-node-id="vTvnakZWqWNikCA5zyrxW6">大型 3D 装饰场景</strong>（奖杯、大象、金塔、龙、帐篷、海岸）</td>
+<td data-page-node-id="cCJO29aauFm01nnAm5iVSC">中央改为<strong data-page-node-id="9LJltb3tsaNyl2r2OQjxgn">写字楼中庭</strong>：旋转楼梯、共享咖啡机、落地绿植、奖杯台、玻璃天顶</td>
+</tr>
+<tr data-page-node-id="sCZ19oJ3MvdkJk6E5YFVpr">
+<td data-page-node-id="z7j1EZ8wgEGfAZUZ9H4wmm">角色立绘</td>
+<td data-page-node-id="z0jB8zoCP9QmbdoiCpplhd">Q 版 2.5D，4 人，头身比约 1:2.5，色彩鲜艳</td>
+<td data-page-node-id="MGiCGkorSNfMGZ78Kx7LrK">6 人：<strong data-page-node-id="E42TqcRvDFza99VqgSGKld">专员/主管/经理/总监/总裁/实习生</strong>，按职级改剪裁与配饰</td>
+</tr>
+<tr data-page-node-id="Cz7goegY40Oj5WPmrdGUgG">
+<td data-page-node-id="lRJDFBPCqIkO47Xs6GQNC4">角色状态</td>
+<td data-page-node-id="pbuCh9k33TBH7f7lR4AHRb">行走动画 + 表情气泡（笑/哭/惊讶/冒汗/睡）</td>
+<td data-page-node-id="1gPLGVHBoosZ5QA4bwuTbQ">同上 + 工位独有表情（加班脸 / 摸鱼脸 / 暴富脸 / 被 boss 骂）</td>
+</tr>
+<tr data-page-node-id="aCmpQuQw5EgqULWlPKMlXT">
+<td data-page-node-id="DJemJHf9pcJojnTGG7y6oj">顶部状态</td>
+<td data-page-node-id="xFaYlTD0Eei51EGTu16QwD">星期 + 天数 + 资产柱状图</td>
+<td data-page-node-id="CkUzW1a4yvsxTRVbwN2Zpe">同上：周次 + 当前日 + 团队资产排名柱状图</td>
+</tr>
+<tr data-page-node-id="4OBzjcn4vqHBvShX4iMfEX">
+<td data-page-node-id="EmDLGTpfTtH8Xml7QAq4bC">右侧玩家面板</td>
+<td data-page-node-id="7ZEWzGfm0VUTQOLlTWGz6W">排名 1–4，头像 + 现金 + 存款 + 道具徽章</td>
+<td data-page-node-id="AkPSikiX7eieRLnYmnZ4dB">同上：4 名玩家，头像 + 现金 + 存款 + 道具位（6 格）+ 现金上限</td>
+</tr>
+<tr data-page-node-id="rGWnLo4Ro8mt14sbo9J5f5">
+<td data-page-node-id="oxicRQDFVRG2x3ZXZIzppC">底部物品栏</td>
+<td data-page-node-id="0FLHNL1DyATdH4RuDFDKLD">8 圆形卡槽 + 翻转动画</td>
+<td data-page-node-id="kQRpPiu4Ey7fSHGQZEp7EG">同上：6 圆形卡槽（电风扇 / 奖杯 / 笔记本电脑 / 路灯 / 抱枕 / 彩票 / 停车牌 / U盘 / 咖啡券）</td>
+</tr>
+<tr data-page-node-id="SpfMczzOpiCjdzQcIaxIhl">
+<td data-page-node-id="rO0uzsoXt7k9mG3KGwLLyj">主交互按钮</td>
+<td data-page-node-id="HVTK0NwJxTHVaK1CshtqU7">中央"待机"圆按钮 + 右下角"自动"按钮</td>
+<td data-page-node-id="Y0TPKSL2GLr61tJhrsDdNG">同上：<strong data-page-node-id="WYoNLRQ3TrrZD2OiH4RzKn">"掷骰子"</strong> 圆形按钮 + <strong data-page-node-id="9ejdQCbXTzAKEiDY5vA0xj">"自动托管"</strong> 切换按钮</td>
+</tr>
+<tr data-page-node-id="heVYpgLKrGSW0iBsTrv8MQ">
+<td data-page-node-id="ZwEcrIctOaZlitJptp91P0">中央事件弹窗</td>
+<td data-page-node-id="91PYc1qrJKebm1n45YqVBd">半透明浮层 + 圆形事件卡 + 文案 + 行动按钮</td>
+<td data-page-node-id="ICSumLBpZOwWBQnsHV5MFr">同上：圆角矩形卡片 + Q 版插画 + 文案 + 行动按钮</td>
+</tr>
+<tr data-page-node-id="0mqBazm0sG7SoEsz47Schw">
+<td data-page-node-id="zqJOCPwzHDJezTvybLjFFc">整体色调</td>
+<td data-page-node-id="k0hqyiHmpnwC4f9TH0s0c3">高饱和、绿草蓝天、暖光</td>
+<td data-page-node-id="6DHtoVHxmXe2c3HYoro34S">同饱和度偏暖：白墙、原木、咖啡、暖光</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12" data-page-node-id="ZHtOt8blSXdldCAiGSUffe">1.2 工位版独有的视觉主张</h3>
+<ol data-page-node-id="1XMlIxWggk2nZkRDl9OH6p">
+<li data-page-node-id="7Et9VdLXZwZw6nLy8d2VNU"><strong data-page-node-id="qng8yQY5sPgVPNSSF4R4wO">格子间即格子</strong>——格子不只分色，每格子里嵌"工位道具"（显示器、文件架、便利贴）作为地段识别。</li>
+<li data-page-node-id="ZBsX130Y78b45KXT5DwDXB"><strong data-page-node-id="LxMzxQY1mbeUnGnsaoOIzt">中庭有故事</strong>——中央场景<strong data-page-node-id="gzA2MI3hu1HWM5DE20nJpB">3 主题轮换</strong>（茶水间 / 会议室 / 加班区），开局随机抽取；叙事节奏跟着场景主题走（茶水间=周中喘息、会议室=季度冲刺、加班区=周末加班）。</li>
+<li data-page-node-id="eZ7SHFssGEJpVs6OuwfFOC"><strong data-page-node-id="BT4sfyc1sNe2LBKAnyGesc">立绘会办公</strong>——玩家行走有"西装公文包""高跟鞋""工牌"等职业元素，表情贴近打工人生存状态。<strong data-page-node-id="1IcWkU3O1tHC13gbqM3TtV">6 职级差异化设计</strong>（不是换配饰，是 6 个不同的人物）：见 §3.5。</li>
+<li data-page-node-id="A6Ii42fpYK3H8o2s2zWfU4"><strong data-page-node-id="d0Ukf0RL9G3C68X19nYrcE">道具即办公神器</strong>——道具栏里出现电风扇、咖啡券、团建券、出差报销单、离职金、加班补贴。</li>
+</ol>
+<hr  data-page-node-id="qQ9xdsv5bKaaq5rxQtzir1"/>
+<h2 id="2" data-page-node-id="Mjto9dyvOjFJV6r6kUmB0I">2. 视觉风格定义</h2>
+<h3 id="21-color-tokens" data-page-node-id="ydognuJmdA4qAV8geo9tzd">2.1 色彩系统（Color Tokens）</h3>
+<h4 id="_1" data-page-node-id="RXdtYDLyM3eE7XDVpbUKdD">主色板</h4>
+<table data-page-node-id="2lyKoRcFjIKCY1kJQPXmy9">
+<thead data-page-node-id="5rxAzRTvDEoB4SOt1J7SxI">
+<tr data-page-node-id="ay9F9xRDFvumLp2J8V4qLV">
+<th data-page-node-id="GU5UwzSp9kZhjdKkko7lUW">Token</th>
+<th data-page-node-id="LHrtv0wQBbm7KSpKnfMhG9">HEX</th>
+<th data-page-node-id="jg5kNQu0UCysLn6UiDr4Py">用途</th>
+</tr>
+</thead>
+<tbody data-page-node-id="QpBSdSRBSjFkzBwqoIQMVr">
+<tr data-page-node-id="kkk9KY7UZWNSWGGo7c4D3F">
+<td data-page-node-id="K9JCAkfnZPGbixXAgXJWcV"><code data-page-node-id="rxiFPjrShsoVXbDy0NPDeE">--bg-stage</code></td>
+<td data-page-node-id="yhlsNO8gL8cmpNqQishLfK"><code data-page-node-id="wUK2N7mQAmitpwwAGmjOtV">#1a2330</code></td>
+<td data-page-node-id="1vJz4DcsH1hpToJDyUM24S">棋盘底色（参考图深蓝灰）</td>
+</tr>
+<tr data-page-node-id="psjbTGDHcaAMWubdeaLoKU">
+<td data-page-node-id="vkl5FTiSkBwZdliqPWraqx"><code data-page-node-id="jArjAxzODz6F1tiAPuo86p">--bg-floor</code></td>
+<td data-page-node-id="KlJT3ixDPiSFV7y8KxFiQd"><code data-page-node-id="yoD7dKzWS9KPDzcAX0vSec">#3a6a4f</code></td>
+<td data-page-node-id="UCDcKJfbPseujalXoKQBEe">中央场景草坪/办公地毯</td>
+</tr>
+<tr data-page-node-id="HuGA27DyH0hHPNIlKhGL4i">
+<td data-page-node-id="5GcbCM15qZo6lZRHwTPEbw"><code data-page-node-id="6wvhrqxQeIjg5s3krPpbuB">--bg-sky</code></td>
+<td data-page-node-id="2aLbe9WUCTD56s53fUA760"><code data-page-node-id="JOhMCjuxknPIFCwakWzCOG">#7fc1e8</code></td>
+<td data-page-node-id="WVNrj40sHNWCH3k3CFQtoJ">远景天顶渐变</td>
+</tr>
+<tr data-page-node-id="MHpffCGjDfdyInMDwJS6jD">
+<td data-page-node-id="c1j89h2qzN244rdWQvIdzq"><code data-page-node-id="FRcPpKOUnrKFPo0IxxOisv">--gold</code></td>
+<td data-page-node-id="jXtQkghMbFg2TG4CUeBWzv"><code data-page-node-id="mEYWeHmYAl6t87QHe3Rcfh">#f5c842</code></td>
+<td data-page-node-id="yTqxl1WehUTB23WqFvuYpr">主按钮 / 高亮 / 奖杯金</td>
+</tr>
+<tr data-page-node-id="9p3TFZKKp9Yxvr1FlBXx5z">
+<td data-page-node-id="XryWGE0tADXYJDQ3N3RwgB"><code data-page-node-id="s126b06YdbaN6MoLbHQzqZ">--gold-deep</code></td>
+<td data-page-node-id="ZEA3D16ODDOiucXN6l61K7"><code data-page-node-id="3HBf7SaP9z3UoKRnGCTSdA">#b88a1f</code></td>
+<td data-page-node-id="CqgHLnHnkSZVOJYXGLPqLh">按钮描边 / 等级星描边</td>
+</tr>
+</tbody>
+</table>
+<h4 id="6" data-page-node-id="T7lyfEMVNQAfP3PG8FbqUt">6 大区段色（地段分组）</h4>
+<table data-page-node-id="Gqfn9G5hQ9CmsNyBa7cPRi">
+<thead data-page-node-id="2ovk6A4bC11Bv2iYZw4twY">
+<tr data-page-node-id="vcEiwK35Kx58rzZ7C5wrSu">
+<th data-page-node-id="OseNIhlP481bmlFFpSQbHE">Token</th>
+<th data-page-node-id="WlYnzx05WMxEXxeR21FtVK">HEX</th>
+<th data-page-node-id="ZUmDwvfpdcdCBBbALvOnu7">区段</th>
+<th data-page-node-id="IrwXhs713dAbdPEa1DFhNF">行业梗</th>
+</tr>
+</thead>
+<tbody data-page-node-id="A4Oy6SOwShAqlpy87G8hTJ">
+<tr data-page-node-id="O4GVKKBiiFII0X1PGkThuv">
+<td data-page-node-id="DWnpeiYOvVZFJPngYwoNeR"><code data-page-node-id="zqlgVkUEgAtuQXv6kQO8PU">--tile-blue</code></td>
+<td data-page-node-id="7CguB4FT3nHBVR7YuUqBBz"><code data-page-node-id="SvzPY63Qj5NNCskAF9sKwM">#4f80d8</code></td>
+<td data-page-node-id="NAbG4QCRFpX9CDT3mq2UJ8">研发区（科技园）</td>
+<td data-page-node-id="ldLMjQwRBosObKryMGlwGS">加班多、买地便宜</td>
+</tr>
+<tr data-page-node-id="8Zuis0mWA08xYdw1BH4yUR">
+<td data-page-node-id="XfKO4FfTYTfSHlBbDMOWXG"><code data-page-node-id="m7FpKHpzDE9G8dvzsRD2L0">--tile-purple</code></td>
+<td data-page-node-id="25AtlKWncb5kFGUEhgE6DX"><code data-page-node-id="KS4c9YOHwMzZsyMeb36wgu">#9268d4</code></td>
+<td data-page-node-id="H3Ec0CynL52RJULVWiHiGv">会议室区（高层）</td>
+<td data-page-node-id="t0Nglcle5OKNEf4tEEyShX">租金高、回报稳</td>
+</tr>
+<tr data-page-node-id="4JsyTpvzXcs6FmOwX8UcWp">
+<td data-page-node-id="HMKZ9zYcZESOWJRlYvsT1X"><code data-page-node-id="U2dmdiu46dYGn99ox4tgB7">--tile-brown</code></td>
+<td data-page-node-id="QZvAmdm4wC94gnyCKIK8r0"><code data-page-node-id="Ea6BquTTY2BmQN41Arkeie">#a07050</code></td>
+<td data-page-node-id="D5xcSQVo0mHRANu7TM5hQy">咖啡/茶水间（后勤）</td>
+<td data-page-node-id="O7RL8RH4GVfN96lGt5HO2G">过路费低但频率高</td>
+</tr>
+<tr data-page-node-id="2tGBxafHj4bkHiypurGgWK">
+<td data-page-node-id="hGHvYkbJZosPLFXLCD4ucI"><code data-page-node-id="KBd1JpfAAu33pxU2czdUXR">--tile-green</code></td>
+<td data-page-node-id="4E9h2EQBygZck3Zxu2euJu"><code data-page-node-id="hvnOhuvcDByNYCqptGjLcO">#5cb868</code></td>
+<td data-page-node-id="TwoC4v9gPvNJBZxdaMXBeo">公共区（绿植/健身房）</td>
+<td data-page-node-id="sAU2xTdbW3OjCACFpfPplK">福利地产，价格中等</td>
+</tr>
+<tr data-page-node-id="BQbDdiEhgJPpwDp5Qi9drH">
+<td data-page-node-id="ZGS6PEXfkFmXAXNjJGEBOR"><code data-page-node-id="BTIqsY8sAvEIpLrGeza6fx">--tile-gold</code></td>
+<td data-page-node-id="yDiJhqZ49oi95g1A9QT7lE"><code data-page-node-id="KqY1GNjoMJGrRZwow5OlQe">#e8c66c</code></td>
+<td data-page-node-id="aKTG8ncL4sovD4GqLCpj5d">高管区（金领）</td>
+<td data-page-node-id="F7nwKDeXLs2oXi5dAtChx8">顶配地段，单价最贵</td>
+</tr>
+<tr data-page-node-id="A8AAFFNHP3SGyg78mzD40U">
+<td data-page-node-id="Q5a3VEWL7JdDGRp6LngleY"><code data-page-node-id="iceR8G8serVBdHgvB7uGol">--tile-orange</code></td>
+<td data-page-node-id="mF0uTHdohqIbi2pHKd7dtr"><code data-page-node-id="pKKOhKi852VxpBSqov5NNA">#e8804f</code></td>
+<td data-page-node-id="0sG71tzze7FuB8L0DHHjY2">机动区（外勤/差旅）</td>
+<td data-page-node-id="U8qS0X5GQzfTLIN8ToysXX">高风险高回报</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_2" data-page-node-id="yliFbdRY0KMpK6txMGsoFh">文字 / 边框 / 状态</h4>
+<table data-page-node-id="8r1oqVFJHAfIDDZeoC3TfV">
+<thead data-page-node-id="q5HYckjwTrOt739f7XQRDK">
+<tr data-page-node-id="f5DXVyVsEuOMDR8p0D2wis">
+<th data-page-node-id="187LGTNDxecqMNb3iXXnJl">Token</th>
+<th data-page-node-id="toTjHHcaUdawYKjOPZJV2i">HEX</th>
+<th data-page-node-id="846CAZlIhtsJnqOTzCrOE9">用途</th>
+</tr>
+</thead>
+<tbody data-page-node-id="WxAgjLIuFTde2D89D9XTCv">
+<tr data-page-node-id="noXpEIO8m8DGHbVyvb7HUG">
+<td data-page-node-id="XwEyArLhzHbt3s8GVJT6qx"><code data-page-node-id="cXXCRtdkgUioMMC0CY8bP5">--text-primary</code></td>
+<td data-page-node-id="bgSazulkpOUp3trUaXq6WB"><code data-page-node-id="QeKpWNhqdGmzHRNPLeXL0o">#2d2a3e</code></td>
+<td data-page-node-id="CpaPsLL1DgpkJaoUW2KE85">主要文字（深紫黑）</td>
+</tr>
+<tr data-page-node-id="gmw6jxEytitBtn6RwSKQ0s">
+<td data-page-node-id="DNkkNDtQzb4jCze9dUoYA3"><code data-page-node-id="FDLlSGGFavDRRKU1TdGR07">--text-on-dark</code></td>
+<td data-page-node-id="eIta8Yt1jgPWO4XCmfePY0"><code data-page-node-id="hKI6FYUvol1F4v3CEurKuo">#f5f1e6</code></td>
+<td data-page-node-id="JvEi0VKUsLRmohGemiru4a">深底上的文字（米白）</td>
+</tr>
+<tr data-page-node-id="AMsAxo1RQpGh2KTCvRYWWM">
+<td data-page-node-id="sCQK54urmilkD9LPyQuil1"><code data-page-node-id="dWxwLjDybUgaZCw1T1MTSY">--text-mute</code></td>
+<td data-page-node-id="LoEWsJYq4p8DICNM161LBS"><code data-page-node-id="jDWhuBkIlPVuhfofZOl1A9">#7d7894</code></td>
+<td data-page-node-id="GcK2XJGDSu8FG7oCRG9G43">次要文字</td>
+</tr>
+<tr data-page-node-id="2mr9vyqwnbN5qIAz14sbEJ">
+<td data-page-node-id="XRgtVlu6gGY1ODPaLlXXko"><code data-page-node-id="FwcTpbX1DxGahL9IvFKdHo">--border-card</code></td>
+<td data-page-node-id="d4waoW80kyZbDHt1GjRluI"><code data-page-node-id="I9cZm0E7S3PE7j36PlkG2T">#3a3654</code></td>
+<td data-page-node-id="iBunT7FNz4CxPDm57i6uLk">卡片描边</td>
+</tr>
+<tr data-page-node-id="jNcTSWzeuWO7Be6ie0qzCp">
+<td data-page-node-id="ud8TECx6VqDv1v77UJqCfQ"><code data-page-node-id="ImEm3ERhRRTCTi6E3zXtqB">--state-warn</code></td>
+<td data-page-node-id="DX7VH0Ub4Ft7bKeVDF335t"><code data-page-node-id="MNfkPoG2uK0dP6ZmtMOAZi">#e85a5a</code></td>
+<td data-page-node-id="vN6eH9mCkxEMzbR8WVKPMn">警告（破产/扣款）</td>
+</tr>
+<tr data-page-node-id="j7EcHaTDXgG03fu0wAeIFT">
+<td data-page-node-id="R6esHEhEditrd0u2JV7USt"><code data-page-node-id="Rn8BZhWSajMHBrmZBF6GYx">--state-good</code></td>
+<td data-page-node-id="C1vlhK7BnMWwJCjmG6TWZ8"><code data-page-node-id="smk6Ru7CeVZt01c2fOoDPa">#5cb868</code></td>
+<td data-page-node-id="olEoT146YSkI7FNqFUQF1Y">增益（加薪/分红）</td>
+</tr>
+<tr data-page-node-id="8rlN5RVcGoVDRSFLvCPDrX">
+<td data-page-node-id="cQYmcFimA2BGHlwimursJf"><code data-page-node-id="i4YKSG0mcqCGc0YIOUtB8p">--state-info</code></td>
+<td data-page-node-id="RvYAbpDnXAMtXB0o1iastl"><code data-page-node-id="eT6zygDvu3HDwV9RGsuEIT">#4fa8d8</code></td>
+<td data-page-node-id="tuUulLVZHnyZvUox8w2hMn">信息（事件/系统提示）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22" data-page-node-id="5C0NZClPnitVIWk3k6JmBP">2.2 字体系统</h3>
+<table data-page-node-id="X97XC3Ar346zqHaj1RT4Uv">
+<thead data-page-node-id="SxdaWXUkGA8HZG21h0kymO">
+<tr data-page-node-id="Dh4KkRip8q7YNG26AleJCE">
+<th data-page-node-id="HXqfGXyOxMNHhVuvfHvqdn">用途</th>
+<th data-page-node-id="b4869fVaLkLxmLq83sIxlI">字体</th>
+<th data-page-node-id="GgRIeb3QsHe3wyaA5PRFM0">字号 / 字重</th>
+<th data-page-node-id="q9q7GrsTD52iOXI4wY4jFp">备注</th>
+</tr>
+</thead>
+<tbody data-page-node-id="rUFq0ETBlB86AnJOHA67jz">
+<tr data-page-node-id="rs2Adjl5DV4avK4IPAISQD">
+<td data-page-node-id="6vL4nwttuT10pL1lWrYAXw">顶栏大数字</td>
+<td data-page-node-id="0gGrDKQ41qTOHfUdACL1gP"><strong data-page-node-id="39Th1xFxbKyn77j2DQIlTV">思源黑体 Heavy</strong> / 数字用 <strong data-page-node-id="DutUqmCjEXjq6r4gAK5JZS">DIN Bold</strong></td>
+<td data-page-node-id="7wHaz2e4X7R5xCYTuYKsSP">32–40px</td>
+<td data-page-node-id="rEpFMKSxP2SEPo4IG2vbu5">天数、倒计时</td>
+</tr>
+<tr data-page-node-id="HGw9uHaG4SJTZroUIyNCP0">
+<td data-page-node-id="Qe1f6yhvMPCtMTQSsm6rAG">玩家名 / 等级</td>
+<td data-page-node-id="NRkcdlQOFXDRZMzz5jBtDK">思源黑体 Bold</td>
+<td data-page-node-id="7GITOmkIyEoOmw3JI7i0w7">18–22px</td>
+<td data-page-node-id="ogrbbw7sNEXbGhs0lW9C2E">排名面板</td>
+</tr>
+<tr data-page-node-id="dNCAnMMMAVF6r0fpAVWOjj">
+<td data-page-node-id="6C7MiJ8T2VRegLCfl736vI">卡片标题</td>
+<td data-page-node-id="enuHmK0i9Nc3nL2BhAUsW4">思源黑体 Bold</td>
+<td data-page-node-id="BJZue0dcPUpwzDfEA0QVhu">24–28px</td>
+<td data-page-node-id="DW3C76BNVgzHQFDhjlJmDd">事件卡</td>
+</tr>
+<tr data-page-node-id="K7ds5a5PQ8IBAla9jqm8tV">
+<td data-page-node-id="Z5O4aMQBNE6KxBcAT8rkM0">卡片正文</td>
+<td data-page-node-id="jnNARHmtYSzPbTfLHgOE5I">思源黑体 Regular</td>
+<td data-page-node-id="rNxPx1fIYgDiP3yu0V31kK">16–18px</td>
+<td data-page-node-id="aa9G3k7ofyagf5W5T5zRLq">行高 1.5</td>
+</tr>
+<tr data-page-node-id="AO246yQ8Ir426hdHAZg8Xj">
+<td data-page-node-id="xjVYlvBjErmR7pC9Pg3JRr">按钮</td>
+<td data-page-node-id="jJKbnOgPc9FrUjyqNKTCKs">思源黑体 Bold</td>
+<td data-page-node-id="Iua00VafTpQgKiszDiqlgz">18–20px</td>
+<td data-page-node-id="7Ga6zADxCsslbNsrpC1wxT">全大写或首字母大写</td>
+</tr>
+<tr data-page-node-id="AjOeVv9A9oGavVc30scuCE">
+<td data-page-node-id="M8hTGt26yyYj2XZ7SsR4D2">价格 / 数字</td>
+<td data-page-node-id="mWPoEhKc1Ye0ONAw3F1JBQ">DIN Bold</td>
+<td data-page-node-id="RLTT4JQmcPQTmJlopLxZVD">16–24px</td>
+<td data-page-node-id="CM5ikAFm1rbpYF5APHhkgJ">千分位空格分隔（<code data-page-node-id="FKeKxdcs9OnAbr2Ga30Jol">10 000</code>）</td>
+</tr>
+</tbody>
+</table>
+<blockquote data-page-node-id="9EJqxaZaSkwWeco2CY8MuB">
+<p data-page-node-id="LnusFijbIAK8PjeGnlNJV6">字体后备：<code data-page-node-id="fDFr3PeEnACwjswAAFDDPp">'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif</code><br  data-page-node-id="Ix7x6tLHHjMGQhRwMMEss1"/>
+数字字距：等宽（tabular-nums），保证价格对齐。</p>
+</blockquote>
+<h3 id="23" data-page-node-id="e9zhcE0aBRkq8w7Vv4kBIS">2.3 图标风格</h3>
+<ul data-page-node-id="HVy7V9wrusZ3L1fAVWsD4v">
+<li data-page-node-id="WCCMBN6fUFSu99MEg4p3es"><strong data-page-node-id="6eSxT2KBGeXFNaGBdt1Gqo">统一语言</strong>：圆角线稿 + 2px 描边 + 一处小色块（不超过图标面积 30%）。</li>
+<li data-page-node-id="Z7XeKWLBAcU3mQB2iYxeBr"><strong data-page-node-id="sEuSAZwAogySnT5DrjZbrl">大小</strong>：场景内 48–64px，卡槽 64px，HUD 24–32px。</li>
+<li data-page-node-id="Op77MRHs9abvy1mh4PMrn3"><strong data-page-node-id="4AHdynqF2fvZuqT18elhug">地块图标库</strong>（共 16 枚）：</li>
+</ul>
+<table data-page-node-id="5stNFjBUQxXejHgX69A3pZ">
+<thead data-page-node-id="8Fb7WbCEAgJt29nzCB1NJN">
+<tr data-page-node-id="FljEIlEwCE1fcMtaXCyAGF">
+<th data-page-node-id="mFkE7Kc2NwrIOkeh1uTqNz">区段</th>
+<th data-page-node-id="spWmfiLQ0BE5gHYiEMvC82">图标</th>
+</tr>
+</thead>
+<tbody data-page-node-id="fqVnz3pc3orltw5WQ8ZVDl">
+<tr data-page-node-id="EjcjSiZ2WaJoi9KHxMKnal">
+<td data-page-node-id="dcu1c3Z3aVH5KFeZM813tV">研发区</td>
+<td data-page-node-id="2T1eLZuL21WAp1oi51Rfkp">🖥️ 显示器 / 💾 服务器机柜 / 🔬 显微镜 / 🧪 烧瓶</td>
+</tr>
+<tr data-page-node-id="zOyJxC6MOsjWoibcGYNtVq">
+<td data-page-node-id="MGJGP9N8eLXNjiNJtTBG20">会议室区</td>
+<td data-page-node-id="SgqFaMNDmGAXcG0UhHdBBZ">📊 投影仪 / 🎙️ 麦克风 / 🗓️ 日历 / 📈 走势图</td>
+</tr>
+<tr data-page-node-id="sXDcYzlOQJSc6zHYyNvnat">
+<td data-page-node-id="abAOQHnTsnxOpbwbE28GCg">咖啡区</td>
+<td data-page-node-id="hT7UXrW8HZZIuDXM8q8sKG">☕ 咖啡杯 / 🍵 茶壶 / 🍰 蛋糕 / 🥐 牛角包</td>
+</tr>
+<tr data-page-node-id="jk7AXlQWAXVNXxuSSuhAXL">
+<td data-page-node-id="9pNinCLjKwK9fZc3N1B2HC">高管区</td>
+<td data-page-node-id="PjzLtJUh6wzNOR5dTMxvc8">🏆 奖杯 / 🪑 真皮椅 / 📜 任命书 / 💼 公文包</td>
+</tr>
+<tr data-page-node-id="mfHYhxMKv1MxPFZhHCsgBm">
+<td data-page-node-id="2jHTnndG1DHO2MjS90bK12">公共区</td>
+<td data-page-node-id="UAbX9sPQ35BUiPy8I9Fvef">🌿 绿植 / 🏃 跑步机 / 📚 书架 / 🛋️ 沙发</td>
+</tr>
+<tr data-page-node-id="V8HWBSgEKHlCDPLKdzOr7K">
+<td data-page-node-id="ArAsAEFONDqSV5IOkC9dDb">机动区</td>
+<td data-page-node-id="T6S7sO3clRHVCbLeWeQBFA">✈️ 飞机 / 🚗 公务车 / 🏨 酒店 / 🎫 出差券</td>
+</tr>
+</tbody>
+</table>
+<ul data-page-node-id="HcQrOD89q0aFMI3ayF0vvG">
+<li data-page-node-id="VzFWqDCCkzE3bdv8EFeIkg"><strong data-page-node-id="uTbwiVQRXnC2HZMHCA9MB9">道具图标</strong>（共 12 枚）：电风扇、奖杯、笔记本电脑、台灯、停车牌、U 盘、咖啡券、加班券、请假条、团建券、报销单、离职金。</li>
+</ul>
+<h3 id="24" data-page-node-id="y4eBVlhFmMcPFGAs5HZBvo">2.4 光照与质感</h3>
+<ul data-page-node-id="cKz90pEi8Vg9AIWHoXa7En">
+<li data-page-node-id="M0CShqnEEkSoAMfiS1XVLk"><strong data-page-node-id="MmWGf9RDgKMQYq9sCRMtfY">棋盘主光源</strong>：左上方 30° 暖白光，色温 ~5500K。</li>
+<li data-page-node-id="1I4WrpfWw113k6KMHebqLn"><strong data-page-node-id="o1a2x0txCq1ebMh8qYszAk">格子质感</strong>：顶面轻微磨砂（噪点 &lt; 5%），侧面带 1px 高光描边，模拟 ABS 塑料感。</li>
+<li data-page-node-id="odnzgbLieS1YoPyfTBeEDx"><strong data-page-node-id="libJCrYfBKx863oY6zE14c">中央场景</strong>：半写实 + 卡通描边（cel-shading），整体景深比格子间略浅。</li>
+<li data-page-node-id="bGfBLgE4VDC33iZ7kPXxdh"><strong data-page-node-id="ooPfsYVADtuL1wVinpSY9n">角色立绘</strong>：cel-shading 三段明暗（暗 / 中 / 高光），轮廓 2px 深紫描边。</li>
+<li data-page-node-id="itE6vj1U7GgtYFtb2iv7lV"><strong data-page-node-id="ZbCxbADNMTz1G1G3ziBpTx">事件卡片</strong>：纸感（米白 <code data-page-node-id="5I5wyq1ONz05jXlQ6qF6i7">#f7f1e1</code>）+ 1px 投影 + 圆角 16px。</li>
+<li data-page-node-id="bfK55uNzTVadZ180IAaPZ9"><strong data-page-node-id="mCDQoJVpuSVsR6u7p521QD">粒子</strong>：玩家行走时脚下小灰尘；事件触发时弹出金币 / 闪电粒子。</li>
+</ul>
+<h3 id="25" data-page-node-id="ZO6IQhL4PMbqNRhyrNjqVV">2.5 动效原则</h3>
+<table data-page-node-id="LbDoXqJytHKVDvWSWYA86g">
+<thead data-page-node-id="7i9GbT9E0koGNRnBf6EZ3g">
+<tr data-page-node-id="4IyXBQdZcvI1N4bUKJBx6J">
+<th data-page-node-id="fuprTRvRkmJzH0yrcAqNdg">元素</th>
+<th data-page-node-id="lrpsv66PsO5H7CTdyYs98f">动效</th>
+<th data-page-node-id="7itR1HmH1uHXc5lwdjMEn1">时长 / 曲线</th>
+</tr>
+</thead>
+<tbody data-page-node-id="szTI2JUGiW9CTWgprgwTlK">
+<tr data-page-node-id="ioHAkqgA7HzwTqcrVbHrCO">
+<td data-page-node-id="TMkGirNfe7Kgu1X4UKM3EF">格子高亮（可买）</td>
+<td data-page-node-id="tjubAzPYBqIBgZYpbGTWS8">边框脉冲</td>
+<td data-page-node-id="H50YzK8ZHM36HZouNXYw2F">1.2s <code data-page-node-id="8Gr1eUSqaHB8DEKMZlUuEB">ease-in-out</code> 循环</td>
+</tr>
+<tr data-page-node-id="MBnJN0Zb7XTNSrRAhbRxdz">
+<td data-page-node-id="GWeuBSBtqnHQgzsGXQD8R7">玩家移动</td>
+<td data-page-node-id="uNE5SApnHEP83z1EgQwwq7">跳跃过格子</td>
+<td data-page-node-id="aNPnboAbFhTuCSgV6EtZzV">0.25s/格 <code data-page-node-id="aqjr9RxHeXfGW56fJtTlhT">ease-out</code></td>
+</tr>
+<tr data-page-node-id="Quwmi3TUm1pAnC7w9pJmfJ">
+<td data-page-node-id="XGbPqiGh0p499uimPNWMMV">扣款</td>
+<td data-page-node-id="qGXn6HCe2f1ug9AEnc3aBK">金币飞向左上角</td>
+<td data-page-node-id="LA8AQRVr1kPzwnZ18TVH7M">0.6s <code data-page-node-id="Fg5OBCs9ObGMLkFczIayvN">ease-in</code></td>
+</tr>
+<tr data-page-node-id="g6fOlLT9caE7X2C29b8mAT">
+<td data-page-node-id="F8LhWXUZvn0wcfY3dC0ohg">加薪</td>
+<td data-page-node-id="Kd5DJqFoI0wbAVpogKiKFp">金币从右上角飞向玩家</td>
+<td data-page-node-id="5mHZ53xFAmDolVUF3smBFx">0.6s <code data-page-node-id="sfqjd7QW08y0sett2debHf">ease-out</code></td>
+</tr>
+<tr data-page-node-id="AyOAMHsqTnYB1jtx4BFBFv">
+<td data-page-node-id="jEaG9fWEBs9WP4DYabmlYR">弹窗入场</td>
+<td data-page-node-id="XO85ehQkX9QFvXPSpHsBUO">缩放 + 淡入</td>
+<td data-page-node-id="DJDbywMDWpbElSpLPm87EY">0.25s <code data-page-node-id="b5JAYcyj7zhC5iJ0Z2pEp3">cubic-bezier(.34,1.56,.64,1)</code></td>
+</tr>
+<tr data-page-node-id="My0CTgapSZDX1AsWKhgcWU">
+<td data-page-node-id="AShmmmtatYRmNbnROL3RT9">弹窗出场</td>
+<td data-page-node-id="riZP4dsRYYQ4hjtD44bqNB">淡出 + 微缩</td>
+<td data-page-node-id="BuEatszezItjMyk53nCuC4">0.15s <code data-page-node-id="AwfqixXFDDBsrOGKrs5sdd">ease-in</code></td>
+</tr>
+<tr data-page-node-id="7CHIPG7WPXDbKVpR4mXzXF">
+<td data-page-node-id="reR1DSHYDangDITlTE3BpY">排名变化</td>
+<td data-page-node-id="3mul8H5RlbjfWnDGyunSyS">上下滑动换位</td>
+<td data-page-node-id="PtVX0O0zqT7q67BMvsldBk">0.4s <code data-page-node-id="EZHzv8RoCcGjbfi9DkauE6">ease-in-out</code></td>
+</tr>
+<tr data-page-node-id="yE5iGqfUqiEjOOcS8Mqo5B">
+<td data-page-node-id="2hce6JpCcxnkrTj6F8SD46">骰子</td>
+<td data-page-node-id="98rd3VULof4VEV85CBRFSG">旋转 + 渐停</td>
+<td data-page-node-id="CvUGGkOlUvJDrdfXVaVixr">1.2s <code data-page-node-id="zfo7dt9zNg0AfUOVUunw8q">cubic-bezier(.2,.8,.2,1)</code></td>
+</tr>
+</tbody>
+</table>
+<hr  data-page-node-id="sJt2de3ChyB5JAsLtwLrwg"/>
+<h2 id="3" data-page-node-id="BYjg1JI7FrBuRWC4DJqdz9">3. 信息架构与界面布局</h2>
+<h3 id="31-169-19201080" data-page-node-id="TCBf78MrYJuXvuVG6gQCuM">3.1 主界面分区（16:9 1920×1080 基线）</h3>
+<pre data-page-node-id="2e4lw0msznnekvBkw4Uvch"><code data-page-node-id="jbHkpGKIZyu71OPWgiGHaG">┌──────────────────────────────────────────────────────────────────────────────┐
+│ ① 顶栏状态条 (高 64px)                                                       │
+│ ┌──────────────┐                                          ┌──────┐ ┌──────┐ │
+│ │ 周次 + 天数  │   团队资产柱状图（4 玩家彩色柱）          │ 菜单 │ │ 应用│ │
+│ └──────────────┘                                          └──────┘ └──────┘ │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                ┌─────────────────────────┐  │
+│                                                │ ② 玩家排名面板 (右侧)   │  │
+│                                                │  宽 280px 高 600px      │  │
+│       ③ 棋盘 (Canvas)                          │  4 行卡片，从上到下排名 │  │
+│       居中、最大可用尺寸                        │  头像/现金/存款/道具   │  │
+│       11×11 网格，圆角外圈                      │                         │  │
+│       中央 9 格为大场景                         └─────────────────────────┘  │
+│                                                ┌─────────────────────────┐  │
+│                                                │ ③ 行动提示气泡（动态）  │  │
+│                                                │ 跟随当前玩家位置         │  │
+│                                                └─────────────────────────┘  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ④ 玩家立绘区 (左下 200×260)        ⑤ 道具栏 (底部居中 8 卡槽)        [自动]│
+│ ┌──────┐                          ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐ ┌─┐   ┌────┐ │
+│ │立绘大│   表情气泡                │1 │ │2 │ │3 │ │4 │ │5 │ │6 │ │7 │ │8 │   │自动│ │
+│ │图    │                          └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘ └─┘   └────┘ │
+│ └──────┘                                ⬆ 圆形卡槽，直径 72px          ⬆ 86px│
+│                                                ⬆ 选中态轻微浮起 8px             │
+└──────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="32" data-page-node-id="ZxtImuqGipC5semn539VWM">3.2 各模块详细规范</h3>
+<h4 id="1-64px" data-page-node-id="FVnatyRUTunNrev20cMdLB">① 顶栏状态条（64px）</h4>
+<table data-page-node-id="AxANxsZUM2c9IdxmxHERFq">
+<thead data-page-node-id="qUkB8psxXBsWE56CqGGIsM">
+<tr data-page-node-id="HVaYyo42rEeRHlvlOTdPqd">
+<th data-page-node-id="x3L6cF14zcV8TJFBwYy8Wu">元素</th>
+<th data-page-node-id="fVJUgKDjEKYPbkfehS1Cfx">位置</th>
+<th data-page-node-id="q1DaZbil0WIeNtDeKxVZIp">规格</th>
+</tr>
+</thead>
+<tbody data-page-node-id="LlTKjkHgbBWY36KuaVYF23">
+<tr data-page-node-id="ny5A3mZb9krkVxuiD0rGud">
+<td data-page-node-id="AoyQr5mNcXC0T0T7SlzS7h">周次标签</td>
+<td data-page-node-id="bAS3i4d0FTC3LSVvNN9OPL">左 24px</td>
+<td data-page-node-id="l14TU6DrYrSu4T3pvLaroW">28px Bold，色 <code data-page-node-id="HJ9RDYqoydkqq7Z3yfGngQ">--gold</code>，背景 <code data-page-node-id="FhEdhiFvep2HBDUiFFelir">--bg-stage</code> 半透明</td>
+</tr>
+<tr data-page-node-id="0dTqsAsKEuF7EtOquR1A5U">
+<td data-page-node-id="12x8cZxHjuyKHuRqLbW6Mh">天数</td>
+<td data-page-node-id="rd7XqaHGEfZ2LKBUEKmiv5">紧邻周次</td>
+<td data-page-node-id="MDzJRKmMFC2z6bnBda8klU">36px Bold DIN 数字，色 <code data-page-node-id="CLndWBaACrWQdwE8QHwxWH">--text-on-dark</code></td>
+</tr>
+<tr data-page-node-id="0LlXTzMSqwsYnSr653AiXN">
+<td data-page-node-id="nX83eh1uOGM9sQuf9sXazt">资产柱状图</td>
+<td data-page-node-id="fiHBwy7evySVO9BW3zlIRh">居中偏左</td>
+<td data-page-node-id="iFUr37bHD3ZEJbP2SVHfvL">4 根 8px 宽柱 + 玩家色，最高 48px，柱顶数字 14px</td>
+</tr>
+<tr data-page-node-id="M6rNAhu2ktmRgZcToi1mGp">
+<td data-page-node-id="0yOXEVXR48nF6BIEQ5J5ZW">菜单按钮</td>
+<td data-page-node-id="kebDdqpVtO2NeoGQeBie7i">右 96px</td>
+<td data-page-node-id="d6jq09krrY6fGimWd45e35">圆形 40px 描边按钮，≡ 图标</td>
+</tr>
+<tr data-page-node-id="K3eEsTsks4HVVJZfuJxrOn">
+<td data-page-node-id="A9cBB2wB3Eer9vLUJ6yYlK">应用网格按钮</td>
+<td data-page-node-id="rX7QUM8fZbNiRvAgFDl0hm">右 40px</td>
+<td data-page-node-id="xP15xfYsRWYAhv93EhtuJb">圆形 40px 描边按钮，▦ 图标</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2-280px" data-page-node-id="ggxhuEk7Alrky1Ye7DLCoe">② 玩家排名面板（右 280px）</h4>
+<pre data-page-node-id="Mn4WUDfovbm7pFtGG7WWIA"><code data-page-node-id="g45neH6ofrBaG4VE5WFgLh">┌────────────────────────────────┐
+│ ① ●  ◯  王思齐                  │ ← 第 1 名，金色描边 2px
+│       💰 58,000  🏦 12,000     │
+│       道具 ▢▢▢▣▢▢             │
+├────────────────────────────────┤
+│ ②  李梦琪                       │
+│       💰 45,000  🏦 8,000      │
+│       道具 ▣▢▢▢▢▢             │
+├────────────────────────────────┤
+│ ③  张伟                         │
+│       ...                       │
+└────────────────────────────────┘
+</code></pre>
+<ul data-page-node-id="RDhRkUEsk9xS7qcNDSTEhf">
+<li data-page-node-id="090DMFlNyvFBHxtffy3x90">卡片尺寸：260×120，圆角 16px，描边 1px <code data-page-node-id="4FOFMeNEf3Aqa9GF4k7JuH">--border-card</code>，自身玩家底色 +20% 不透明。</li>
+<li data-page-node-id="ZIOjOop3nsMHVBWvVvAeyn">现金 / 存款行：16px Regular，💰 / 🏦 小图标 16px。</li>
+<li data-page-node-id="Xkj3WGT9kmzO4qKcaya08i">道具行：6 个 24×24 方格，持有填实色，无则空心。</li>
+</ul>
+<h4 id="3_1" data-page-node-id="iKY5xI1rjCAujor45EyojA">③ 棋盘（中央）</h4>
+<ul data-page-node-id="xNM7q4mZ01pgas1AP3cuG3">
+<li data-page-node-id="HqJwxICC7ccBHiAgFeBptD">网格：11×11，外圈 40 格走子路径 + 中央 9 格装饰（3×3 大场景）。</li>
+<li data-page-node-id="ArxqPBHy4X2Pf4mAW1nbTF">单格：约 100×100px（自适应）。</li>
+<li data-page-node-id="F0XnqpYlJTKDPLcLnvUBPD">顶面：区段色 + 浅磨砂 + 图标 + 名称（顶部 1 行）+ 价格（底部 1 行）。</li>
+<li data-page-node-id="kr9B7miVmy8HmpClJndWGH">底座：同色深 30%，高 14px，呈现 3D 感。</li>
+<li data-page-node-id="kSnCehclFOR5y0W1ljB17u">玩家 token：每格最多 4 人，2×2 网格排列，半径 18px，描边 2px 玩家色。</li>
+<li data-page-node-id="Ze1JRLqui9ckTFcapO43n3">选中态：玩家脚下 1.5× 格大的发光圆环，色 <code data-page-node-id="9LsORPf0qtR5ecq6aNSRKu">--gold</code>，脉冲。</li>
+</ul>
+<h4 id="4-200260" data-page-node-id="3eEmU1W2EbhndNCQo7Q0mz">④ 玩家立绘区（左下 200×260）</h4>
+<ul data-page-node-id="ZuM7I9lsBgrBciDMtmrXXr">
+<li data-page-node-id="DzVfYZIxbG5AVOYR8TAghR">立绘大图：180×240，居中。</li>
+<li data-page-node-id="6jofekP3mfAOe1ZcqdUe4q">表情气泡：右上角 64×64 圆角气泡，随状态切换 6 种表情（默认 / 开心 / 惊讶 / 哭泣 / 暴富 / 加班）。</li>
+<li data-page-node-id="mQMYZ1peoHv00AjAqR9gj4">等级徽章：左上角 28×28，盾形 + 职级文字（实习生 / 专员 / 主管 / 经理 / 总监 / 总裁）。</li>
+</ul>
+<h4 id="5" data-page-node-id="DZbkD1UHh87DAC43BBdyBb">⑤ 道具栏（底部居中）</h4>
+<ul data-page-node-id="B7ALE1WGk2oimWJn2e4xkJ">
+<li data-page-node-id="UVngAJBF9FtSeBfHnT1YWf">8 圆形卡槽，直径 72px，间距 12px。</li>
+<li data-page-node-id="Llb4hI0UZyVjJik9pU6DOn">选中态：浮起 8px + 底部 2px <code data-page-node-id="lpWR1GAsTMw0197fe3XYlp">--gold</code> 描边。</li>
+<li data-page-node-id="VUBilMqepYhN58sipPASoH">未持有：半透明 + 灰色蒙版 + 锁图标。</li>
+<li data-page-node-id="FSoehk9hjLlN4iB2j5BSUa">倒序排列：最新获得在最左（动画从右侧滑入）。</li>
+</ul>
+<h4 id="6_1" data-page-node-id="tT1synhoppTlayHhT7SBFH">⑥ 中央"掷骰子"按钮</h4>
+<ul data-page-node-id="4Pg4A7jGNBF8N7bJjs7Nfe">
+<li data-page-node-id="tXhycB7FgXK84KLnYHobGV">位置：底部居中（道具栏下方）。</li>
+<li data-page-node-id="rkQxkWib7vyVfKFIMRVFn9">圆形 80px，主色 <code data-page-node-id="xEM65bDNaZC6XistC4FxFE">--gold</code>，描边 <code data-page-node-id="xPK8vbC5V0e6K2sIF0LWbi">--gold-deep</code> 3px。</li>
+<li data-page-node-id="KfceCxLZDJoE8GFFnKJCYa">静止态：显示 🎲 图标 + "掷骰子"文字。</li>
+<li data-page-node-id="qepldSa7cgAhPNb3HNoef6">掷出中：3D 骰子旋转，1.2s。</li>
+<li data-page-node-id="BA8ueT7zryMddVpGYWUeBb">结束后：显示点数 1.2s 后自动收起。</li>
+</ul>
+<h4 id="7" data-page-node-id="TFByRGR8EabwMgLoX7yvpy">⑦ 自动托管按钮（右下角）</h4>
+<ul data-page-node-id="3AjSZlXJkJ90AFzbKYvvaX">
+<li data-page-node-id="VEeKCMe0mSYD3AQHETXZ1Q">胶囊形 86×40，圆角 20px。</li>
+<li data-page-node-id="DZf9I126goFLAzbFwgROhR">关闭态：灰底 + "自动"。</li>
+<li data-page-node-id="oruqGEe6JOKCJD0Yb1mvuV">开启态：绿色 + "托管中"，动画发光脉冲。</li>
+</ul>
+<h3 id="33-40" data-page-node-id="1gQBhytBFYekzqJQgXjDgj">3.3 棋盘 40 格 + 中央场景</h3>
+<p data-page-node-id="MfKGiicSscAoJq8U20FUIQ">外圈 40 格按上述 6 区段分布，每区段 6–7 格；4 角为特殊格（起点 / 机遇 / 命运 / 监狱 / 总部 等）。</p>
+<p data-page-node-id="HGMtULSi1IEJnmQghJJIlg">中央 9 格为大场景，每 3×3 一组主题，<strong data-page-node-id="n3bXNwnAyodbSSHjjIdCTI">3 主题随机抽取</strong>（开局锁定）：</p>
+<table data-page-node-id="j9x2GExQiuOYtIORdFCm6P">
+<thead data-page-node-id="tiTTHwLO2eaYro6LnJwzM3">
+<tr data-page-node-id="UNLhNtqCsIH4I5gwCwtdjE">
+<th data-page-node-id="sedW7tDUJuP5nGB8ykMUfM">主题</th>
+<th data-page-node-id="7QtUw8IsqaeXRQpwY761qg">描述</th>
+<th data-page-node-id="lwCUWGJ4hi6KGNFrfJze9V">主色调</th>
+<th data-page-node-id="2coQddRe9LAinnSFr96KdM">触发语境</th>
+</tr>
+</thead>
+<tbody data-page-node-id="4h9JXoBcK4vkyIEpvP6rkD">
+<tr data-page-node-id="R0lZPwxwNm0oa4L59CF55E">
+<td data-page-node-id="huWwrHphOPBShBMzzxGKOC"><strong data-page-node-id="sjbSRnp3pC7co4OCqIYUC2">茶水间</strong></td>
+<td data-page-node-id="WN3uEUvVOQeGGErJ7hfylB">咖啡机、沙发、绿植、茶包柜、零食架</td>
+<td data-page-node-id="6yjFXgJauvF2s13XOoIrIu">暖橙 + 浅木（<code data-page-node-id="mGxgmPKZRdDmcvknfGA4St">#e8b97a</code> / <code data-page-node-id="54CHqpRa5mStYPYRFtSCWx">#d4a268</code>）</td>
+<td data-page-node-id="Ci2az6ryLkY5S0CUABiWlC">周中喘息、闲逛买地</td>
+</tr>
+<tr data-page-node-id="4kUoWqzhRtONXSeu7vzJ6f">
+<td data-page-node-id="qsypxcE5g1P4if14dQ4Fze"><strong data-page-node-id="mwaGz1SuG7eOBTapUtMD4l">会议室</strong></td>
+<td data-page-node-id="JuFQ8LXjM9wwcNiyIEtMkL">长桌、投影、奖牌墙、白板、落地窗</td>
+<td data-page-node-id="Li4eqPt72ABBODaTa9kWCf">冷蓝 + 深灰（<code data-page-node-id="hVblZNaQHNdLbQisR4nGIU">#5b7eb8</code> / <code data-page-node-id="PI1Ug6dotgJgZcQij5BATE">#3e4d6e</code>）</td>
+<td data-page-node-id="jFfNydvXpT3IFuXSeEYao7">季度冲刺、大宗交易</td>
+</tr>
+<tr data-page-node-id="1dkPPzTN4n1smyafmugQdR">
+<td data-page-node-id="6yNx2ZOX1CaiDsyQZWARMr"><strong data-page-node-id="N7C1e25P5Jo49ZZFuRVJj1">加班区</strong></td>
+<td data-page-node-id="PhF9sEL1itnXIMByNpMCIh">显示器墙、外卖盒、台灯、咖啡杯、便利贴墙</td>
+<td data-page-node-id="sIBKHQRVUO45uCZRySy9Ph">夜色暖橙 + 深紫（<code data-page-node-id="kPINoKbukVujBG4O2JuZ3r">#d4824a</code> / <code data-page-node-id="lbbaLrgZlWjaBMIUxz0TsA">#2d2845</code>）</td>
+<td data-page-node-id="h1Rn1XFBpLHaymRzbbheNP">周末加班、连败翻盘</td>
+</tr>
+</tbody>
+</table>
+<blockquote data-page-node-id="SHLd13uEL9tCNFGxVU748t">
+<p data-page-node-id="mCUZgiY6ZubkuKNGPDshJ3"><strong data-page-node-id="AB1y5wZOt6da3S0JpB1iZk">轮换意义</strong>：3 主题覆盖<strong data-page-node-id="hSwVGqQJQ45RrmTKtppE9h">暖色日常 / 冷色商务 / 夜色反差</strong>三套情绪，让每局视觉新鲜感最大化，同时美术工作量控制为 3×3×1 张大图 = 3 张主稿 + 9 个物件变体。</p>
+</blockquote>
+<h3 id="34-6" data-page-node-id="FUtDq8Z10RDln8GbTFD3vg">3.4 角色立绘规范（6 职级差异化设计）</h3>
+<blockquote data-page-node-id="kFBTfrn8zEEoLE3LlPRkCL">
+<p data-page-node-id="hDVBQZbOKsDYfWEFhYXlMn">核心：<strong data-page-node-id="TXplaOEgoswo5wNXcEiEVo">6 个不同的人</strong>，不是同一个底子换配饰。每个职级有自己的体型、年龄感、气质与专属动作。</p>
+</blockquote>
+<h4 id="341" data-page-node-id="bB1gjjfk6F1sxIj09gjITF">3.4.1 设计基线</h4>
+<table data-page-node-id="fV4KOGKWQm1kNQB6DHXpro">
+<thead data-page-node-id="Q4bOioYmkLemnRoq1g7SO3">
+<tr data-page-node-id="qbMRipL8ctJF6xFz9nb7ZR">
+<th data-page-node-id="yWdJ7gAZnxHyxvPbqRSooz">项</th>
+<th data-page-node-id="mDUAyrBarjJtoq69YVX8Sr">规范</th>
+</tr>
+</thead>
+<tbody data-page-node-id="7p5zAHYcbbZxE7VV4iQTPe">
+<tr data-page-node-id="DOFSV0HBOlTFNnwT0QwGzF">
+<td data-page-node-id="L1OrrnqY6qjB02yDhjFj2S">头身比</td>
+<td data-page-node-id="V7KRfkGWCReTAVWzsAWtsl">1:2.5（Q 版 2.5D）</td>
+</tr>
+<tr data-page-node-id="lzlAugTAHwD4o9mEcm8h9L">
+<td data-page-node-id="EO7yTytyVzmH0KGdBzUjft">输出尺寸</td>
+<td data-page-node-id="4hOkzHGp7O1yw8Hd6InmtZ">512×680 PNG（透明）</td>
+</tr>
+<tr data-page-node-id="W4iajNW4duBX8kHYIUkGlO">
+<td data-page-node-id="bk646zd33tBUXcWjQqncgR">画风</td>
+<td data-page-node-id="IUuV4OT2KqrjgCbWfEl4Uf">cel-shading 三段明暗 + 2px 深紫描边</td>
+</tr>
+<tr data-page-node-id="K6rZfozg025UV03FkCARGc">
+<td data-page-node-id="tDKHzrWSGpBboQBy5QO0Cp">姿势</td>
+<td data-page-node-id="4hkRfJSgUI4hBgGxniAiHw"><strong data-page-node-id="U7BpE3GMwwHfoGbE4oLggy">每个职级 1 个专属默认动作</strong>（不是统一站姿）</td>
+</tr>
+<tr data-page-node-id="FrQKeO9Re4v3VTgz0MWct3">
+<td data-page-node-id="eKHl8iGGw0DU2FC3MxoGrK">配色</td>
+<td data-page-node-id="VOdW1Zj4SeH0CILoCC5VDY">主角玩家 1 号用品牌色金（<code data-page-node-id="ByJJJE9tayQL25ZfMbPE8v">#f5c842</code>），其余 5 人用协调色（红/蓝/绿/紫/橙）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="342-6" data-page-node-id="7YgDuXtczMgc1ZBqXzsWph">3.4.2 6 职级差异化定位</h4>
+<table data-page-node-id="gajjexRClKGjMYQt0UBZDf">
+<thead data-page-node-id="6XCcmVHEmV2J00VQiIsTVA">
+<tr data-page-node-id="Bx7D3DdPraz2pFwpehyA1D">
+<th data-page-node-id="sKWrXPjwgxdCdTRJs2uf8N">#</th>
+<th data-page-node-id="yzzFrJOLCEDE42ieTNaLH4">职级</th>
+<th data-page-node-id="AyilYFvPuPadom8VhcsPDd">性别 / 年龄</th>
+<th data-page-node-id="b18GrUacz4LqBkidlr4IIE">体型</th>
+<th data-page-node-id="12sGDyFnSrWPMVWRejLIln">服装</th>
+<th data-page-node-id="JZlKSIitByr2E2PYCX8yOc">专属动作</th>
+<th data-page-node-id="c4Ko2IDIY1vdabjNSUJGnh">默认表情</th>
+<th data-page-node-id="0jWEB9MasxUyB6GnngY8gG">备注</th>
+</tr>
+</thead>
+<tbody data-page-node-id="C9TCNs32tRjIDnZn6KLQlP">
+<tr data-page-node-id="bBHjHVr3mCWI0KmvDSkoxb">
+<td data-page-node-id="OSHUL7D74aZ8RiHTJZpZlR">1</td>
+<td data-page-node-id="UirJhdA8ZokktG2BrH3ACw"><strong data-page-node-id="oRXvvgEmKxn2HPpy8JhuK9">实习生</strong></td>
+<td data-page-node-id="nLREpwnwMJmXOxzMUT23oH">女 / 22</td>
+<td data-page-node-id="cBXUERnW2ZsQdIbcPVODTF">娇小</td>
+<td data-page-node-id="Mixu4sAEG0FzFjOFBRqaWM">浅蓝衬衫 + 牛仔裤 + 双肩包</td>
+<td data-page-node-id="cDNQ1phG1Fv0hyYp9qZRHp">双手抱笔记本、歪头</td>
+<td data-page-node-id="xJxIEK9FGTcomVamrmsW9w">天真笑</td>
+<td data-page-node-id="Rlp2WHUdH0WszAAOpGuiCA">起手工资最低（6000）、成长曲线最陡</td>
+</tr>
+<tr data-page-node-id="gyZBzFodozu9DOucnVkM6I">
+<td data-page-node-id="OF4WR1pV0JQ0kZWstR6AmE">2</td>
+<td data-page-node-id="fAOOg3FWXkwRUBObTzRuGR"><strong data-page-node-id="98G6p53EbmOts5xHfpQRmB">专员</strong></td>
+<td data-page-node-id="8CmUWVUDo57wEzYClsWyuo">男 / 26</td>
+<td data-page-node-id="cC5fut0vDlVgIy9REp77lI">中等</td>
+<td data-page-node-id="EBxcq6JK78ZFUMV5s9lvjj">白衬衫 + 西裤 + 工牌</td>
+<td data-page-node-id="H9NQaIAsQlnBaQB4AH9QyW">双手拿文件夹、微笑</td>
+<td data-page-node-id="S1UYI3ULYSDBBNAaVrDPAW">标准笑</td>
+<td data-page-node-id="R63654BOK9uatNhEy9GDlA">起手标准玩家、动作保守</td>
+</tr>
+<tr data-page-node-id="CPHvo7gpu7LLPDCiCHEYDb">
+<td data-page-node-id="11K6pfecgCsfPtddMBDUFO">3</td>
+<td data-page-node-id="dlgPnnQK0XbCEEm4TbexiM"><strong data-page-node-id="1HsiWDea6m6Bv0JDPMwCC6">主管</strong></td>
+<td data-page-node-id="EdIqhiLkqCKIni5bEz7fpg">女 / 32</td>
+<td data-page-node-id="HRy7EDCAEV5SYqthStyohq">健壮</td>
+<td data-page-node-id="K3wZC10x3AqYBlu42xt2T2">衬衫 + 马甲 + 西裤 + 手表</td>
+<td data-page-node-id="M53KwxKz3dya48a3zx8rpr">单手叉腰 + 另一手翻报表</td>
+<td data-page-node-id="CdaCIHzpFmweU2AxO8kP1j">疲惫笑</td>
+<td data-page-node-id="nHuOMTpR2DRCrcIf9QfnW9">表情偏累、生活压力大</td>
+</tr>
+<tr data-page-node-id="h3ja8dihiyBkifQTWXM91E">
+<td data-page-node-id="Wt6L3uyapsWNDHbenE6W80">4</td>
+<td data-page-node-id="98DYEdZjPEEY0NP2Dha2eS"><strong data-page-node-id="PLACudE86fIQWdktm14Y4E">经理</strong></td>
+<td data-page-node-id="6sfUbSyEELjWBPF86SAua1">男 / 38</td>
+<td data-page-node-id="6ADNHvRuTfwC3FbIKScslC">略壮</td>
+<td data-page-node-id="nLjiIfsDr1Is4iqRDlMWbu">深灰西装 + 领带 + 公文包</td>
+<td data-page-node-id="V316FBlT2fNfVG2gFZwgAi">双手背后 + 下巴微抬</td>
+<td data-page-node-id="KTcoXyahG8HBHlpHDRhZTX">自信笑</td>
+<td data-page-node-id="8feqpVexnJHAoWtqSa3zn3">气场最强、买入决策激进</td>
+</tr>
+<tr data-page-node-id="6WrUk5Fd3ViNkvXEDp0LAK">
+<td data-page-node-id="UggONgdG5NeiZafvzhxTAt">5</td>
+<td data-page-node-id="qeaPvfEXI7j8UEnuQYg86B"><strong data-page-node-id="1d4XkaAh4TQTaqKASaziVy">总监</strong></td>
+<td data-page-node-id="CV9AD7drPFFeJoULyoxqS9">男 / 45</td>
+<td data-page-node-id="ZPaaei5EzmConB3pljPfVL">发福</td>
+<td data-page-node-id="GARi4iAv5HNWAbI8XFmSpv">黑西装 + 金边眼镜 + 咖啡杯</td>
+<td data-page-node-id="PyhpbprFJMl0M3c6Aj0lAv">单手扶眼镜 + 思考</td>
+<td data-page-node-id="sXMTQHIa2C6vew2mlLbAB9">思考表情</td>
+<td data-page-node-id="l7oWDEilX3KPhrETJjtpXJ">决策最稳、净资产最高</td>
+</tr>
+<tr data-page-node-id="XTEkVEGbAmwrs8l5wY8VCT">
+<td data-page-node-id="uD3ejBb8Xu2sh0vAMlF0h7">6</td>
+<td data-page-node-id="g009Fjn8Se0anScEOAhrxZ"><strong data-page-node-id="krAAE2FrZrCWtJxvMt8Ncj">总裁</strong></td>
+<td data-page-node-id="jOYGNZu7DFMT3YYehcVKCc">女 / 50</td>
+<td data-page-node-id="UmR31d5X0IalE4dhzUpo2L">威严</td>
+<td data-page-node-id="aI0MlhX6A8Eelgu3f1khoP">全套深紫西装 + 珍珠项链 + 胸针</td>
+<td data-page-node-id="sOwqdAANdxeyLVmNAn8apk">双手背后 + 下巴高抬</td>
+<td data-page-node-id="PkiYnGBf87BDON2BJZUy5a">严肃笑</td>
+<td data-page-node-id="VnORRgBCiAqLOW89OFxpHA">起手资产最高、租金最高</td>
+</tr>
+</tbody>
+</table>
+<h4 id="343-6" data-page-node-id="DavO8myYCpgu0jrAvKGLTJ">3.4.3 6 种表情（每个立绘都要画）</h4>
+<table data-page-node-id="9nr0XiBiy8Vcwh8Ba8wgfT">
+<thead data-page-node-id="qmYP9zGFDecobDEJQ2smhd">
+<tr data-page-node-id="RPeQOCtQI3LPVxM4z02LG4">
+<th data-page-node-id="HWaQNrvuYz5WGcDtHaQgEb">表情</th>
+<th data-page-node-id="oyKrByWaK7j2snRLDOZMsq">触发场景</th>
+<th data-page-node-id="ZsTWbcCekDNODTjH0X2nZi">表情特点</th>
+</tr>
+</thead>
+<tbody data-page-node-id="Q9K0z9MDGpTpQcVY9yy9Xt">
+<tr data-page-node-id="635KzVQtRKuDDgMNiUQxDQ">
+<td data-page-node-id="0NgoEKJj5iFBTkhnCy0Ky2">默认</td>
+<td data-page-node-id="gFUwKGYfP2ZxoZJui98wln">正常回合</td>
+<td data-page-node-id="EHjAe64E2cc09GtsPelLB3">角色专属默认笑</td>
+</tr>
+<tr data-page-node-id="Nt5JXwq6aMNGrXhHxbtMJg">
+<td data-page-node-id="bJPEVI9n0j5X7aGe4cES1d">开心</td>
+<td data-page-node-id="zmZWxBat6tQsUD4RAUwjDg">加薪 / 收购成功</td>
+<td data-page-node-id="t15cpg0XIosaRuovVKvhMq">嘴角上扬、眼睛眯成月牙</td>
+</tr>
+<tr data-page-node-id="MJ4HG24DBKdJnbgJ5vUFaS">
+<td data-page-node-id="Pb8J1zqG1vHbTBX0w9z79F">惊讶</td>
+<td data-page-node-id="dGB59shClFUDAjAcArtehO">抽到好卡 / 巨额租金</td>
+<td data-page-node-id="43T4fkg9i5rNhhYumtlAne">张嘴 O 型、眉毛高挑</td>
+</tr>
+<tr data-page-node-id="LGu92knLI5Y7JvuWDJ89qk">
+<td data-page-node-id="hnzlO3EY4AsUksPbqOefGo">哭泣</td>
+<td data-page-node-id="lukwT381Q0Cqg44tq4EQJQ">破产边缘 / 巨额扣款</td>
+<td data-page-node-id="yYHHHEhmRyAkcnSw6FEh2m">泪滴、嘴角下垂</td>
+</tr>
+<tr data-page-node-id="AclDHjaYr5tOcVPfxp62wI">
+<td data-page-node-id="MfknqbmRCGHJKhbAJqZCuF">暴富</td>
+<td data-page-node-id="dUQuvhEN7P6pRB0gAtHBEz">收到分红 / 收购对手</td>
+<td data-page-node-id="FrRxy8VryamOt3f3EYiG1U">眼睛冒金光、嘴角咧开</td>
+</tr>
+<tr data-page-node-id="42Z95ETcBBHuDLXpsIZH4i">
+<td data-page-node-id="TDfoEG3DNwiDGnXQ0RWTkC"><strong data-page-node-id="2lyyD8PrUWBE6cuic0RGne">加班</strong></td>
+<td data-page-node-id="cASlOdlPEIep11d6mbq1JG">现金告急 / 倒计时</td>
+<td data-page-node-id="MYxQrENN7iaMfrexcVCTFU">眼下青黑、咖啡杯不离手（<strong data-page-node-id="QjJZmKyTvWg4rq1zAhdXvq">工位版独有</strong>）</td>
+</tr>
+<tr data-page-node-id="LUpA3o78X9dVlDp1alcboY">
+<td data-page-node-id="b0UyEE7U0iPUar0RAwXBLg"><strong data-page-node-id="atKeY9fs37vGsxmGrZtufG">被 boss 骂</strong></td>
+<td data-page-node-id="2Be8E4flH6pldADyRN6b9h">决策失误 / 强制支出</td>
+<td data-page-node-id="jsH5bjp1zQACmh3rkcWe3w">缩脖子、头顶出现 boss 怒气符号</td>
+</tr>
+</tbody>
+</table>
+<blockquote data-page-node-id="3jvJ5C7IvB3d1sBbvM5jnK">
+<p data-page-node-id="C9rxEswUNb1nGLckWpkTZa">第 6、7 种表情是工位版独有——区别于传统大富翁的"哭笑怒"三件套，强化办公场景代入感。</p>
+</blockquote>
+<h4 id="344" data-page-node-id="JFMdWXqi9BXWQgDnbU3aka">3.4.4 行走 / 待机动画</h4>
+<ul data-page-node-id="3c8oRfXxAxL5qGKFxPpBa4">
+<li data-page-node-id="tk16BpXiXlP7oCDIGkCcpa"><strong data-page-node-id="IWnyZTucWcZaf4EwohGm2L">行走</strong>：6 帧循环（左右脚交替 + 身体微摆 + 手中道具晃动）</li>
+<li data-page-node-id="KTq8x9gANZmk8YDMqkFLu3"><strong data-page-node-id="W9fXNC4EefJ8OgZN0jzGsA">待机</strong>：呼吸感（身体上下 2px 浮动，2s 循环）</li>
+<li data-page-node-id="LZ3D1ibYp2ZFf150VoS5Hp"><strong data-page-node-id="buJi0GnqXYIqLnCxGDQSyD">胜利</strong>：跳跃 + 头顶撒花（5 帧）</li>
+<li data-page-node-id="n9j3lepC6jCZrFMUzTTGJP"><strong data-page-node-id="Ai6RyW0Sj0cYM0g2FXVPIi">失败</strong>：单膝跪 + 头顶下雨（8 帧）</li>
+</ul>
+<h4 id="345-6" data-page-node-id="SGvbD5cuTErgg5oVF2cos7">3.4.5 色彩协调表（确保 6 人同框不撞色）</h4>
+<table data-page-node-id="yGXK5YszeCArZhwTv2JLkn">
+<thead data-page-node-id="75utS2mInE25wX67lthESZ">
+<tr data-page-node-id="PEDyjAQMBWt1xzcAABzYPj">
+<th data-page-node-id="6f7YYAGMdZAUqGSrNKj3AA">#</th>
+<th data-page-node-id="zCFBrIKAA3wTKPMy8FlK9M">职级</th>
+<th data-page-node-id="RMwzIa1xxDpBkknyTIX8MY">主色</th>
+<th data-page-node-id="iv3LTcxHDYp6PSrSAbVIQa">辅色</th>
+</tr>
+</thead>
+<tbody data-page-node-id="bP2Jczd86S87ZMIXRenfQz">
+<tr data-page-node-id="c7YfejQhWiDCgZoZVsYIEt">
+<td data-page-node-id="0NGPRRoOVjgID1WMEL1AcP">1</td>
+<td data-page-node-id="9scuKAy6l1ukv1CwPANMHU">实习生</td>
+<td data-page-node-id="y1YfhNrfnvhlCaJg3oUBDa">浅蓝 <code data-page-node-id="endmZ1ed0M5wMR6aHGmuVa">#7fb0e0</code></td>
+<td data-page-node-id="9rkFnph5mjB7vDFZTHMY9a">米白 <code data-page-node-id="oft2k0GFKKWfyErAOjVHoB">#f5f1e6</code></td>
+</tr>
+<tr data-page-node-id="494YwnZAlEYieGpmFQcqgJ">
+<td data-page-node-id="N44HJIMWSUPqoZil9B8HHH">2</td>
+<td data-page-node-id="uQbkHiWc2TIlmvEuDE3aoM">专员</td>
+<td data-page-node-id="DTPwpfP391JOUP3DAmxf0F">红 <code data-page-node-id="eXcjGg1475elAgweeyceDl">#d8584a</code></td>
+<td data-page-node-id="Ccem4LJiY1sZyEC0d7UnNG">灰 <code data-page-node-id="DPYyFSSwvuNk1Id3zhYuUq">#5a5a6a</code></td>
+</tr>
+<tr data-page-node-id="fBF81GntNPvhisY3ZwTtjG">
+<td data-page-node-id="rlQ1KRxEzbcHFRjpBWUGYI">3</td>
+<td data-page-node-id="1tB3YXDX1Cd9GCYZRREMON">主管</td>
+<td data-page-node-id="e32XGSASsa4eooLZRyClmC">绿 <code data-page-node-id="ASQYZwaYb4DD7agclfJUbg">#5cb868</code></td>
+<td data-page-node-id="SxRHw9iXQbPkoNWwCGYYNj">卡其 <code data-page-node-id="ugVI647BdRBLYDlC60ZMoG">#a08050</code></td>
+</tr>
+<tr data-page-node-id="e3WwBOx8ZIYrqCxptFDDBE">
+<td data-page-node-id="lBHn5TTcazmLJa0YfnnHg5">4</td>
+<td data-page-node-id="1QnYJHRP2IMDhgeyz5l3PE">经理</td>
+<td data-page-node-id="Q44y4FQM8d3m7lFOkbHaK2">蓝 <code data-page-node-id="scwI0AIGIuca4Jqu9jgUdm">#4f80d8</code></td>
+<td data-page-node-id="30F3ERTFmIUPj8yhol1IR7">深灰 <code data-page-node-id="7InZGX5WKvDu8CBm0LsH3V">#3a3a4a</code></td>
+</tr>
+<tr data-page-node-id="VlZRxAeACR5AgzzERIKDdE">
+<td data-page-node-id="V8KZ33z40Mlyx4RkckJHqR">5</td>
+<td data-page-node-id="qil1MR1P8HsSt51sKBAWTH">总监</td>
+<td data-page-node-id="EFcXBbs2563avi58esvjlO">紫 <code data-page-node-id="QCdCt5Nrzn3aC8w4KkTPKF">#9268d4</code></td>
+<td data-page-node-id="MkCQpLuqCZ7KnaQGI6WIOd">黑 <code data-page-node-id="gGOcMzDxgBEr3FcBw5VITZ">#2d2a3e</code></td>
+</tr>
+<tr data-page-node-id="3DOxTX0CrA9ObJKQ8v7Esz">
+<td data-page-node-id="MN2oT5BTJFU5JM3lIGUhhw">6</td>
+<td data-page-node-id="STh4FkdPL2mXSjXSADzHq0">总裁</td>
+<td data-page-node-id="0XfLbLVyEmXo3pgZ5TVcjd">金 <code data-page-node-id="AYl19Q3rVE7nuwN5tkNJrg">#e8c66c</code></td>
+<td data-page-node-id="NOXJ2g6gt84SKUl0jrNf6l">深紫 <code data-page-node-id="eaJkeC6K8YFZCyFsiC0XrK">#5a4a7a</code></td>
+</tr>
+</tbody>
+</table>
+<hr  data-page-node-id="up3ggEZuP1clCF0ooUYDcs"/>
+<h2 id="4" data-page-node-id="aDkNLbGtFjJM3kOcHhksv3">4. 交互流程说明</h2>
+<h3 id="41" data-page-node-id="PskqIT7LwpF5Vrd2wBEfEI">4.1 总流程</h3>
+<pre data-page-node-id="Jyxp2oB6Yz26mHqtScw7hm"><code data-page-node-id="3LL2JpiYUACYHH0bwF6WrB">启动 → 主菜单 → 选模式 → 角色选择 → 加载场景 → 回合循环 → 结束结算
+                                       │
+                                       └─ 回合循环：
+                                            ① 投骰子 → ② 移动 → ③ 落格判定
+                                                       │
+                                                       ├─ 空地 → 弹出购买卡片
+                                                       ├─ 己方 → 无事
+                                                       ├─ 他人 → 付租金弹窗
+                                                       ├─ 机遇/命运 → 抽卡弹窗
+                                                       ├─ 特殊格 → 事件弹窗
+                                                       └─ 监狱 → 选择交赎金/等
+                                                       ↓
+                                                  ④ 月结算（每 4 回合）
+                                                       ↓
+                                                  ⑤ 切换下一玩家
+</code></pre>
+<h3 id="42" data-page-node-id="lApxEKd5iOVz3ghf5ZFyFl">4.2 关键交互细节</h3>
+<table data-page-node-id="LDk6O4fvEsvO5ZK8wYpkEp">
+<thead data-page-node-id="PqBUYfGyzydtyehHF073Bz">
+<tr data-page-node-id="KGAShEfcZD2F3Q8pOAWfW3">
+<th data-page-node-id="VeTx6Nw9SDo9ZdUaND9gjh">场景</th>
+<th data-page-node-id="mHDVlHHeMULNIpYndOIFxc">触发</th>
+<th data-page-node-id="gwnN23ZSMAkaPeyDOGKjGq">用户操作</th>
+<th data-page-node-id="X7DyXKLF91HfNzk1M2qQF5">系统反馈</th>
+</tr>
+</thead>
+<tbody data-page-node-id="11QpyCfNuAEu9tCLVmBJTZ">
+<tr data-page-node-id="2gggOoiFtQX2YlFVQVb8kg">
+<td data-page-node-id="U3W3ssdzHseKPu07k3aVSl">掷骰子</td>
+<td data-page-node-id="We5MMIxS6iEyOhvua6abWP">玩家回合开始</td>
+<td data-page-node-id="yFzUOSWCMPnkWNBGIJQODb">点击中央按钮</td>
+<td data-page-node-id="AmslSoGTHb3FMaibxadXlT">骰子旋转 1.2s → 显示点数 → 玩家跳跃前进</td>
+</tr>
+<tr data-page-node-id="i97jm0T0u37hItuDFuvJsG">
+<td data-page-node-id="mZeB0tGsMjMcmtZ7WIejGp">购买地块</td>
+<td data-page-node-id="TgT5thrJOzu1pDDv5srPlK">落在空地</td>
+<td data-page-node-id="P1DB4HFKSfMkw2YuL5mmvv">弹窗：买 / 不买</td>
+<td data-page-node-id="hTZ6QxSAzfttoLFLEKXNUC">买则扣款 + 格子描边变玩家色 + 等级升 ★</td>
+</tr>
+<tr data-page-node-id="i6DHGFY0FGHDxlhG2K7NyP">
+<td data-page-node-id="tnpHe5Z5YQQlrEFBU8Iuho">付租金</td>
+<td data-page-node-id="P5lHUWVI1LBhrCLAeCnprn">落在他人地块</td>
+<td data-page-node-id="JYRKYCA5xE2HQaxEEF4Dqe">弹窗：自动扣款</td>
+<td data-page-node-id="HK5VrDCzaMO0sn19ASnXpz">现金飞向对方 + 双方资产面板同步刷新</td>
+</tr>
+<tr data-page-node-id="63k1L3ttrL4uvQZh29jCkm">
+<td data-page-node-id="rnuZBR4oC5j60AuEJNgmoQ">抽卡</td>
+<td data-page-node-id="WB4cTNxkVpclFnuW2yU8FC">落在机遇/命运</td>
+<td data-page-node-id="y7bZLQFWtRozznEGDaDkK0">弹窗：卡片翻转动画</td>
+<td data-page-node-id="SyJqB1ojDHRfW3NnVG784L">显示卡面 2s → 应用效果 → 自动关闭</td>
+</tr>
+<tr data-page-node-id="2QyNcOjoFxQROmDMD6dUwQ">
+<td data-page-node-id="YO8qo5mwIaF8OWTlRjtORG">月结算</td>
+<td data-page-node-id="WzlsciigIT3vOxhxdEzY6l">每 4 回合结束</td>
+<td data-page-node-id="E2jFxrB3bn8YI0ngMoGSi4">无（自动）</td>
+<td data-page-node-id="J4m35sLoQyWZSdYWWsafb4">顶部弹层 + 工资入账 + 资产柱状图重排</td>
+</tr>
+<tr data-page-node-id="hVKDCcfFPHvJfahQNzXYTv">
+<td data-page-node-id="SE1VRFTYMomEYQsc4PmKkC">道具使用</td>
+<td data-page-node-id="2cwPEogYhffHUOdDp8OwWs">选中卡槽 + 目标玩家/格子</td>
+<td data-page-node-id="KH3noTKiyWOAChyJRznETx">双击或拖拽</td>
+<td data-page-node-id="WI6rz7tHqvBDUffjPZGVOu">道具飞向目标 + 应用效果</td>
+</tr>
+<tr data-page-node-id="9azfIaHdyYANNrfFCeXYr7">
+<td data-page-node-id="yD2hMqMtJStAJAO5SoyZwf">自动托管</td>
+<td data-page-node-id="aG2OHuzgsyG3XOAMeMpaju">右下角开关</td>
+<td data-page-node-id="PqgRIH3vMdIw9xTemfVt9g">点击切换</td>
+<td data-page-node-id="Q5Bv9fBbduqm9yCtqZJfVf">AI 自动掷骰/买地/用卡</td>
+</tr>
+<tr data-page-node-id="BlTwBhfBk73WH61tmIEVG0">
+<td data-page-node-id="GoAfMH9ZyE4REDwfVKTJmv">破产</td>
+<td data-page-node-id="BBibcDMSVI9pRyo31khuDE">现金 &lt; 应付款</td>
+<td data-page-node-id="GVTLE0SreI3pkYYlADV6EZ">无</td>
+<td data-page-node-id="E3YGdRdiaQlSEH0R0cQE5g">弹窗：宣告破产 → 转旁观模式</td>
+</tr>
+<tr data-page-node-id="ODrn1o5zZpM10Gd7k1NE0Y">
+<td data-page-node-id="yWajB578KKK4fLGL0TPJRH">游戏结束</td>
+<td data-page-node-id="upyUDYJfKXMdwsexhKKRqS">回合数达到上限 或 仅剩 1 人</td>
+<td data-page-node-id="7S2QhMeEqmqGEtkuTBRxei">无</td>
+<td data-page-node-id="p8kAdIFdHB2TmEGBN39CTb">结算页 + 排名 + 退出按钮</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43" data-page-node-id="XfVzxyDF20F2uJGgFRqccf">4.3 状态可视化</h3>
+<table data-page-node-id="ivor66fo41glbjRjvoifVi">
+<thead data-page-node-id="UeSdayZgzECnwSpFvYVSGW">
+<tr data-page-node-id="derpatDttCXu2zDa3MATs5">
+<th data-page-node-id="PM1jYQtKTYsaABkzh5Udj8">状态</th>
+<th data-page-node-id="23ZJcCpVBBV2tyHngZ0qCh">视觉提示</th>
+</tr>
+</thead>
+<tbody data-page-node-id="Fg4qBPCL0HO4bNwCveGg2u">
+<tr data-page-node-id="wCzYWXiVTZGofZVCzVV8Wx">
+<td data-page-node-id="S3sfe7A2xhmaYxHlOLqwvB">当前玩家</td>
+<td data-page-node-id="eIj6HjB2RqtTQpESX0KLmf">棋盘上头像发光 + 底部"轮到 X"提示条</td>
+</tr>
+<tr data-page-node-id="DIHua0qQ5xlRoq0Psdl1Kg">
+<td data-page-node-id="BFE3OyIavukIGQKeHpirvD">可购买</td>
+<td data-page-node-id="7m2XTV4MJVnLpk1QfUp3g8">格子边框金色脉冲</td>
+</tr>
+<tr data-page-node-id="pEPEJ4Tvi97xPzSQAuu6f7">
+<td data-page-node-id="HRS1zEigxzJoK9inw0ArXi">不可交互（托管中）</td>
+<td data-page-node-id="1aTaAa83Du9bzfZvF9YTXw">棋盘整体降饱和度 30% + 半透明蒙层</td>
+</tr>
+<tr data-page-node-id="YTBLAVQlDpI6goqvr1GMRi">
+<td data-page-node-id="bVTN5qwWUPDBNIzSigriqo">暂停</td>
+<td data-page-node-id="gK9Y3MlmIAuN6GadSps0jl">顶部灰条 + "已暂停"</td>
+</tr>
+<tr data-page-node-id="jcUpzyT9G6tR6RFLKH2Ax0">
+<td data-page-node-id="2dE40mecBTEJ8lzH3AQO0u">网络断线（联机）</td>
+<td data-page-node-id="sziIuP5mEtllPZVL5d4lvf">顶部红条 + "X 已掉线，等待重连"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-focus-mode" data-page-node-id="XN1EKPHxWyf4fJ8wBOUF08">4.4 专注模式（Focus Mode）</h3>
+<blockquote data-page-node-id="Fhs5k8YERj4gzGfpCBuupQ">
+<p data-page-node-id="TDQO9ljm8Uku6rS6rQEDUh">定位：把棋盘当成"桌面常驻 / 副屏装饰"——只留棋盘 + 中央场景，其他全收起。</p>
+</blockquote>
+<h4 id="441" data-page-node-id="ILPgjwV0J7tFQaUR3PIisC">4.4.1 触发方式</h4>
+<table data-page-node-id="9pRPMiy7zMK7HZt6IC6tN0">
+<thead data-page-node-id="Hsajf23qjAaogrErDm6iRv">
+<tr data-page-node-id="4hu88TIsWYXcnS8Kco4eQT">
+<th data-page-node-id="Oy8BqjS8TRFQZAsFFSbRyA">方式</th>
+<th data-page-node-id="5pGNgdJZF2ZKOvVz4pP8II">场景</th>
+</tr>
+</thead>
+<tbody data-page-node-id="9gQf7yafqsba24iVXSabbY">
+<tr data-page-node-id="jnEJqyohRH8aq1BO7bwzvF">
+<td data-page-node-id="TQ55yQytmN1qhXfkrZ0GM0"><code data-page-node-id="4bsabic2N9ouCb3mRcrvSL">F11</code> 快捷键</td>
+<td data-page-node-id="oszsetK20yuduSGACFGT1Z">最快</td>
+</tr>
+<tr data-page-node-id="RSdF1HXSu6UBhHvFN5G1Zx">
+<td data-page-node-id="RsAUoZ7DnMJP4c1QUUHNQ3">顶栏菜单 → 切换专注模式</td>
+<td data-page-node-id="Yq6pv7dQ3dV8AuiSCTY7e1">带提示</td>
+</tr>
+<tr data-page-node-id="TLnQOB8467i7FEtgxAG8ZF">
+<td data-page-node-id="tR6u653hN481qRHvDDmzHp">设置页 → 启动时进入专注模式</td>
+<td data-page-node-id="pJa1DL34TpiPuCr5EvViC6">默认行为开关</td>
+</tr>
+</tbody>
+</table>
+<h4 id="442" data-page-node-id="3dbYwc1CKhKr4cy5NiMCp6">4.4.2 视觉效果（对比正常模式）</h4>
+<table data-page-node-id="NoO386UyeIGoLkwScOCB4y">
+<thead data-page-node-id="B8P5526fQeM8B5V0ONjkD8">
+<tr data-page-node-id="oCPS5yNOtFFc4CL44E3cCy">
+<th data-page-node-id="a1OVnqjM10qXsINEQKvCmD">元素</th>
+<th data-page-node-id="SegCtPgczcgzVMlYnz26GP">正常模式</th>
+<th data-page-node-id="rG3XvFqjMQ0svEDm26yxhV">专注模式</th>
+</tr>
+</thead>
+<tbody data-page-node-id="gBDs6kJ91jrWnMCodsBpg8">
+<tr data-page-node-id="FKAtDVhFFThVtdkKdsFKtr">
+<td data-page-node-id="EmrZF0HROYyMLmYnfodaGz">顶栏</td>
+<td data-page-node-id="Cw3GJNuovCZEQyUfMvWvNW">显示（64px）</td>
+<td data-page-node-id="I6LbgwIrbX5QfMECSWIE7I"><strong data-page-node-id="lxChXqbX9p2NtL7oCNijkS">收起</strong>（0px）</td>
+</tr>
+<tr data-page-node-id="wrofT1A1qlWih0MnCFgSjO">
+<td data-page-node-id="ZIbEFiDWVDDPW9KopOIS3C">玩家排名面板</td>
+<td data-page-node-id="Fu7Q9pdlpSBKTAGymmTTum">显示（280px）</td>
+<td data-page-node-id="I9aXtaMsRZZNpHDBMnFvV7"><strong data-page-node-id="jV5ajXYRbtoA5fvkEC37x1">收起</strong></td>
+</tr>
+<tr data-page-node-id="enBoDrm6ZiVnMzNCGiQhHS">
+<td data-page-node-id="dw7r5ZMpU4PmGvxD0NHc57">玩家立绘区</td>
+<td data-page-node-id="Ci3CHMd6BK3PM7XxpvETUG">显示（左下 200×260）</td>
+<td data-page-node-id="q6bCz7qyZpx5Fmn36Ozyes"><strong data-page-node-id="lEX18zWa793kX7AWC0b9oo">收起</strong></td>
+</tr>
+<tr data-page-node-id="WzEny2uSW48ISuBQn4v3tI">
+<td data-page-node-id="T7ogl72hQ6jMID73aJoIym">道具栏</td>
+<td data-page-node-id="9LBCvyUGExeHfm5dYEzWAl">显示（8 卡槽）</td>
+<td data-page-node-id="QLmtb1gLjfTpK0wIMPzT6M"><strong data-page-node-id="7YVO9vWE7We3WzTadnFPwC">收起</strong></td>
+</tr>
+<tr data-page-node-id="YgWg1pJJ557hsAbWNt5m35">
+<td data-page-node-id="rUGI4o0dsNr2Unq4iO6nOx">掷骰子按钮</td>
+<td data-page-node-id="VANG6gY3dM7rhuwLU7gdDb">显示（80px 金色）</td>
+<td data-page-node-id="2slJ6N9yGcIU3H9ab9vupt"><strong data-page-node-id="suPUFhbhT2sAA1AXXkl8dk">仅当前玩家可点击时显示 30px 小按钮</strong></td>
+</tr>
+<tr data-page-node-id="sMr7oYwEyoEEQarS3CUpAa">
+<td data-page-node-id="wMGrgXzAbi9M8ylYYckYfU">自动托管按钮</td>
+<td data-page-node-id="elNSGbVUrFiLX4CviLfxlL">显示（右下 86×40）</td>
+<td data-page-node-id="KchkcTGingRUUkylFXABdu"><strong data-page-node-id="BjZXVoEFb4LBXsPqvfu9Wn">收起</strong>（专注模式下不允许托管）</td>
+</tr>
+<tr data-page-node-id="Wj4jENah1bnS2HA8vGxYFF">
+<td data-page-node-id="kHXrOdlrN1B0dJDCToKKaa">棋盘</td>
+<td data-page-node-id="hGzYbzUTJGPdyEmDqxy5wR">显示</td>
+<td data-page-node-id="UvoeSeJsOWK8inYtFnKKrS"><strong data-page-node-id="J5oZDqEGKTZKgo4VlONfoQ">铺满整个视口</strong>（最大化）</td>
+</tr>
+<tr data-page-node-id="Z3EBFPE8TLYQdaLZw0UbZt">
+<td data-page-node-id="S18ogNGjjY9eOy07wEOLVs">中央场景</td>
+<td data-page-node-id="3dVySACJP2sqYlPB9NaImO">显示</td>
+<td data-page-node-id="EWanXsjdsUKnCAwVIXpSIt">显示（占视口中心 50%）</td>
+</tr>
+<tr data-page-node-id="rxu2dph4MCgT3faepQpxP5">
+<td data-page-node-id="dU8beJo9yLsx8MfStFiRzx"><strong data-page-node-id="XioHjMrgTxJTNDXEovpa3Y">当前玩家提示</strong></td>
+<td data-page-node-id="xJ99zzpfjZ5Txwl3JFFUBl">头像发光 + 底部提示条</td>
+<td data-page-node-id="X4QNRdyONZwrzepGwpPUSO"><strong data-page-node-id="ZJrIDyoFkuWVzWZWsma6KT">仅保留脚下金色光环</strong></td>
+</tr>
+<tr data-page-node-id="aS5NAwyQZqL0Zf4Bz3KC12">
+<td data-page-node-id="XnppHStMqOuRQUEmBo5Eyx">落格气泡</td>
+<td data-page-node-id="XyyVhV1S8oWW6bk8yXGlSw">显示</td>
+<td data-page-node-id="cM3WQGlRYzvuNuKXshZXJc">显示（必要的信息反馈）</td>
+</tr>
+<tr data-page-node-id="qQSBwfGWSx8dk7uersYzKW">
+<td data-page-node-id="YpcksOCX6GMCphUtDQuahb">事件弹窗</td>
+<td data-page-node-id="tFmahspPu5fpi8R9Xa8Pg6">显示</td>
+<td data-page-node-id="NByFiCKu35YjPCY1urXN8W">显示（必要的中断）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="443" data-page-node-id="uBZMk5O9TIdv3D3BenlXgz">4.4.3 退出方式</h4>
+<table data-page-node-id="4w3uNiZd2j3HltH9qFWFDu">
+<thead data-page-node-id="0q99OsxwGyUA4Jv6vGIuYP">
+<tr data-page-node-id="ixRPFd4opXgPcVQ27k69CX">
+<th data-page-node-id="vySsG4VgGXzUutApBVQTMX">方式</th>
+<th data-page-node-id="YdNSi3ann7kJ98iGoBwMJJ">说明</th>
+</tr>
+</thead>
+<tbody data-page-node-id="dRPvl50VnzFrv9PzMoFABt">
+<tr data-page-node-id="WLPp5X1X9DBsRO4OCGCBYc">
+<td data-page-node-id="AHgWqBVW5MaiOIrwIyKCkE"><code data-page-node-id="39vQkyRW30wZeFwamN7Rlr">F11</code> / <code data-page-node-id="IXl2YqYAFskGRBxecK8p7v">Esc</code></td>
+<td data-page-node-id="v5PGjNeo1OmZcRZnDO3gNp">双键皆可</td>
+</tr>
+<tr data-page-node-id="HuaREt3RiPQXpBZl80PEVg">
+<td data-page-node-id="a5ih0mbB1F3E6dAn9YYXRE">棋盘右上角浮出"退出专注"按钮</td>
+<td data-page-node-id="7t5xTGfXESToOLs2syGQxC">鼠标悬停 1s 后浮现</td>
+</tr>
+</tbody>
+</table>
+<h4 id="444" data-page-node-id="6OItV4pJAoANYqTzG98QYZ">4.4.4 适用场景</h4>
+<ol data-page-node-id="nFBEvmnpFa5Hs2EyWde4dK">
+<li data-page-node-id="iZs6maKecUmO1HI8aJ1VDz"><strong data-page-node-id="M4uDLQ4vvHND1DeFYNL6iu">副屏常驻</strong>——办公时把游戏挂在副屏，看别人玩或自己后台托管当背景动画</li>
+<li data-page-node-id="7klRmqJ5KAskqaon9LjeZN"><strong data-page-node-id="lZszDWKnnPDVNlKwLwLG5Z">演示模式</strong>——给同事 / 客户讲解时不被 UI 干扰</li>
+<li data-page-node-id="wiHPM8QnSpLnHuXNUYTmvt"><strong data-page-node-id="CtizCHnxBW5KK9xUOSteEp">低性能设备</strong>——减少 DOM 渲染压力，提升帧率</li>
+<li data-page-node-id="c8Cjh2hLs7D0kAL1hJqnQa"><strong data-page-node-id="GorxaF3rqsBvRf1zkXbDWB">省电模式</strong>——笔记本电池模式下延长续航</li>
+</ol>
+<h4 id="445" data-page-node-id="tfwHgND9GKtzApEYUcw1Xj">4.4.5 实施要点</h4>
+<ul data-page-node-id="AA9H5QTJlzK9SJyW47XICi">
+<li data-page-node-id="weVke7oQIDRUljxT1pFi1x">用 CSS class <code data-page-node-id="myPGSvRJgxavAvsOj5OWP0">body.focus-mode</code> 切换状态，<strong data-page-node-id="0BuuT8lTO91zOJjURgKgoB">不重建 DOM</strong></li>
+<li data-page-node-id="DGSakqDSTRVG1hHgrlT6kP">收起动画 0.3s <code data-page-node-id="qRU4tsuJlR8SntpMKvACpC">ease-in-out</code>，展开动画 0.2s <code data-page-node-id="BaQdqI80XZ6HpNlxurNcxw">ease-out</code></li>
+<li data-page-node-id="bVEybZSQ4iWTTrycknttZX">事件弹窗必须能在专注模式下正常弹出（破坏沉浸感但保证可玩性）</li>
+<li data-page-node-id="BNVyR9Nn5V3PtE9iodtv9s">专注模式下的掷骰子自动改为"按空格掷"（避免鼠标找不到小按钮）</li>
+</ul>
+<hr  data-page-node-id="fzBK7MkJkRORAWJAELUnyS"/>
+<h2 id="5-3" data-page-node-id="CEtqQ2hqi9STB9EhwCZNh4">5. 典型场景草图（3 个）</h2>
+<h3 id="a" data-page-node-id="ERaLKK9W0I0jJ3psMf6p1D">场景 A · 起始页面（主菜单）</h3>
+<pre data-page-node-id="t7uqty2lgyxqXe85Wat0Xy"><code data-page-node-id="gOcOsAGVX180GIQsa4pYYj">┌──────────────────────────────────────────────────────────────────────────────┐
+│  ▓▓▓▓ 远景：3D 写字楼外观，黄昏暖光，左下角飞鸟剪影 ▓▓▓▓                       │
+│                                                                              │
+│                                                                              │
+│        ┌──────────────────────────────────────────────────────────┐          │
+│        │                                                          │          │
+│        │    🏢 大富翁·工位版                                        │          │
+│        │    Office Monopoly · v1.0                                  │          │
+│        │                                                          │          │
+│        │    [ 单人模式 ]   ← 主按钮 200×60 金色描边                │          │
+│        │    [ 多人热座 ]                                          │          │
+│        │    [ 局域网联机 ]   ← 副按钮 200×60 白底描边             │          │
+│        │    [ 自定义数值 ]                                         │          │
+│        │                                                          │          │
+│        │    ┌─────────────┐  ┌─────────────┐                      │          │
+│        │    │ 继续上次    │  │ 设置 / 教程 │                      │          │
+│        │    └─────────────┘  └─────────────┘                      │          │
+│        │                                                          │          │
+│        └──────────────────────────────────────────────────────────┘          │
+│                                                                              │
+│  底部版权信息 · 版本号 · 小图标（GitHub / 帮助 / 退出）                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p data-page-node-id="750v9Ml50QNTBjVDITlPv7"><strong data-page-node-id="eYUXPLQCLhZKiopqclrWsI">要素说明：</strong><br  data-page-node-id="GDaZpwQfCTup0p1EDinYCH"/>
+- 背景：3D 渲染的写字楼外观（黄昏天际线，写字楼玻璃幕墙反射夕阳光），与中央菜单区形成层次。<br  data-page-node-id="cHFiwyuZMldVDyEswp8mh8"/>
+- 主标题：80px Bold，金色描边，阴影。<br  data-page-node-id="3k5bCnxe7rmiYFGcFjyLfY"/>
+- 4 个主按钮：垂直排列，等宽 200px，居中。<br  data-page-node-id="jEUBF4nMhgjQuqVB7NP3gm"/>
+- 副按钮组：右下角小图标 + 文字。<br  data-page-node-id="D2GmuzIWDF0FRuJMB7ylio"/>
+- 配乐：轻快的办公室键盘声 + 远处咖啡机嘶嘶声循环。</p>
+<hr  data-page-node-id="QDHHCVzFwB7PY7iWqCHXHk"/>
+<h3 id="b" data-page-node-id="mbJ6LC6lNUTcCekCJtNLM3">场景 B · 回合进行中</h3>
+<pre data-page-node-id="SC9ETa5E7euliqBtKS7yPC"><code data-page-node-id="DlviaXPMxMVChvIJEwcEA8">┌──────────────────────────────────────────────────────────────────────────────┐
+│ 周三 12 天   ▌▌▌▌ 王   ▌▌▌ 李   ▌▌ 张   ▌ 周                            [≡][▦] │
+├─────────────────────────────────────────────────────────┬────────────────────┤
+│                                                         │ ● ① 王思齐  ★总监 │
+│   ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗   │ 💰 58,000           │
+│   ║ ↑ ║ ║  ║ ║  ║ ║☕║ ║  ║ ║📊║ ║  ║ ║  ║ ║  ║   │ 🏦 12,000           │
+│   ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝   │ 道具 ▢▢▣▢▢▢           │
+│                                                         ├────────────────────┤
+│   ╔══╗┌─────────────────────────────────────┐╔══╗   │ ② 李梦琪  ★经理    │
+│   ║  ║│                                     │║  ║   │ 💰 45,000           │
+│   ╚══╝│     中 庭 场 景（旋转楼梯+奖杯台） │╚══╝   │ 🏦  8,000           │
+│   ╔══╗│                                     │╔══╗   │ 道具 ▣▢▢▢▢▢           │
+│   ║  ║│                                     │║  ║   ├────────────────────┤
+│   ╚══╝│                                     │╚══╝   │ ③ 张伟  ★主管       │
+│   ╔══╗│                                     │╔══╗   │ 💰 38,000           │
+│   ║  ║└─────────────────────────────────────┘║  ║   │ 🏦  5,000           │
+│   ╚══╝ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╗ ╔══╝   │ 道具 ▢▢▢▢▢▢           │
+│   ║→ ║ ║  ║ ║  ║ ║🛋║ ║  ║ ║📜║ ║  ║ ║  ║   ├────────────────────┤
+│   ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝ ╚══╝   │ ④ 周晓  ★专员       │
+│                                                         │ 💰 22,000           │
+├─────────────────────────────────────────────────────────┤ 🏦  3,000           │
+│ ┌──────┐      ⊙ ⊙ ⊙ ⊙ ⊙ ⊙ ⊙ ⊙ ⊙                    [托管] │
+│ │立绘  │     (8 圆形卡槽，左起最新)                      │ 道具 ▢▢▢▢▢▢           │
+│ │王思齐│                                                  │                      │
+│ │😊    │              ⬤ ← 掷骰子按钮（80px 金色）         │                      │
+│ └──────┘                                                  │                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p data-page-node-id="SiiyNsWcYpfrt5qSBnbWIy"><strong data-page-node-id="rzX9pI9QoErk4FohgVFIFb">要素说明：</strong><br  data-page-node-id="CDPLDbc9ACnqxqrmRG6oaZ"/>
+- 顶栏：周三天、4 人资产柱状图、菜单 / 应用按钮。<br  data-page-node-id="vrLem5LwDaiAvQx63HGHKP"/>
+- 棋盘：11×11，外圈 40 格走子，中央 9 格"茶水间场景（咖啡机 + 沙发 + 绿植）"。<br  data-page-node-id="JqR3nshxyUlCeoEIhmrMvN"/>
+- 当前玩家（王思齐）：头像发光 + 脚下金色光环 + 表情"😊"。<br  data-page-node-id="qeZMC2oX4ycnjzZV1ev3MG"/>
+- 右侧排名：4 人面板，当前玩家金色描边。<br  data-page-node-id="iFp60rXBVxhm8KNoRAOAXY"/>
+- 底部：立绘大图 + 表情 + 8 卡槽 + 掷骰子按钮 + 托管按钮。<br  data-page-node-id="A8fC4G5F3vfwBpQm64IghD"/>
+- 动画：玩家 token 在格子上移动，脚下有小灰尘；可购买格子金色脉冲边框。</p>
+<hr  data-page-node-id="GeLNoN7QwHNfYF9uMrPQLA"/>
+<h3 id="c" data-page-node-id="pGKsMRW9EfcokcjQ2uUDCQ">场景 C · 事件触发（机遇卡）</h3>
+<pre data-page-node-id="jLOTFxU6KKy5asqAB9N4Ks"><code data-page-node-id="ZTPTpFPIAQJDenhVNHNKdC">┌──────────────────────────────────────────────────────────────────────────────┐
+│ 周三 12 天   ▌▌▌▌ 王   ▌▌▌ 李   ▌▌ 张   ▌ 周                            [≡][▦] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                          ╔════════════════════════╗                          │
+│                          ║   ⓘ 机遇 / Opportunity ║                          │
+│                          ║                        ║                          │
+│                          ║   ┌──────────────────┐ ║                          │
+│                          ║   │                  │ ║                          │
+│                          ║   │  📈 季度分红！    │ ║   ← 卡片 480×600 圆角   │
+│                          ║   │                  │ ║                          │
+│                          ║   │  老板发话：       │ ║                          │
+│                          ║   │  &quot;这个季度大家     │ ║                          │
+│                          ║   │   辛苦了！&quot;       │ ║                          │
+│                          ║   │                  │ ║                          │
+│                          ║   │  → 获得 ¥5,000   │ ║                          │
+│                          ║   │                  │ ║                          │
+│                          ║   └──────────────────┘ ║                          │
+│                          ║                        ║                          │
+│                          ║   [ 收下 ]  [ 转赠 ]   ║                          │
+│                          ╚════════════════════════╝                          │
+│                                                                              │
+│  （棋盘暗化 50%，仅事件卡区域高亮）                                            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p data-page-node-id="eDgZrTfBSv3cMgZSEvMPin"><strong data-page-node-id="qvH0Va5gP6G9DGQJjYWJ0z">要素说明：</strong><br  data-page-node-id="cmNpFDvmtbE9Rc2SHeifq6"/>
+- 棋盘背景：暗化 50%（<code data-page-node-id="CGDqQrBkkYlKy4LlOzzYMn">rgba(0,0,0,0.5)</code>），仅事件卡区域高亮。<br  data-page-node-id="yIhFNNjedB5pWlZvqwRE7z"/>
+- 卡片入场：从中央缩放 0.8 → 1.0 + 淡入 0.25s。<br  data-page-node-id="h7HvcD1r3czEjV1nNL8Nlh"/>
+- 卡片结构：标题 + 图标 + 标题 + 正文 + 效果行 + 行动按钮。<br  data-page-node-id="Q7V3pEb6Q5NANvX9IKO4YT"/>
+- 字体：标题 24px Bold，正文 18px Regular，效果行 22px Bold 绿色 <code data-page-node-id="BcTlEcjFJMCylnUhuFrzKV">--state-good</code>。<br  data-page-node-id="648elfbzgzOdvB9i0BqBKS"/>
+- 行动按钮：主按钮 120×44 金色，副按钮 120×44 白底描边。<br  data-page-node-id="7JgjwEDCAFrpJJqKDtZNi9"/>
+- 动画：金币从屏幕右下角飞向玩家头像（0.6s）。<br  data-page-node-id="8sQ4rSZpxNw6nPDJCKcTOj"/>
+- 音效：清脆"叮"一声 + 远处欢呼声。</p>
+<hr  data-page-node-id="YzVm3K1AjbbZEgpSqCPFla"/>
+<h2 id="6_2" data-page-node-id="sdlug85qDpeC3QMIA3iqGV">6. 资产清单（交付清单）</h2>
+<p data-page-node-id="k4U2FwmI2pJMHYIeZb7P0o">设计师需交付的素材清单（建议拆分到 Figma / Sketch 文件）：</p>
+<table data-page-node-id="dvF07BEpzXfEp3AeFUQS95">
+<thead data-page-node-id="ASTyykVaOEDo9yy1vjrMM8">
+<tr data-page-node-id="VyTFXJ26xCycB62fhX5E89">
+<th data-page-node-id="ExjpVHzFwQTzl8jGvw774L">#</th>
+<th data-page-node-id="tpDUhPKAfcKTKriRO8fqm1">类型</th>
+<th data-page-node-id="42hMG2xBWQnmJS01PWjDmX">名称</th>
+<th data-page-node-id="8V2cNRl8Ve8mvE8boEagkL">规格</th>
+<th data-page-node-id="5LGi26OImdu4rGn9Z1bIaU">数量</th>
+</tr>
+</thead>
+<tbody data-page-node-id="x19VV3DFxXHWa60afFL6Rj">
+<tr data-page-node-id="7C9qvcpXREvwqdtUbZye3U">
+<td data-page-node-id="IvGM1NdYVPMwEazdcfRZIn">1</td>
+<td data-page-node-id="hDCx4VVPLvEu6mZVeSbV38">角色立绘</td>
+<td data-page-node-id="kfVBgKRDHNHWKFAqZrSxy9"><strong data-page-node-id="G5pqDr8OyZbRWr9mnOiYLt">6 职级差异化</strong>（见 §3.4：实习生/专员/主管/经理/总监/总裁）</td>
+<td data-page-node-id="EBGmVCwEYZJd4DEX9ggCxZ">512×680 PNG（透明）+ 行走 6 帧</td>
+<td data-page-node-id="uzhFxsq1FhUW0V4HAGyTd1">6 主体 + 6×6=36 动画帧</td>
+</tr>
+<tr data-page-node-id="vTeJgjXbSPZNpPMsCG5Bsy">
+<td data-page-node-id="atJtzkHVD9HvrJNyIkSQ1Z">2</td>
+<td data-page-node-id="sZWO1NoP11HNWevX1u1IPD">角色表情</td>
+<td data-page-node-id="3wi1B0ZwnWIgSMmRTVJzFH"><strong data-page-node-id="RcszlhHfPYp5Aw3GaPCPXL">7 表情</strong>（默认/开心/惊讶/哭泣/暴富/<strong data-page-node-id="AJ34ErCH5juIZBoJilo0iV">加班/被 boss 骂</strong>）</td>
+<td data-page-node-id="igAISjQzkdnucuuy0Aex8M">128×128 PNG</td>
+<td data-page-node-id="jhEpy8xA85NlH2E3aClOhJ">7×6=42</td>
+</tr>
+<tr data-page-node-id="tUpMSV8UiREW4yxEHRxwKP">
+<td data-page-node-id="KvyIrCkXoV0m1Woa9dHb6F">3</td>
+<td data-page-node-id="XAVXxmgeSxI6OxgD2pCaK1">棋盘地块底座</td>
+<td data-page-node-id="joGiTbObXqZEemnsfxDcau">6 色 × 5 等级</td>
+<td data-page-node-id="dZGYVhCudPH3ynV9HnSNC8">200×220 PNG（3D 立体）</td>
+<td data-page-node-id="cGHLZ6DoiaJImXcIJccPrb">6×5=30</td>
+</tr>
+<tr data-page-node-id="DqJS0VuD0AQa3A0kbvWmJ2">
+<td data-page-node-id="RpVpUhPHDuHh0jrV4kIHVJ">4</td>
+<td data-page-node-id="zQzeRLPX7nI6AM3n4dIBV7">地块图标</td>
+<td data-page-node-id="1fa0cLjdiSpEsqMEvipH3N">16 枚（见 §2.3）</td>
+<td data-page-node-id="DENUWVA7vhOZ9gHIEmMnCx">96×96 PNG</td>
+<td data-page-node-id="dENrDA4OmihWBvzgRir1RS">16</td>
+</tr>
+<tr data-page-node-id="y63EPYXoWULShgNjdmFb9X">
+<td data-page-node-id="byMW1o3SxLCC718la9CaNE">5</td>
+<td data-page-node-id="XSl3MlTF2H7vaA7YVmmX7G">中央场景</td>
+<td data-page-node-id="XarwtdJySCMKPNg6UYnAw4">茶水间 / 会议室 / 加班区</td>
+<td data-page-node-id="nuOAHnQXQDCUXxFYaQmbkB">3×3 整图 1100×1100 PNG</td>
+<td data-page-node-id="coQBFa4CaONGEN16zxCNPS">3</td>
+</tr>
+<tr data-page-node-id="xAuPTjehUUK5VYPuAHKNZJ">
+<td data-page-node-id="6aScWdj09VEkLGjKQCrX0l">6</td>
+<td data-page-node-id="VAtdCwIeGZ7cKLD3hlUz5V">道具图标</td>
+<td data-page-node-id="XVahfCEJqr36ZB2ENVuFdu">12 枚（见 §2.3）</td>
+<td data-page-node-id="F2mGHYt9lO4cGSAot9ERsn">96×96 PNG</td>
+<td data-page-node-id="cxsTsrQ9NBLrmFXqZEPuM5">12</td>
+</tr>
+<tr data-page-node-id="PkLWPgUGHQa4SRo79gePMB">
+<td data-page-node-id="SvivybnULepaXPcdKAIbbS">7</td>
+<td data-page-node-id="EfQTVJuGPk8HE6VYpAATwW">UI 图标</td>
+<td data-page-node-id="oBqe6UZ9w3SjJLxxoflFjd">菜单 / 应用 / 自动 / 掷骰子 / 暂停 / 锁 / 头像 / 现金 / 存款</td>
+<td data-page-node-id="4O6XlIXhLXZyFh7saWOWaY">24–48px SVG</td>
+<td data-page-node-id="TgLDAwdjmEhgfmY6sBSFPE">8</td>
+</tr>
+<tr data-page-node-id="BJjpVtCaZX2G2aghzppeSX">
+<td data-page-node-id="nQ77Q6ak5m1jDVnw2NHXaf">8</td>
+<td data-page-node-id="gOfMxzMQibbkksHkCWUjrF">启动页</td>
+<td data-page-node-id="4HxNVTCUU7WXhgsBVyn2Tj">写字楼外观黄昏景</td>
+<td data-page-node-id="N2decR0dmLZnX6JCtihgGq">1920×1080 PNG/JPG</td>
+<td data-page-node-id="2d0GdKDqgVuEXtDzYwiDRN">1</td>
+</tr>
+<tr data-page-node-id="XMiEHioZulnwSOgctxVncc">
+<td data-page-node-id="r3PLcnnDBemXRY1jcOXlis">9</td>
+<td data-page-node-id="SOKf52dnEAQw4oBqD3SUWX">排名面板</td>
+<td data-page-node-id="5JGDQzcIanrDHZnKFrzTgf">4 玩家模板</td>
+<td data-page-node-id="rkOo8t8PYrScvnlqksWh5E">Figma 组件</td>
+<td data-page-node-id="tpHKCK9imw3IIE6RsoBmmH">1 套</td>
+</tr>
+<tr data-page-node-id="FMln3oR1QG2hgGNVViJwgP">
+<td data-page-node-id="EawYgLS44acgBNtGVEDTtq">10</td>
+<td data-page-node-id="E8ScVHj9dXtk2aAY3X51ax">事件卡</td>
+<td data-page-node-id="yfjCi7NQC4p2PYsHyz4Lag">机遇 / 命运 / 弹窗 / 破产 / 结算</td>
+<td data-page-node-id="Qw7o2H7BzIh9fWkSG8jXLn">480×600 PNG 模板</td>
+<td data-page-node-id="gqBiODeTey3iBkz2cucpnX">5</td>
+</tr>
+<tr data-page-node-id="9FUoESZ2wgoAYkAZxM1Xw9">
+<td data-page-node-id="TfI8wqKyaTQGAQVcwLStah">11</td>
+<td data-page-node-id="yxsd4ulN6Wm5UxzSnkcuhh">骰子</td>
+<td data-page-node-id="yG0H30LlTcp4xJsDxFkODh">1–6 点数 3D 渲染</td>
+<td data-page-node-id="PB8lXAa9kXVFBEgliq1S48">200×200 PNG × 6 + 序列帧</td>
+<td data-page-node-id="tvP3aU0fW6RqS3lqxDnF68">7</td>
+</tr>
+<tr data-page-node-id="7bhiSzSClUlJiqCgsA8F99">
+<td data-page-node-id="YxAlcYy2huoI89DT4O7Tz7">12</td>
+<td data-page-node-id="lAnIzW3PuUXCiqedUu1Il1">字体包</td>
+<td data-page-node-id="3oOwGtHiyCFA1e4LGeJZg2">思源黑体 + DIN Bold</td>
+<td data-page-node-id="WEMV94AS5MKq7m4pc6NuCB">OTF / WOFF</td>
+<td data-page-node-id="2M2H1AApD6MsGzwiOSCDEB">2</td>
+</tr>
+<tr data-page-node-id="8SqryQUU08HaYSWvoCZOs6">
+<td data-page-node-id="78eZwSIBeeKDXcyEEzbKiI">13</td>
+<td data-page-node-id="9O47Vw5igPDmKanBDINpms">颜色规范</td>
+<td data-page-node-id="K8Bri20FDPZTqmZivYevzS">调色板 + token</td>
+<td data-page-node-id="tb6vmj1N5D7eHsq6eMVsxX">Figma Variables</td>
+<td data-page-node-id="rcfCeIVlEq1J8Mo3u1dkIS">1</td>
+</tr>
+<tr data-page-node-id="IfMzjfvmnyboTbp96pNbkV">
+<td data-page-node-id="gEdxKoFPLDwPObhA8TPK9C">14</td>
+<td data-page-node-id="8aLMjfPhUMMaEk2X5CnLSf">动效规范</td>
+<td data-page-node-id="xZay1zKFs5qAnRl3yyHj7v">入场 / 出场 / 转场 / <strong data-page-node-id="L20K65IagsGe72lDGFKr8w">专注模式切换</strong></td>
+<td data-page-node-id="WcsEb1knGncslEA5UlOdz3">Lottie 或 Rive</td>
+<td data-page-node-id="D5WSp3Rwal42Pp2MZ3ION6">10+</td>
+</tr>
+</tbody>
+</table>
+<hr  data-page-node-id="k7yANqhLYNzWtDNS2p8FEp"/>
+<h2 id="7_1" data-page-node-id="MalFSx7UvBgmHLvAWzF0hW">7. 设计原则与红线</h2>
+<h3 id="71" data-page-node-id="resNrC4DQDc4ixE9BbKhI0">7.1 一致性原则</h3>
+<ol data-page-node-id="doxAuDLH54yBeRQoaUEQV3">
+<li data-page-node-id="klP1ARjjMqyZf1AQ6BCnfe"><strong data-page-node-id="wvlN1zh6Hfll08cXkYEqAR">所有按钮遵循三态</strong>：默认 / Hover（亮度 +10%） / Pressed（缩放 95%）。</li>
+<li data-page-node-id="pQD5UHZQlEmO2FXR535qOX"><strong data-page-node-id="tP6EF0fpSlqA4bATs1fQOs">所有卡片遵循同一种圆角</strong>：16px（卡片）/ 24px（弹窗）/ 12px（小标签）。</li>
+<li data-page-node-id="Oi9cewb0DeLCq2qB3kjMl8"><strong data-page-node-id="ktQyGfkMKR7iGQm6TOwZqB">所有文字遵循同一行高</strong>：标题 1.2，正文 1.5。</li>
+<li data-page-node-id="Ord0C4eMRw5P9ZvK1VxcXe"><strong data-page-node-id="Vqkac1qymT0toZhrBnjAqY">所有色彩遵循 token</strong>：不允许直接使用 HEX，引入新色须先登记到调色板。</li>
+</ol>
+<h3 id="72" data-page-node-id="3MFyxtEZPwao6cl8vbk8ah">7.2 可用性红线</h3>
+<ul data-page-node-id="jVfpvjjEEyG4bEdHUlnBDg">
+<li data-page-node-id="2C24IT3X4hu3iIwDhLpZKq">❌ 不要在深色背景上用深色文字（最低对比度 4.5:1）。</li>
+<li data-page-node-id="eJUNg3diFaLfaQAjr3NY2y">❌ 不要使用 &lt; 12px 的字号（正文最小 16px）。</li>
+<li data-page-node-id="BlOuMyMVfSRAFA8zbioPjh">❌ 不要让按钮宽度 &lt; 80px（手机端误触风险）。</li>
+<li data-page-node-id="4kpRATsPr0Y6FQC3EAX3Ik">❌ 不要用纯红 + 纯绿传达"好/坏"（色盲友好：加图标辅助）。</li>
+<li data-page-node-id="KiFGSAlNAfeU9opBrOPUTn">✅ 所有交互元素必须有焦点态（键盘 Tab 可达）。</li>
+<li data-page-node-id="PVABTDoER7KNcNPJARgiBL">✅ 所有破坏性操作（破产 / 强制退出）需要二次确认。</li>
+</ul>
+<h3 id="73" data-page-node-id="gu7yyZZIjbBXlJMAk6bf3l">7.3 性能红线</h3>
+<ul data-page-node-id="c55AuaRsAXcTYgnNURY2Et">
+<li data-page-node-id="zFx74bhB0WhzeIr0r1neko">单张 PNG 素材 ≤ 500KB（中央场景可破例到 2MB）。</li>
+<li data-page-node-id="jBHrhlADqEFqV6BssClcsD">Canvas 绘制元素总数 ≤ 2000 个（参考大富翁 11 的 Z 序管理）。</li>
+<li data-page-node-id="Cb0tiE8GBSxIEWuty1EVlU">动效帧率 ≥ 30fps（低于 30fps 自动降级到 15fps 简版）。</li>
+<li data-page-node-id="ETYF2ZWXYWhETFAEdu0cIa">启动时间 ≤ 3s（含启动页动画）。</li>
+</ul>
+<hr  data-page-node-id="kfDEk25QzdZ2r4Xbtxsve0"/>
+<h2 id="8" data-page-node-id="OT05k1F2NOOLMBkByshMvE">8. 交付节点建议</h2>
+<table data-page-node-id="g45vKa82bFNDOnaBbAJTbA">
+<thead data-page-node-id="hHhPfjBrlSW0xFEz2G0xIB">
+<tr data-page-node-id="crbnhCWFZYEvGpTLpN3hXE">
+<th data-page-node-id="OZSU7NTVNdg6KDsrH4RdBp">阶段</th>
+<th data-page-node-id="Dy0ZSi0AxsZnnsrEtFJG25">交付物</th>
+<th data-page-node-id="7sVmy6hDLXo66Ts3QqLaoU">工期（参考）</th>
+</tr>
+</thead>
+<tbody data-page-node-id="anaJSXDJe5NeB8oscYJNoP">
+<tr data-page-node-id="QLh5DlWQr7oFihRogDF45A">
+<td data-page-node-id="PAhiFbEpGM1g2MXGdv57KG">Phase 1</td>
+<td data-page-node-id="jGGJ4FSHZ2atfy2c1IzXGP">视觉规范（色彩 / 字体 / 图标 / 组件库）</td>
+<td data-page-node-id="do5YEGg3k30XzIo41SEzXH">5 天</td>
+</tr>
+<tr data-page-node-id="3wpSPXF029iOyNImxqfOSi">
+<td data-page-node-id="eWndDKoj1lsHePADbdfRsu">Phase 2</td>
+<td data-page-node-id="Reeb67mgVMUZnfGWkTRigY">棋盘 + 地块 + <strong data-page-node-id="EeiZ7R9teQADbWhr0rcC0n">3 个中央场景静态稿</strong>（茶水间/会议室/加班区）</td>
+<td data-page-node-id="XGf1RoaJxGXIN6GZO2LpfE">7 天</td>
+</tr>
+<tr data-page-node-id="pZTDFGYGPXGFpYSAJovN0J">
+<td data-page-node-id="ATVHiSo2d03jtSBZTWT6BA">Phase 3</td>
+<td data-page-node-id="hXSzSKmDwyQWrL1D487zdW"><strong data-page-node-id="LJMovs6hW8rtpElsBU165b">6 职级差异化立绘</strong> + <strong data-page-node-id="QvHbFVe0VvYikLyjDC7N07">7 表情</strong> + 行走 6 帧</td>
+<td data-page-node-id="SmimO9ensVgxm33b1u2J4F">7 天</td>
+</tr>
+<tr data-page-node-id="42DKn3sujqN7fXkWbPKbJX">
+<td data-page-node-id="gYmZJ1o6lWtLiLadGiCviL">Phase 4</td>
+<td data-page-node-id="41gs2fmhter2nMSZtb2LEG">UI 组件（按钮 / 卡片 / 弹窗 / 排名面板 / <strong data-page-node-id="hX6jUegrucExfNuKaPze7v">专注模式</strong>）</td>
+<td data-page-node-id="0Lr5zN772ZV95464xmps9q">5 天</td>
+</tr>
+<tr data-page-node-id="BJDbGWZaXHoZWNoN091pIk">
+<td data-page-node-id="loBUXgRmHAjkbMqTRiCFhA">Phase 5</td>
+<td data-page-node-id="tCybXAwQoZlp6cjYt20OyW">动效（Lottie + CSS + <strong data-page-node-id="MkmalqDYtAFTyapDgp8Fl5">专注模式切换</strong>）</td>
+<td data-page-node-id="NswviynPC0DAV3XsWUcHOi">3 天</td>
+</tr>
+<tr data-page-node-id="1SP1mjzf1T4VwYqsxISARB">
+<td data-page-node-id="fYlFkPrLZtviYgL4MT0yk5">Phase 6</td>
+<td data-page-node-id="4ET8ZypGgjXZIzOhaxAyqo">集成 + 适配 + 走查 + 副屏常驻验证</td>
+<td data-page-node-id="hn7wC8Bk0LWro1m0QS4wyO">5 天</td>
+</tr>
+<tr data-page-node-id="dwze966Rsk8uM1jeLrsQWW">
+<td data-page-node-id="HWRAkgnZ2nc55VtYTBAMZe"><strong data-page-node-id="60vJPCx4HdUHdhqHwVotHd">合计</strong></td>
+<td data-page-node-id="QEvPeXABeBLOUduIRFBSsB">—</td>
+<td data-page-node-id="6zYInbdXvH3huQGBLcqffr"><strong data-page-node-id="4v6lkZRJOCFtNMKFy7gLHy">32 天</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote data-page-node-id="zaDwYiGzNSS1NCWKqw7Grj">
+<p data-page-node-id="PDNwOwqAJ7N4EKdsP6Qlk0">重点变更：<br  data-page-node-id="EaEtvxf7BzA0gKljCdjWZd"/>
+- <strong data-page-node-id="nlga3qNxfUb5xveuzhksq3">Phase 2 中央场景从 6 个改为 3 个</strong>（节省约 5 天 × 美术工作量 = 12 人日）<br  data-page-node-id="alyuBVQuPFuLnAeG5J3ACi"/>
+- <strong data-page-node-id="4V6xlNVBLkZYXfARy1VsxD">Phase 3 角色立绘从"6 同底换配饰"改为"6 差异化立绘"</strong>（+2 天，但视觉辨识度跃升）<br  data-page-node-id="KacivembMbDNrdCQITIAdP"/>
+- <strong data-page-node-id="nMFYOexWe23hkOTuGlGJqU">新增 Phase 4 / 5 专注模式</strong>（+2 天）</p>
+</blockquote>
+<hr  data-page-node-id="7tVHAHbl2qmlvYRaYPWZst"/>
+<h2 id="9" data-page-node-id="hxh6TCXPkNzWfDImgbvVss">9. 附录</h2>
+<h3 id="91-figma" data-page-node-id="MCP7kq8dTr8cTyN3Rh4q44">9.1 Figma 文件结构建议</h3>
+<pre data-page-node-id="YYQaVRxFPEMPzDRT5Dd3Fa"><code data-page-node-id="8SWyvDz5ZgBiDO7y1EP0H4">/Monopoly-Office
+├── 00 · Cover
+├── 01 · Design Tokens
+│   ├── Colors
+│   ├── Typography
+│   ├── Spacing
+│   └── Effects
+├── 02 · Components
+│   ├── Buttons
+│   ├── Cards
+│   ├── Panels
+│   ├── Modal
+│   └── Toast
+├── 03 · Scenes
+│   ├── 01-MainMenu
+│   ├── 02-Board
+│   ├── 03-EventCard
+│   ├── 04-Settlement
+│   └── 05-GameOver
+├── 04 · Characters
+│   ├── Specialist
+│   ├── Supervisor
+│   ├── Manager
+│   ├── Director
+│   └── Boss
+├── 05 · Tiles
+│   ├── Blue-RND
+│   ├── Purple-MTG
+│   ├── Brown-Cafe
+│   ├── Green-Public
+│   ├── Gold-Boss
+│   └── Orange-Mobile
+├── 06 · Center Stage
+│   ├── Tea Room
+│   ├── Gym
+│   ├── Meeting Room
+│   ├── Cafeteria
+│   ├── Atrium
+│   └── Overtime
+└── 07 · Animations
+    └── Specs
+</code></pre>
+<h3 id="92" data-page-node-id="gLJcgT7jiyQz758JBvnYLk">9.2 参考素材链接（设计师取用）</h3>
+<ul data-page-node-id="yR72Tk9MCZ5KhwJKNSinVs">
+<li data-page-node-id="19ZLjgkTFF8UOX3tUwTo9P">大富翁 11 视觉拆解：<a href="bilibili.com" data-page-node-id="7f0QSCDfuKFjTLx5ZGQbil">B 站视频合集</a></li>
+<li data-page-node-id="rAiPeaRY7robcHkR5RHVcc">2.5D 卡通风格参考：原神、崩坏 3、阴阳师百闻牌 UI</li>
+<li data-page-node-id="S6eMGFAc0fzBKLrLw5KlVf">3D 半俯视棋盘参考：富翁时代、Monopoly Plus</li>
+<li data-page-node-id="jv6ZyZVgNUOGcRUtuHHqkW">办公场景素材：UI8.net / Flaticon 搜索 "office isometric"</li>
+</ul>
+<hr  data-page-node-id="EUgLSMizHMMqpVP8uS9OHq"/>
+<p data-page-node-id="VO6tfWELA2R53JAD4Al427"><strong data-page-node-id="4EqWF5zAmR5hfk5rETFFcu">文档版本</strong>：v1.0<br  data-page-node-id="70Ft9JFzzIAejmNq2I1yUI"/>
+<strong data-page-node-id="nEZJB2T8lxSyRksQ4zimhW">最后更新</strong>：2026-10-08<br  data-page-node-id="9HHufsCHqNOiHr7BRZeAo3"/>
+<strong data-page-node-id="3mmQp2zEm8IB187EeFmVgz">下一步</strong>：交付设计师启动 Phase 1（视觉规范），同时输出<strong data-page-node-id="J1CaCs7ju7lQ5kGINwab4S">文字版起稿草图</strong>供 1 轮内部评审。</p>
+    </main>
+    <hr data-page-node-id="MrBBX1A6XZOA0S2QmD0eZp">
+    <p style="text-align:center;color:var(--fg-dim);font-size:13px;" data-page-node-id="3ZsaiY8PvUZCc47KT8QOSo">
+      本文档由 Chip 自动生成 · 项目路径 <code data-page-node-id="TOLuJmeUCqIEzR6Q78u5Pe">monopoly-office/docs/05-UI概念设计.md</code>
+    </p>
+  </div>
+</body>
+</html>

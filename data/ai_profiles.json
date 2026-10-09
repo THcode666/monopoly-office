@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "profiles": [
+    {
+      "id": "greedy",
+      "name": "贪婪型",
+      "desc": "见钱就抢，敢贷款梭哈",
+      "avatar": "shark",
+      "color": "#E24B4A",
+      "weights": {
+        "buyProperty": 1.0,
+        "keepCash": 0.15,
+        "deposit": 0.05,
+        "takeLoan": 0.85,
+        "useItem": 0.75,
+        "cardOpportunity": 0.9,
+        "cardFate": 0.55,
+        "cardItem": 0.7
+      },
+      "thresholds": { "reserveRatio": 0.05, "loanMaxRatio": 0.72 },
+      "tradeStyle": { "offerCashToRich": 0.3, "askPriceMarkup": 1.2 },
+      "voice": ["现金为王，杠杆是朋友。", "这波我不贪，我只是资金效率最大化。", "别人恐惧我贪婪。"],
+      "strategy": "看到可买资产就上，现金不足就贷款。负债率过高时会暂时收手。"
+    },
+    {
+      "id": "steady",
+      "name": "稳健型",
+      "desc": "现金流为上，存款吃利息",
+      "avatar": "turtle",
+      "color": "#378ADD",
+      "weights": {
+        "buyProperty": 0.55,
+        "keepCash": 0.6,
+        "deposit": 0.75,
+        "takeLoan": 0.15,
+        "useItem": 0.9,
+        "cardOpportunity": 0.85,
+        "cardFate": 0.8,
+        "cardItem": 0.85
+      },
+      "thresholds": { "reserveRatio": 0.30, "loanMaxRatio": 0.45 },
+      "tradeStyle": { "offerCashToRich": 0.7, "askPriceMarkup": 1.0 },
+      "voice": ["我不需要暴富，我需要不下班。", "存款利率再低也是确定收益。", "现金流断裂比亏钱难受多了。"],
+      "strategy": "优先把闲钱存入银行吃息，只买能收租的核心资产，永远留 35% 现金。"
+    },
+    {
+      "id": "spender",
+      "name": "消费型",
+      "desc": "及时行乐，装备党",
+      "avatar": "cat",
+      "color": "#D4537E",
+      "weights": {
+        "buyProperty": 0.35,
+        "keepCash": 0.1,
+        "deposit": 0.05,
+        "takeLoan": 0.45,
+        "useItem": 0.95,
+        "cardOpportunity": 0.5,
+        "cardFate": 0.3,
+        "cardItem": 1.0
+      },
+      "thresholds": { "reserveRatio": 0.05, "loanMaxRatio": 0.60 },
+      "prefers": ["clothes", "vehicle", "eat"],
+      "tradeStyle": { "offerCashToRich": 0.1, "askPriceMarkup": 1.35 },
+      "voice": ["钱不是赚来的，是花出去的。", "不开心就买点什么。", "明天的事明天再说，今晚先消费。"],
+      "strategy": "优先买车买衣服提升生活开销减免，看到消费类格子就想停。"
+    }
+  ]
+}

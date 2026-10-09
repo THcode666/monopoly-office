@@ -1,0 +1,90 @@
+{
+  "id": "office-default",
+  "name": "浦东写字楼 · 标准版",
+  "grid": { "cols": 11, "rows": 11, "cellSize": 56 },
+  "tiles": [
+    { "id": 0, "type": "start", "name": "起点工位", "grid": [0, 10], "payload": { "salaryBonus": 2000, "text": "回到自己的工位，摸鱼时间 +1 小时。" } },
+
+    { "id": 1, "type": "eat", "name": "楼下食堂", "grid": [1, 10], "payload": { "text": "今天的午饭是公司食堂第九大菜系：麻辣烫自由。" } },
+    { "id": 2, "type": "company", "name": "地铁口广告位", "grid": [2, 10], "payload": { "hot": "gold", "price": 26000, "rent": 440, "group": "gold", "text": "这块广告位常年有人找 you 投简历。" }, "owner": null },
+    { "id": 3, "type": "chance", "name": "机会", "grid": [3, 10], "payload": {} },
+    { "id": 4, "type": "rent", "name": "合租次卧", "grid": [4, 10], "payload": { "rent": 1800, "group": "rent-small", "text": "房东又准时来催房租了。" } },
+    { "id": 5, "type": "eat", "name": "便利店便当", "grid": [5, 10], "payload": { "text": "便当里的肉 Always 藏在土豆下面。" } },
+    { "id": 6, "type": "clothes", "name": "优衣库", "grid": [6, 10], "payload": { "price": 300, "text": "买了两件 T 恤，出门被同事叫了一声「潮男」。" } },
+    { "id": 7, "type": "company", "name": "工位左侧", "grid": [7, 10], "payload": { "price": 16000, "rent": 340, "group": "mid", "text": "你拥有了自己工位旁边那半米 airspace。" }, "owner": null },
+    { "id": 8, "type": "fate", "name": "命运", "grid": [8, 10], "payload": {} },
+    { "id": 9, "type": "raise", "name": "加薪", "grid": [9, 10], "payload": { "delta": 0.1, "text": "调薪名单里有你，涨了 10%。同事说恭喜，你说还行。" } },
+    { "id": 10, "type": "property", "name": "老公房", "grid": [10, 10], "payload": { "price": 34000, "rent": 520, "mortgage": 54000, "group": "old-house", "text": "六楼无电梯，但窗外能看到自己的车位。" }, "owner": null },
+
+    { "id": 11, "type": "property", "name": "商品房", "grid": [10, 9], "payload": { "hot": "gold", "price": 62000, "rent": 780, "mortgage": 120000, "group": "new-house", "text": "小区里有健身房，你一年去两次。" }, "owner": null },
+    { "id": 12, "type": "chance", "name": "机会", "grid": [10, 8], "payload": {} },
+    { "id": 13, "type": "eat", "name": "公司食堂", "grid": [10, 7], "payload": { "text": "今天有鸡腿，说明公司还没放弃你。" } },
+    { "id": 14, "type": "rent", "name": "单间公寓", "grid": [10, 6], "payload": { "rent": 2800, "group": "rent-mid", "text": "独居的第一个月，你学会了用电饭煲煮面。" } },
+    { "id": 15, "type": "clothes", "name": "网购衣柜", "grid": [10, 5], "payload": { "price": 800, "text": "快递盒堆在门口，你假装那是decor。" } },
+    { "id": 16, "type": "fate", "name": "命运", "grid": [10, 4], "payload": {} },
+    { "id": 17, "type": "cut", "name": "降薪", "grid": [10, 3], "payload": { "delta": 0.1, "text": "绩效面谈后，薪资结构调整了「结构」。" } },
+    { "id": 18, "type": "vehicle", "name": "买车", "grid": [10, 2], "payload": { "text": "同事说：都这个岁数了该有台车了。", "options": [
+      { "id": "ebike", "name": "二手电动车", "price": 7000, "monthly": 180, "livingDiscount": 260, "depreciation": 0.03, "face": 2, "mood": 8, "tag": "环保但��不体面" },
+      { "id": "sedan", "name": "通勤轿车", "price": 24000, "monthly": 620, "livingDiscount": 620, "depreciation": 0.02, "face": 6, "mood": 14, "tag": "见客户不用打车了" },
+      { "id": "luxury", "name": "豪华轿车", "price": 62000, "monthly": 1650, "livingDiscount": 1400, "depreciation": 0.015, "face": 14, "mood": 22, "tag": "停车场 C 位" }
+    ] } },
+    { "id": 19, "type": "property", "name": "江景大平层", "grid": [10, 1], "payload": { "hot": "prime", "price": 92000, "rent": 1080, "mortgage": 228000, "group": "penthouse", "text": "你在样板间里看到了 40 岁的自己。" }, "owner": null },
+    { "id": 20, "type": "promotion", "name": "升职", "grid": [10, 0], "payload": { "text": "新头衔意味着新工位，也意味着新活儿。" } },
+
+    { "id": 21, "type": "chance", "name": "机会", "grid": [9, 0], "payload": {} },
+    { "id": 22, "type": "clothes", "name": "皮鞋护理", "grid": [8, 0], "payload": { "price": 400, "text": "擦完鞋你才想起来，客户下午才来。" } },
+    { "id": 23, "type": "company", "name": "茶水间旁", "grid": [7, 0], "payload": { "price": 45000, "rent": 620, "group": "mid", "text": "这块地皮的租金来自全公司的咖啡消费。" }, "owner": null },
+    { "id": 24, "type": "eat", "name": "下午茶", "grid": [6, 0], "payload": { "text": "下午茶是团队建设，你一个人喝完了整壶。" } },
+    { "id": 25, "type": "rent", "name": "两居室", "grid": [5, 0], "payload": { "rent": 4200, "group": "rent-big", "text": "两居室意味着你要开始考虑猫了。" } },
+    { "id": 26, "type": "demotion", "name": "降职", "grid": [4, 0], "payload": { "text": "组织架构调整，你的头衔少了一个「副」字，多了两个「临时」。" } },
+    { "id": 27, "type": "fate", "name": "命运", "grid": [3, 0], "payload": {} },
+    { "id": 28, "type": "chance", "name": "机会", "grid": [2, 0], "payload": {} },
+    { "id": 29, "type": "company", "name": "仓库角落", "grid": [1, 0], "payload": { "price": 9000, "rent": 260, "group": "edge", "text": "仓库角落堆着你的年终奖和它的包装箱。" }, "owner": null },
+    { "id": 30, "type": "vacation", "name": "公休", "grid": [0, 0], "payload": { "skipNext": true, "text": "连休两天，你开始怀疑人生。" } },
+
+    { "id": 31, "type": "vehicle", "name": "买车", "grid": [0, 1], "payload": { "text": "分期广告说：月供很轻。你信了。", "options": [
+      { "id": "ebike", "name": "二手电动车", "price": 30000, "monthly": 600, "livingDiscount": 200, "depreciation": 0.03 },
+      { "id": "sedan", "name": "通勤轿车", "price": 90000, "monthly": 1800, "livingDiscount": 500, "depreciation": 0.02 },
+      { "id": "luxury", "name": "豪华轿车", "price": 260000, "monthly": 4800, "livingDiscount": 1200, "depreciation": 0.015 }
+    ] } },
+    { "id": 32, "type": "company", "name": "楼梯间", "grid": [0, 2], "payload": { "price": 30000, "rent": 480, "group": "edge", "text": "楼梯间是你的秘密基地，也是消防隐患。" }, "owner": null },
+    { "id": 33, "type": "eat", "name": "便利店关东煮", "grid": [0, 3], "payload": { "text": "关东煮的萝卜比工作靠谱。" } },
+    { "id": 34, "type": "rent", "name": "复式公寓", "grid": [0, 4], "payload": { "rent": 3600, "group": "rent-mid", "text": "层高 4.8 米，你在上层放了折叠椅。" } },
+    { "id": 35, "type": "clothes", "name": "打折区", "grid": [0, 5], "payload": { "price": 500, "text": "打折区的西装，穿上就有了老板的气质。" } },
+    { "id": 36, "type": "fate", "name": "命运", "grid": [0, 6], "payload": {} },
+    { "id": 37, "type": "company", "name": "打印机旁边", "grid": [0, 7], "payload": { "price": 30000, "rent": 480, "group": "edge", "text": "紧挨打印机，风水学上叫「打印旺铺」。" }, "owner": null },
+    { "id": 38, "type": "chance", "name": "机会", "grid": [0, 8], "payload": {} },
+    { "id": 39, "type": "eat", "name": "深夜食堂", "grid": [0, 9], "payload": { "text": "加班到十点，这顿夜宵算加班餐还是自我安慰？" } }
+  ],
+  "decor": [
+    { "kind": "cubicle", "grid": [2, 3], "label": "工位" },
+    { "kind": "cubicle", "grid": [3, 3], "label": "工位" },
+    { "kind": "cubicle", "grid": [2, 4], "label": "工位" },
+    { "kind": "cubicle", "grid": [3, 4], "label": "工位" },
+    { "kind": "cubicle", "grid": [7, 3], "label": "工位" },
+    { "kind": "cubicle", "grid": [8, 3], "label": "工位" },
+    { "kind": "cubicle", "grid": [7, 4], "label": "工位" },
+    { "kind": "cubicle", "grid": [8, 4], "label": "工位" },
+
+    { "kind": "bossOffice", "grid": [5, 1], "span": 2, "label": "老板办公室" },
+    { "kind": "meetingRoom", "grid": [5, 3], "span": 2, "label": "会议室" },
+    { "kind": "teaRoom", "grid": [7, 6], "span": 2, "label": "茶水间" },
+    { "kind": "meetingRoom", "grid": [2, 7], "label": "小会议室" },
+
+    { "kind": "printer", "grid": [4, 2], "label": "复印机" },
+    { "kind": "printer", "grid": [7, 5], "label": "打印机" },
+    { "kind": "plant", "grid": [4, 5], "label": "绿萝" },
+    { "kind": "plant", "grid": [6, 2], "label": "绿萝" },
+    { "kind": "plant", "grid": [3, 8], "label": "盆栽" },
+    { "kind": "plant", "grid": [7, 8], "label": "盆栽" },
+    { "kind": "whiteboard", "grid": [8, 5], "label": "白板" },
+    { "kind": "pantry", "grid": [6, 7], "label": "零食柜" },
+    { "kind": "window", "grid": [5, 8], "label": "落地窗" },
+    { "kind": "sofa", "grid": [1, 5], "label": "沙发" },
+    { "kind": "watercooler", "grid": [3, 6], "label": "饮水机" },
+    { "kind": "gym", "grid": [1, 1], "span": 2, "label": "健身房" },
+    { "kind": "serverRoom", "grid": [8, 8], "label": "机房" },
+    { "kind": "reception", "grid": [4, 9], "label": "前台" }
+  ],
+  "colorTokens": ["#E24B4A", "#378ADD", "#1D9E75", "#BA7517", "#7F77DD", "#D4537E"]
+}

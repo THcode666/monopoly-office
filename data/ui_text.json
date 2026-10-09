@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "app": { "title": "大富翁 · 工位版", "subtitle": "打工人资产争霸赛" },
+  "modes": {
+    "solo": { "title": "单人练习", "desc": "1 人 + AI，同屏操作，随时重开" },
+    "hotseat": { "title": "本地热座", "desc": "2~6 人轮流用同一台电脑" },
+    "lan": { "title": "局域网对战", "desc": "多台设备同一房间，主机权威" }
+  },
+  "ranks": {
+    "intern": "实习生",
+    "specialist": "专员",
+    "supervisor": "主管",
+    "manager": "经理",
+    "director": "总监"
+  },
+  "tileNames": {
+    "start": "起点工位",
+    "company": "公司",
+    "rent": "租房",
+    "eat": "吃饭",
+    "clothes": "买衣服",
+    "vehicle": "买车",
+    "property": "买房",
+    "promotion": "升职",
+    "demotion": "降职",
+    "raise": "加薪",
+    "cut": "降薪",
+    "chance": "机会",
+    "fate": "命运",
+    "vacation": "公休"
+  },
+  "phase": {
+    "TURN_START": "回合开始",
+    "ROLL": "掷骰子",
+    "MOVING": "移动中",
+    "TILE_EVENT": "格子事件",
+    "POST_ACTION": "交易与道具",
+    "TURN_END": "回合结束",
+    "MONTH_SETTLE": "月度结算",
+    "BANKRUPT_CHECK": "破产清算",
+    "GAME_OVER": "游戏结束"
+  },
+  "settle": {
+    "title": "月度结算 · 第 {month} 个月",
+    "salary": "应发工资",
+    "rentIncome": "收租收入",
+    "living": "生活开销",
+    "debt": "月供支出",
+    "interestPaid": "贷款利息",
+    "interestEarned": "存款利息",
+    "net": "本月净收支",
+    "assets": "资产重估",
+    "rankUp": "恭喜升职",
+    "rankDown": "职级下调",
+    "bankrupt": "资不抵债，清算资产",
+    "rescued": "宽限期结束仍未补足，本月支出 −{amount}",
+    "pawned": "被迫变卖 {asset}，回收 {amount}"
+  },
+  "gameOver": {
+    "rounds": "{rounds} 回合结束，资产最高者胜出。",
+    "bankruptcy": "活到最后的人赢。",
+    "winner": "恭喜 {name} 通关",
+    "rank": "最终职级"
+  },
+  "trade": {
+    "title": "发起交易",
+    "give": "我给出",
+    "want": "我想要",
+    "cash": "现金",
+    "property": "房产/地皮",
+    "vehicle": "车辆",
+    "confirm": "确认提议",
+    "accept": "接受",
+    "reject": "拒绝",
+    "expired": "对方已下线，交易取消"
+  },
+  "net": {
+    "room": "房间号",
+    "hosting": "创建房间",
+    "joining": "加入房间",
+    "waiting": "等待其他玩家加入…",
+    "reconnecting": "重连中…",
+    "offline": "掉线中，AI 将暂代操作",
+    "migrating": "房主掉线，正在重新选举…",
+    "passExport": "导出回合包",
+    "passImport": "导入回合包",
+    "passHint": "把文件发给下一位玩家，对方导入后即可继续",
+    "passMismatch": "回合包校验失败：状态不一致或已被篡改"
+  },
+  "audio": {
+    "dice": "骰子",
+    "cash": "收银",
+    "sigh": "叹息",
+    "bgm": "背景音乐",
+    "on": "开",
+    "off": "关"
+  },
+  "toast": {
+    "bankrupt": "{name} 破产出局了",
+    "rankUp": "{name} 升职为 {rank}",
+    "rankDown": "{name} 降职为 {rank}",
+    "tradeDone": "交易完成",
+    "needCash": "现金不足"
+  }
+}

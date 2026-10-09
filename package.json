@@ -1,0 +1,55 @@
+{
+  "name": "monopoly-office",
+  "version": "1.1.0",
+  "description": "大富翁 · 工位版 — 打工人资产争霸赛",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "verify": "node tools/verify-core.mjs",
+    "profile": "node tools/profile.mjs 400",
+    "human": "node tools/human-sim.mjs 300 4",
+    "sim": "node tools/headless-sim.mjs 500 4",
+    "ui-test": "node tools/ui-smoke.mjs",
+    "net-test": "node tools/net-e2e.mjs",
+    "check-layout": "node tools/check-layout.mjs",
+    "trace": "node tools/trace.mjs",
+    "server": "node server/room-server.cjs",
+    "electron": "electron electron/main.cjs",
+    "dist:win": "electron-builder --win nsis --x64",
+    "test": "node tools/verify-core.mjs && node tools/ui-smoke.mjs && node tools/net-e2e.mjs"
+  },
+  "build": {
+    "appId": "com.monopoly.office",
+    "productName": "MonopolyOffice",
+    "directories": {
+      "output": "release/installer"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "data/**/*",
+      "!node_modules/**"
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "artifactName": "monopoly-office-setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "mac": { "target": ["dmg"] },
+    "linux": { "target": ["AppImage"] }
+  },
+  "keywords": ["game", "board-game", "monopoly", "canvas", "html5"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.64.0"
+  }
+}
